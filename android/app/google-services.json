@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "216493554082",
+    "project_id": "nuduwawithflutter",
+    "storage_bucket": "nuduwawithflutter.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216493554082:android:76dbe56a07055387c7dafb",
+        "android_client_info": {
+          "package_name": "com.example.nuduwa_with_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "216493554082-8s42hrbf6m0ga00br1aagckejlisp2q8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYgX5oQFy6NZ1n1bIfmfN9AhbX6uJ5NDo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "216493554082-8s42hrbf6m0ga00br1aagckejlisp2q8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
