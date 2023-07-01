@@ -21,6 +21,12 @@ class MapScreen extends StatelessWidget {
           target: _center,
           zoom: 15.0,
         ),
+        markers: {
+          const Marker(
+            markerId: MarkerId('대림대'),
+            position: LatLng(37.4036, 126.9304),
+          ),
+        },
       ),
     );
   }
