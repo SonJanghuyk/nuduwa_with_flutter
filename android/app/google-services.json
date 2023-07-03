@@ -14,7 +14,7 @@
       },
       "oauth_client": [
         {
-          "client_id": "216493554082-8s42hrbf6m0ga00br1aagckejlisp2q8.apps.googleusercontent.com",
+          "client_id": "216493554082-fpu5pi81fqf1ijdbafcs23e6b9pcjo8c.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -29,6 +29,13 @@
             {
               "client_id": "216493554082-8s42hrbf6m0ga00br1aagckejlisp2q8.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "216493554082-fs8trvf8s551emgp9e8be0esmia89lo3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.nuduwaWithFlutter"
+              }
             }
           ]
         }
