@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:nuduwa_with_flutter/screens/controller/auth_controller.dart';
+import 'package:get/get.dart';
+import 'package:nuduwa_with_flutter/controller/auth_controller.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class LoginScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 50),
-            
+
                   // 로고
                   Image.asset(
                     'assets/images/nuduwa_logo.png',
@@ -24,7 +25,7 @@ class LoginScreen extends StatelessWidget {
                     height: 70,
                     fit: BoxFit.cover,
                   ),
-            
+
                   const SizedBox(height: 30),
 
                   // 인삿말1
@@ -37,7 +38,7 @@ class LoginScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-            
+
                   // 인삿말2
                   const Text(
                     '계속하려면 로그인',
@@ -59,13 +60,12 @@ class LoginScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-
                   // 애플로그인 버튼
                   SnsLoginButton(
                     sns: 'Apple',
-                    onPressed: () {},
+                    onPressed: () {}, isLoading: RxBool(false),
                   ),
-                  
+
                   const SizedBox(height: 10),
                   const Text(
                     '또는',
@@ -80,7 +80,7 @@ class LoginScreen extends StatelessWidget {
                   // 구글로그인 버튼
                   SnsLoginButton(
                     sns: 'Google',
-                    onPressed: AuthController.instance.signInWithGoogle,
+                    onPressed: AuthController.instance.signInWithGoogle, isLoading: AuthController.instance.isLoading,
                   ),
                 ],
               ),
@@ -95,17 +95,18 @@ class LoginScreen extends StatelessWidget {
 class SnsLoginButton extends StatelessWidget {
   final String sns;
   final VoidCallback? onPressed;
+  final RxBool isLoading;
 
   const SnsLoginButton({
     super.key,
     required this.sns,
-    required this.onPressed,
+    required this.onPressed, required this.isLoading,
   });
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: onPressed,
+      onPressed: Get.find<AuthController>().isLoading.value ? null : onPressed,
       style: ButtonStyle(
         backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
         fixedSize: MaterialStateProperty.all<Size>(const Size(200, 80)),
@@ -115,21 +116,25 @@ class SnsLoginButton extends StatelessWidget {
           ),
         ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Image.asset(
-            sns == 'Google'
-                ? 'assets/images/google.png'
-                : 'assets/images/apple.png',
-            color: Colors.white,
-            width: 45,
-            height: 45,
-            fit: BoxFit.cover,
-          ),
-          const SizedBox(width: 8),
-          Text('$sns 간편로그인'),
-        ],
+      child: Obx(
+        () => isLoading.value
+            ? const CircularProgressIndicator()
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    sns == 'Google'
+                        ? 'assets/images/google.png'
+                        : 'assets/images/apple.png',
+                    color: Colors.white,
+                    width: 45,
+                    height: 45,
+                    fit: BoxFit.cover,
+                  ),
+                  const SizedBox(width: 8),
+                  Text('$sns 간편로그인'),
+                ],
+              ),
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Player {
+class Meeter {
   final String? id;
   final String? name;
   final String? email;
@@ -9,7 +9,7 @@ class Player {
   final List<String>? interests;
   final DateTime? signUpTime;
 
-  Player({
+  Meeter({
     this.id, 
     this.name, 
     this.email, 
@@ -19,12 +19,12 @@ class Player {
     this.signUpTime
   });
 
-  factory Player.fromFirestore(
+  factory Meeter.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> snapshot,
     SnapshotOptions? options,
   ) {
     final data = snapshot.data();
-    return Player(
+    return Meeter(
       id: snapshot.id,
       name: data?['name'],
       email: data?['email'],
@@ -44,6 +44,13 @@ class Player {
       if (interests != null) "interests": interests,
       "signUpTime": FieldValue.serverTimestamp(),
     };
+  }  
+}
+
+class MeeterManager {
+
+  static createFirestore(Meeter meeter, Query ref) {
+    
   }
-  
+
 }

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class Meeting {
   final String? id;
@@ -7,8 +8,9 @@ class Meeting {
   final String description;
   final String place;
   final int maxMemers;
+  final String category;
 
-  final Location location;
+  final LatLng location;
   final String? goeHash;
 
   final DateTime meetingTime;
@@ -24,6 +26,7 @@ class Meeting {
     required this.description, 
     required this.place, 
     required this.maxMemers,
+     required this.category,
     required this.location,
     this.goeHash,
     required this.meetingTime, 
@@ -46,7 +49,8 @@ class Meeting {
       description: data?['description'],
       place: data?['place'],
       maxMemers: data?['maxMemers'],
-      location: Location(latitude: latitude, longitude: longitude),
+      category: data?['category'],
+      location: LatLng(latitude, longitude),
       goeHash: data?['goeHash'],
       meetingTime: data?['meetingTime'],
       publishedTime: data?['publishedTime'],
@@ -60,6 +64,7 @@ class Meeting {
       "description": description,
       "place": place,
       "maxMemers": maxMemers,
+      "category": category,
       "latitude": location.latitude,
       "longitude": location.longitude,
       if (goeHash != null) "goeHash": goeHash,
@@ -68,13 +73,4 @@ class Meeting {
       "hostUID": hostUID      
     };
   }
-}
-class Location {
-  final double latitude;
-  final double longitude;
-
-  Location({
-    required this.latitude, 
-    required this.longitude,
-  });
 }

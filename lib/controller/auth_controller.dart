@@ -3,14 +3,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:nuduwa_with_flutter/model/player.dart';
-import 'package:nuduwa_with_flutter/screens/login_screen.dart';
-import 'package:nuduwa_with_flutter/screens/main_screen.dart';
+import 'package:nuduwa_with_flutter/model/meeter.dart';
+import 'package:nuduwa_with_flutter/screens/login_page.dart';
+import 'package:nuduwa_with_flutter/screens/main_page.dart';
 
 class AuthController extends GetxController {
   static AuthController instance = Get.find();
+  static User? get currentUser => FirebaseAuth.instance.currentUser;
+
   late Rx<User?> _user;
   FirebaseAuth authentication = FirebaseAuth.instance;
+
+  final isLoading = false.obs;
 
   @override
   void onReady() {
@@ -22,13 +26,15 @@ class AuthController extends GetxController {
 
   _moveToPage(User? user) {
     if (user == null) {
-      Get.offAll(() => LoginScreen());
+      Get.offAll(() => LoginPage());
     } else {
-      Get.offAll(() => MainScreen());
+      Get.offAll(() => MainPage());
     }
   }
 
   void signInWithGoogle() async {
+    if (isLoading.value) return;
+    isLoading.value = true;
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
@@ -42,10 +48,10 @@ class AuthController extends GetxController {
       final user = userCredential.user;
 
       if (user==null) {return;}    
-      final currentUser = await FirebaseFirestore.instance.collection('user').doc(user.uid).get();
-      if (!currentUser.exists) {
+      // final currentUser = await FirebaseFirestore.instance.collection('user').doc(user.uid).get();
+      // if (!currentUser.exists) {
         registerUser(user);
-      }
+      // }
     }catch (e){
       Get.snackbar(
         "에러!!!",
@@ -61,12 +67,14 @@ class AuthController extends GetxController {
           style: const TextStyle(color: Colors.white),
         ),
       );
+    }finally{
+      isLoading.value = false;
     }
   }
 
   void registerUser(User user) async {
-    final player = Player(name: user.displayName, email: user.email, image: user.photoURL);
-    final docRef = FirebaseFirestore.instance.collection('user').withConverter(fromFirestore: Player.fromFirestore, toFirestore: (Player player, options) => player.toFirestore(),).doc(user.uid);
+    final player = Meeter(name: user.displayName, email: user.email, image: user.photoURL);
+    final docRef = FirebaseFirestore.instance.collection('user').withConverter(fromFirestore: Meeter.fromFirestore, toFirestore: (Meeter player, options) => player.toFirestore(),).doc(user.uid);
 
     await docRef.set(player);
   }

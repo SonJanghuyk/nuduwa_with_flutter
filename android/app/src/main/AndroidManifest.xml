@@ -9,7 +9,7 @@
 
         <!-- 구글지도 API키 -->
         <meta-data android:name="com.google.android.geo.API_KEY"
-               android:value="AIzaSyBNc1_doFoEr7yTY-hLM9VBodozxxWMo40"/>
+               android:value="AIzaSyD7HNss1CtBe-KstkVFyLjHwNeBr7Yj06c"/>
 
         <activity
             android:name=".MainActivity"

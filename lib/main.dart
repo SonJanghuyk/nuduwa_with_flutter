@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/screens/controller/auth_controller.dart';
-import 'package:nuduwa_with_flutter/screens/main_screen.dart';
+import 'package:nuduwa_with_flutter/controller/auth_controller.dart';
+import 'package:nuduwa_with_flutter/screens/main_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MainScreen(),
+      home: MainPage(),
     );
   }
 } 
