@@ -52,8 +52,8 @@ class Meeting {
       category: data?['category'],
       location: LatLng(latitude, longitude),
       goeHash: data?['goeHash'],
-      meetingTime: data?['meetingTime'],
-      publishedTime: data?['publishedTime'],
+      meetingTime: data?['meetingTime'].toDate(),
+      publishedTime: data?['publishedTime'].toDate(),
       hostUID: data?['hostUID']
     );
   }

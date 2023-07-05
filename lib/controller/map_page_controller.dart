@@ -1,19 +1,62 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:nuduwa_with_flutter/model/meeting.dart';
 
 class MapPageController extends GetxController {
   var currentLocation = const LatLng(0, 0);
 
   final _mapController = Completer<GoogleMapController>();
   final markers = <MarkerId, Marker>{}.obs;
+  var snapshotMarkers = <MarkerId, Marker>{};
+
   var center = const LatLng(0, 0);
   final isCreate = false.obs;
 
+  Marker? newMarker;
   final newMarkerId = const MarkerId('newMarker');
+
+  final meetings = <Meeting>[].obs;
+
+  void convertMarkers() {
+    markers.value = snapshotMarkers;
+    if(newMarker != null) {
+      markers[newMarkerId] = newMarker!;
+    }
+    
+  }
+
+  void listenerForMeetings() {
+    debugPrint("리슨");
+    final ref = FirebaseFirestore.instance.collection('meeting').withConverter(
+          fromFirestore: Meeting.fromFirestore,
+          toFirestore: (Meeting meeting, _) => meeting.toFirestore(),
+        );
+    ref.snapshots().listen((event) {
+      final snapshotMeetings = <Meeting>[];
+      snapshotMarkers = {};
+      for (var doc in event.docs) {
+        snapshotMeetings.add(doc.data());
+        debugPrint("미팅: ${doc.data().title}");
+
+        Marker marker = Marker(
+          markerId: MarkerId(doc.data().id!),
+          position: doc.data().location,
+          infoWindow: InfoWindow(title: doc.data().title),
+        );
+
+        snapshotMarkers[MarkerId(doc.data().id!)] = marker;
+      }
+      meetings.value = snapshotMeetings;
+      convertMarkers();
+    });
+    debugPrint("리슨");
+  }
 
   void setCurrentLocation(LatLng? currentLatLng) {
     if (currentLatLng == null) {
@@ -50,13 +93,15 @@ class MapPageController extends GetxController {
   void checkedCenter(CameraPosition position) {
     center = position.target;
 
-    if (markers[newMarkerId] != null) {
-      Marker marker = markers[newMarkerId]!;
-      Marker updatedMarker = marker.copyWith(
-        positionParam: position.target,
-      );
-      markers[newMarkerId] = updatedMarker;
+    if (newMarker == null) {
+      return;
     }
+
+    Marker updatedMarker = newMarker!.copyWith(
+      positionParam: position.target,
+    );
+    newMarker = updatedMarker;
+    convertMarkers();
   }
 
   void clickedMeetingCreateButton() {
@@ -67,53 +112,11 @@ class MapPageController extends GetxController {
         position: center,
         draggable: false,
       );
-      markers[newMarkerId] = marker;
+      newMarker = marker;
     } else {
       isCreate.value = false;
-      markers.remove(newMarkerId);
+      newMarker = null;
     }
+    convertMarkers();
   }
-
-  // String markerIdVal({bool increment = false}) {
-  //   String val = 'marker_id_$_markerIdCounter';
-  //   if (increment) _markerIdCounter++;
-  //   return val;
-  // }
-/*
-  loadMarkers() async {
-    markers.add(Marker(
-        markerId: MarkerId('대림대'),
-        position: LatLng(37.4036, 126.9304),
-        icon: await meetingIcon(),
-        infoWindow: InfoWindow(title: '대림대학교'),
-        onTap: () {
-          showModalBottomSheet(
-            context: context,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(15.0),
-              ),
-            ),
-            barrierColor: Colors.white.withOpacity(0),
-            isScrollControlled: true,
-            builder: (BuildContext context) => const MeetingInfoSheet(),
-          );
-        }));
-    markers.add(
-      Marker(
-        markerId: MarkerId('안양대'),
-        position: LatLng(37.3919, 126.9199),
-        icon: await meetingIcon(),
-        infoWindow: InfoWindow(title: '안양대학교'),
-      ),
-    );
-    markers.add(
-      Marker(
-        markerId: MarkerId('안양종합운동장'),
-        position: LatLng(37.4053, 126.9464),
-        infoWindow: InfoWindow(title: '안양종합운동장'),
-      ),
-    );
-  }
-  */
 }

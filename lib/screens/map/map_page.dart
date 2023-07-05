@@ -28,6 +28,7 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
     controller.setCurrentLocation(widget.currentLatLng);
+    controller.listenerForMeetings();
   }
 
   @override
