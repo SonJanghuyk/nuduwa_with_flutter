@@ -4,7 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nuduwa_with_flutter/controller/map_page_controller.dart';
 
 import 'sub/create_meeting_sheet.dart';
-import 'sub/meeting_icon.dart';
+import 'sub/meeting_icon_image.dart';
 import 'sub/meeting_info_sheet.dart';
 
 class MapPage extends StatefulWidget {
@@ -22,8 +22,6 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   final MapPageController controller = Get.put(MapPageController());
 
-  // bool isCreate = false;
-
   @override
   void initState() {
     super.initState();
@@ -37,16 +35,17 @@ class _MapPageState extends State<MapPage> {
       () => Scaffold(
         body: GoogleMap(
           onMapCreated: controller.onMapCreated,
-          initialCameraPosition: CameraPosition(
+          initialCameraPosition: CameraPosition( // 초기 지도 위치
             target: controller.currentLocation,
             zoom: 15.0,
           ),
-          compassEnabled: false,
-          myLocationEnabled: true,
-          myLocationButtonEnabled: false,
-          zoomControlsEnabled: false,
-          markers: Set.of(controller.markers.values),
-          onCameraMove: controller.checkedCenter,
+          compassEnabled: false,          // 나침판표시 비활성화
+          myLocationEnabled: true,        // 내 위치 활성화
+          myLocationButtonEnabled: false, // 내 위치 버튼 비활성화(따로 구현함)
+          zoomControlsEnabled: false,     // 확대축소 버튼 비활성화
+          markers: Set.of(controller.markers.values), // 지도 마커
+          onCameraMove: controller.checkedCenter, // 지도 이동시 중심위치 저장
+          
         ),
         floatingActionButton: Stack(
           children: [
@@ -91,22 +90,6 @@ class _MapPageState extends State<MapPage> {
                     borderRadius: BorderRadius.circular(100),
                   ),
                   onPressed: controller.clickedMeetingCreateButton,
-
-                  /*
-                    showModalBottomSheet(
-                      context: context,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(15.0),
-                        ),
-                      ),
-                      barrierColor: Colors.white.withOpacity(0),
-                      backgroundColor: Colors.white,
-                      isScrollControlled: true,
-                      builder: (BuildContext context) => const CreateMeetingSheet(),
-                    );
-                    */
-
                   child: Text(
                     !controller.isCreate.value ? '모임만들기' : '취소',
                     style: const TextStyle(
