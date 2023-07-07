@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:nuduwa_with_flutter/model/firebase_manager.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:http/http.dart' as http;
 
@@ -21,7 +22,6 @@ class CreateMeetingController extends GetxController {
 
   final address = ''.obs;
 
-  String? get currentUID => FirebaseAuth.instance.currentUser?.uid;
 
   void setLocation(LatLng location) {
     this.location = location;
@@ -29,7 +29,7 @@ class CreateMeetingController extends GetxController {
   }
 
   void createMeeting() {
-    if (currentUID == null) {
+    if (FirebaseManager.currentUID == null) {
       getXsnackbar('오류: 계정오류', '사용자 계정이 없습니다');
       return;
     }
@@ -45,8 +45,8 @@ class CreateMeetingController extends GetxController {
       getXsnackbar('오류: 모임장소 오류', '모임장소를 입력해주세요');
       return;
     }
-    if (maxMemers == 0) {
-      getXsnackbar('오류: 모임최대인원수 오류', '알 수 없는 오류');
+    if (maxMemers < 2) {
+      getXsnackbar('오류: 모임최대인원수 오류', '모임 최대인원을 2명이상 선택해주세요');
       return;
     }
     if (category.isEmpty) {
@@ -66,7 +66,7 @@ class CreateMeetingController extends GetxController {
       category: category,
       location: location,
       meetingTime: meetingTime,
-      hostUID: currentUID!,
+      hostUID: FirebaseManager.currentUID!,
     );
     final ref = FirebaseFirestore.instance.collection('meeting').withConverter(
           fromFirestore: Meeting.fromFirestore,
@@ -90,14 +90,20 @@ class CreateMeetingController extends GetxController {
     );
   }
 
-  void getLocationAddress() async {
+  void getLocationAddress() async {    
+    if (address.value != '') {return;}
+    debugPrint('주소가져오기');
     final uri = Uri.https('maps.googleapis.com', '/maps/api/geocode/json', {
       'latlng': '${location.latitude},${location.longitude}',
       'key': 'AIzaSyD7HNss1CtBe-KstkVFyLjHwNeBr7Yj06c',
       'language': 'ko',
     });
-    final response = await http.get(uri);
-
-    address.value = jsonDecode(response.body)['results'][0]['formatted_address'];
+    try {
+      final response = await http.get(uri);
+      address.value =
+          jsonDecode(response.body)['results'][0]['formatted_address'];
+    } catch (e) {
+      debugPrint('오류!!getLocationAddress: ${e.toString()}');
+    }
   }
 }

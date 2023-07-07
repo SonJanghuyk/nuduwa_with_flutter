@@ -4,9 +4,15 @@ import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/controller/auth_controller.dart';
 import 'package:nuduwa_with_flutter/screens/main_page.dart';
 
+import 'firebase_options.dart';
+
 void main() async {
+  // 앱에 Firebase 추가
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp().then((value) => Get.put(AuthController()));
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  ).then((_) => Get.put(AuthController()));  // sns자동로그인 여부확인용
+  
   runApp(const MyApp());
 }
 
@@ -20,7 +26,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MainPage(),
+      home: const MainPage(),
     );
   }
 } 

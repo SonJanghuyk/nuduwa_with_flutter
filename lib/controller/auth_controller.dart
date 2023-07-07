@@ -3,18 +3,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:nuduwa_with_flutter/model/meeter.dart';
+import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/screens/login_page.dart';
 import 'package:nuduwa_with_flutter/screens/main_page.dart';
 
 class AuthController extends GetxController {
   static AuthController instance = Get.find();
-  static User? get currentUser => FirebaseAuth.instance.currentUser;
 
-  late Rx<User?> _user;
+  // Firestore에서 user정보 가져오는 Manager
+  final userManager = Get.put(UserManager());
+  
+  late Rx<User?> _user; // user 인증여부 확인(null이면 비회원)
   FirebaseAuth authentication = FirebaseAuth.instance;
 
-  final isLoading = false.obs;
+  final isLoading = false.obs; // 서버 로그인중
 
   @override
   void onReady() {
@@ -48,10 +50,10 @@ class AuthController extends GetxController {
       final user = userCredential.user;
 
       if (user==null) {return;}    
-      // final currentUser = await FirebaseFirestore.instance.collection('user').doc(user.uid).get();
-      // if (!currentUser.exists) {
+      final currentUser = await userManager.fetchUser(user.uid);
+      if (currentUser == null) {
         registerUser(user);
-      // }
+      }
     }catch (e){
       Get.snackbar(
         "에러!!!",
@@ -73,10 +75,11 @@ class AuthController extends GetxController {
   }
 
   void registerUser(User user) async {
-    final player = Meeter(name: user.displayName, email: user.email, image: user.photoURL);
-    final docRef = FirebaseFirestore.instance.collection('user').withConverter(fromFirestore: Meeter.fromFirestore, toFirestore: (Meeter player, options) => player.toFirestore(),).doc(user.uid);
-
-    await docRef.set(player);
+    final providerData = user.providerData[0];
+    final googleData = SnsData(snsUID: providerData.providerId, snsName: providerData.displayName, snsEmail: providerData.email, snsImage: providerData.photoURL);
+    final userModel = UserModel(id: user.uid, name: user.displayName, email: user.email, image: user.photoURL, googleData: googleData);
+ 
+    await userManager.createUserData(userModel);
   }
 
   void logout(){

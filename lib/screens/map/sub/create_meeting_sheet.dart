@@ -34,72 +34,78 @@ class CreateMeetingSheet extends StatelessWidget {
           ),
           // 모임 정보 입력창
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(5.0),
-              color: const Color.fromARGB(29, 3, 168, 244),
-              child: ListView(
-                children: [
-                  const SizedBox(height: 5),
+            child: GestureDetector(
+              onTap: () {
+                // 터치 이벤트 발생 시 키보드를 숨깁니다.
+                FocusScope.of(context).unfocus();
+              },
+              child: Container(
+                padding: const EdgeInsets.all(5.0),
+                color: const Color.fromARGB(29, 3, 168, 244),
+                child: ListView(
+                  children: [
+                    const SizedBox(height: 5),
 
-                  // 모임 정보 컨테이너
-                  MeetingSetContainer(
-                    title: '모임정보',
-                    content: [
-                      setTextfiled(controller.title, '모임 제목 입력'),
-                      const SizedBox(height: 8),
-                      setTextfiled(controller.description, '모임 내용 입력'),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
+                    // 모임 정보 컨테이너
+                    MeetingSetContainer(
+                      title: '모임정보',
+                      content: [
+                        setTextfiled(controller.title, '모임 제목 입력'),
+                        const SizedBox(height: 8),
+                        setTextfiled(controller.description, '모임 내용 입력'),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
 
-                  // 모임 장소 컨테이너
-                  MeetingSetContainer(
-                    title: '장소',
-                    content: [
-                      Row(
-                        children: [
-                          Text(controller.address.value),
-                          const Spacer(),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      setTextfiled(controller.place, '모임 상세장소 입력'),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
+                    // 모임 장소 컨테이너
+                    MeetingSetContainer(
+                      title: '장소',
+                      content: [
+                        Row(
+                          children: [
+                            Text(controller.address.value),
+                            const Spacer(),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        setTextfiled(controller.place, '모임 상세장소 입력'),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
 
-                  // 모임 시간 컨테이너
-                  MeetingSetContainer(
-                    title: '시간',
-                    content: [
-                      TimePicker(
-                        controller: controller,
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 20),
+                    // 모임 시간 컨테이너
+                    MeetingSetContainer(
+                      title: '시간',
+                      content: [
+                        TimePicker(
+                          controller: controller,
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 20),
 
-                  // 최대 인원수 컨테이너
-                  MeetingSetContainer(
-                    title: '최대 인원수',
-                    content: [
-                      MaxNumberPicker(
-                        controller: controller,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
+                    // 최대 인원수 컨테이너
+                    MeetingSetContainer(
+                      title: '최대 인원수',
+                      content: [
+                        MaxNumberPicker(
+                          controller: controller,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
 
-                  // 카테고리 컨테이너
-                  MeetingSetContainer(
-                    title: '카테고리',
-                    content: [
-                      CategoryPicker(
-                        controller: controller,
-                      ),
-                    ],
-                  ),
-                ],
+                    // 카테고리 컨테이너
+                    MeetingSetContainer(
+                      title: '카테고리',
+                      content: [
+                        CategoryPicker(
+                          controller: controller,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -253,7 +259,7 @@ class _MaxNumberPickerState extends State<MaxNumberPicker> {
   void initState() {
     super.initState();
     _controller = widget.controller;
-    _controller.maxMemers = 2;
+    _controller.maxMemers = 1;
   }
 
   @override
@@ -284,7 +290,7 @@ class _MaxNumberPickerState extends State<MaxNumberPicker> {
               ),
               NumberPicker(
                 itemWidth: 50,
-                minValue: 2,
+                minValue: 1,
                 maxValue: 10,
                 value: _controller.maxMemers,
                 itemCount: 1,

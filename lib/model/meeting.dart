@@ -17,8 +17,8 @@ class Meeting {
   final DateTime? publishedTime;
 
   final String hostUID;
-  final String? hostName;
-  final String? hostImage;
+  String? hostName;
+  String? hostImage;
 
   Meeting({
     this.id, 
