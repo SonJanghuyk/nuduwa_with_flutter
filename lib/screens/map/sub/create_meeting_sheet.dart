@@ -2,30 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:nuduwa_with_flutter/controller/create_meeting_controller.dart';
+import 'package:nuduwa_with_flutter/controller/mapController/create_meeting_controller.dart';
 import 'package:numberpicker/numberpicker.dart';
 
-class CreateMeetingSheet extends StatelessWidget {
+Future<dynamic> createMeetingSheet(BuildContext context, LatLng location) {
+  return showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(15.0),
+      ),
+    ),
+    barrierColor: Colors.white.withOpacity(0),
+    backgroundColor: Colors.white,
+    isScrollControlled: true,
+    builder: (BuildContext context) => CreateMeetingScreen(location: location),
+  );
+}
+
+class CreateMeetingScreen extends StatelessWidget {
   final LatLng location;
-  const CreateMeetingSheet({super.key, required this.location});
+  const CreateMeetingScreen({
+    super.key,
+    required this.location,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(CreateMeetingController());
-    controller.setLocation(location);
+    final controller = Get.put(CreateMeetingController(location));
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.95,
       padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(color: Colors.transparent.withOpacity(0.0)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 상단바 뒤로가기 아이콘
           IconButton(
-            onPressed: () {
-              // Navigator.pop(context);
-              Get.back();
-            },
+            onPressed: Get.back,
             icon: const Icon(
               Icons.arrow_back,
               size: 30,

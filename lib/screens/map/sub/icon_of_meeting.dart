@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class MeetingIconImage {
+class IconOfMeeting {
   Future<BitmapDescriptor> meetingIcon(String? url, Color color) async {
     const double imageSize = 80.0; // 이미지 크기
     const double borderWidth = 10.0; // 테두리 두께
@@ -28,7 +28,6 @@ class MeetingIconImage {
   // 웹이미지 원 모양으로 그리는 함수
   Future<ui.Image> _drawWebImage(String? url, double imageSize) async {
     late ui.FrameInfo frameInfo;
-    debugPrint('유알엘:$url');
     if (url != null) {
       // 이미지 네트워크로부터 바이트 데이터 가져오기
       final response = await http.get(Uri.parse(url));

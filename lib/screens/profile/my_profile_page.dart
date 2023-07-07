@@ -37,7 +37,7 @@ class MyProfilePage extends StatelessWidget {
           ),
         ],
       ),
-      body: Text(FirebaseManager.currentUid ?? '이름없음'),
+      body: Text(controller.userManager.currentUid ?? '이름없음'),
     );
   }
 }

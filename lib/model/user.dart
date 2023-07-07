@@ -30,16 +30,17 @@ class UserModel {
     SnapshotOptions? options,
   ]) {
     final data = snapshot.data();
-    debugPrint(data.toString());
+    final interests = data?['interests'] is Iterable
+            ? List.from(data?['interests']) as List<String>?
+            : null;
+            
     return UserModel(
         id: snapshot.id,
         name: data?['name'] as String?,
         email: data?['email'] as String?,
         image: data?['image'] as String?,
         introdution: data?['introdution'] as String?,
-        interests: data?['interests'] is Iterable
-            ? List.from(data?['interests']) as List<String>?
-            : null,
+        interests: interests,
         signUpTime: (data?['signUpTime'] as Timestamp).toDate(),
         googleData: SnsData.fromJson(data?['googleData']),
     );
@@ -91,7 +92,7 @@ class SnsData {
   }
 }
 
-class UserManager extends GetxController with FirebaseManager {
+class UserManager extends FirebaseManager {
   static UserManager get instance => Get.find();
 
   Future<void> createUserData(UserModel user) async {

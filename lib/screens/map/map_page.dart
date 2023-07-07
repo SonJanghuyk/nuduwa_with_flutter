@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:nuduwa_with_flutter/controller/map_page_controller.dart';
+import 'package:nuduwa_with_flutter/controller/mapController/map_page_controller.dart';
 
 import 'sub/create_meeting_sheet.dart';
 
@@ -117,20 +117,7 @@ class MapPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(5.0),
                     ),
                     onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(15.0),
-                          ),
-                        ),
-                        barrierColor: Colors.white.withOpacity(0),
-                        backgroundColor: Colors.white,
-                        isScrollControlled: true,
-                        builder: (BuildContext context) => CreateMeetingSheet(
-                          location: controller.center,
-                        ),
-                      );
+                      createMeetingSheet(context, controller.center);
                       controller.clickedMeetingCreateButton();
                     },
                     child: const Text(
@@ -147,4 +134,21 @@ class MapPage extends StatelessWidget {
       ),
     );
   }
+
+  // Future<dynamic> newMethod(BuildContext context) {
+  //   return showModalBottomSheet(
+  //                     context: context,
+  //                     shape: const RoundedRectangleBorder(
+  //                       borderRadius: BorderRadius.vertical(
+  //                         top: Radius.circular(15.0),
+  //                       ),
+  //                     ),
+  //                     barrierColor: Colors.white.withOpacity(0),
+  //                     backgroundColor: Colors.white,
+  //                     isScrollControlled: true,
+  //                     builder: (BuildContext context) => CreateMeetingSheet(
+  //                       location: controller.center,
+  //                     ),
+  //                   );
+  // }
 }

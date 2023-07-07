@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nuduwa_with_flutter/controller/main_page_controller.dart';
-import 'package:nuduwa_with_flutter/controller/map_page_controller.dart';
+import 'package:nuduwa_with_flutter/controller/mapController/map_page_controller.dart';
 import 'package:nuduwa_with_flutter/screens/map/map_page.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/screens/profile/my_profile_page.dart';

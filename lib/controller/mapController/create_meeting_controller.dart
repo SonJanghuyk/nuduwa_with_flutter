@@ -9,27 +9,31 @@ import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:http/http.dart' as http;
 
 class CreateMeetingController extends GetxController {
+  final meetingManager = MeetingManager.instance;
   final title = ''.obs;
   final description = ''.obs;
   final place = ''.obs;
   var maxMemers = 0;
   var category = '';
 
-  var location = LatLng(0, 0);
+  final LatLng location;
   String? goeHash;
 
   DateTime meetingTime = DateTime(0);
 
   final address = ''.obs;
 
+  CreateMeetingController(this.location);
 
-  void setLocation(LatLng location) {
-    this.location = location;
+  @override
+  void onInit() {
+    debugPrint("CreateMeetingController");
+    super.onInit();
     getLocationAddress();
   }
 
   void createMeeting() {
-    if (FirebaseManager.currentUid == null) {
+    if (meetingManager.currentUid == null) {
       getXsnackbar('오류: 계정오류', '사용자 계정이 없습니다');
       return;
     }
@@ -66,14 +70,16 @@ class CreateMeetingController extends GetxController {
       category: category,
       location: location,
       meetingTime: meetingTime,
-      hostUid: FirebaseManager.currentUid!,
+      hostUid: meetingManager.currentUid!,
+      members: [Member(uid: meetingManager.currentUid!)],
     );
-    final ref = FirebaseFirestore.instance.collection('meeting').withConverter(
-          fromFirestore: Meeting.fromFirestore,
-          toFirestore: (Meeting meeting, options) => meeting.toFirestore(),
-        );
+    meetingManager.createMeetingData(newMeeting);
+    // final ref = FirebaseFirestore.instance.collection('meeting').withConverter(
+    //       fromFirestore: Meeting.fromFirestore,
+    //       toFirestore: (Meeting meeting, options) => meeting.toFirestore(),
+    //     );
     try {
-      ref.add(newMeeting).then((value) {
+      meetingManager.createMeetingData(newMeeting).then((value) {
         Get.snackbar('모임생성 완료', '모임생성이 완료되었습니다');
       });
       Get.back();
@@ -91,7 +97,7 @@ class CreateMeetingController extends GetxController {
   }
 
   void getLocationAddress() async {    
-    if (address.value != '') {return;}
+    if (address.value != '') return;
     debugPrint('주소가져오기');
     final uri = Uri.https('maps.googleapis.com', '/maps/api/geocode/json', {
       'latlng': '${location.latitude},${location.longitude}',
