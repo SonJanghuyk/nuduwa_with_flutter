@@ -4,30 +4,14 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nuduwa_with_flutter/controller/map_page_controller.dart';
 
 import 'sub/create_meeting_sheet.dart';
-import 'sub/meeting_icon_image.dart';
-import 'sub/meeting_info_sheet.dart';
 
-class MapPage extends StatefulWidget {
-  final LatLng? currentLatLng;
+class MapPage extends StatelessWidget {
+  final MapPageController controller;
 
   const MapPage({
     super.key,
-    required this.currentLatLng,
+    required this.controller,
   });
-
-  @override
-  State<MapPage> createState() => _MapPageState();
-}
-
-class _MapPageState extends State<MapPage> {
-  final MapPageController controller = Get.put(MapPageController());
-
-  @override
-  void initState() {
-    super.initState();
-    controller.setCurrentLocation(widget.currentLatLng);
-    controller.listenerForMeetings();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +27,7 @@ class _MapPageState extends State<MapPage> {
           myLocationEnabled: true,        // 내 위치 활성화
           myLocationButtonEnabled: false, // 내 위치 버튼 비활성화(따로 구현함)
           zoomControlsEnabled: false,     // 확대축소 버튼 비활성화
-          markers: Set.of(controller.markers.values), // 지도 마커
+          markers: controller.meetings.values.map((tuple) => tuple.$2).toSet(), // 지도 마커
           onCameraMove: controller.checkedCenter, // 지도 이동시 중심위치 저장
           
         ),

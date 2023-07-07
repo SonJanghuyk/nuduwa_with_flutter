@@ -94,25 +94,14 @@ class SnsData {
 class UserManager extends GetxController with FirebaseManager {
   static UserManager get instance => Get.find();
 
-
   Future<void> createUserData(UserModel user) async {
-    await userList
-        .withConverter(
-          fromFirestore: UserModel.fromFirestore,
-          toFirestore: (UserModel player, options) => player.toFirestore(),
-        )
-        .doc(user.id)
-        .set(user);
+    final ref = userList.doc(user.id);
+    await ref.set(user);
   }
 
   Future<UserModel?> fetchUser(String uid) async {
     debugPrint('패치 유저:$uid');
-    final ref = userList
-        .withConverter(
-          fromFirestore: UserModel.fromFirestore,
-          toFirestore: (UserModel player, _) => player.toFirestore(),
-        )
-        .doc(uid);
+    final ref = userList.doc(uid);
     var snapshot = await ref.get();        
 
     return snapshot.data();

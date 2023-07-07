@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:nuduwa_with_flutter/controller/auth_controller.dart';
 import 'package:nuduwa_with_flutter/model/firebase_manager.dart';
 class MyProfilePage extends StatelessWidget {
-  const MyProfilePage({super.key});
+  final controller = AuthController.instance;
+
+  MyProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,12 +32,12 @@ class MyProfilePage extends StatelessWidget {
               color: Colors.black,
             ),
             onPressed: () {
-              AuthController.instance.logout();
+              controller.logout();
             },
           ),
         ],
       ),
-      body: Text(FirebaseManager.currentUID ?? '이름없음'),
+      body: Text(FirebaseManager.currentUid ?? '이름없음'),
     );
   }
 }

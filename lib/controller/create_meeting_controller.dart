@@ -29,7 +29,7 @@ class CreateMeetingController extends GetxController {
   }
 
   void createMeeting() {
-    if (FirebaseManager.currentUID == null) {
+    if (FirebaseManager.currentUid == null) {
       getXsnackbar('오류: 계정오류', '사용자 계정이 없습니다');
       return;
     }
@@ -66,7 +66,7 @@ class CreateMeetingController extends GetxController {
       category: category,
       location: location,
       meetingTime: meetingTime,
-      hostUID: FirebaseManager.currentUID!,
+      hostUid: FirebaseManager.currentUid!,
     );
     final ref = FirebaseFirestore.instance.collection('meeting').withConverter(
           fromFirestore: Meeting.fromFirestore,

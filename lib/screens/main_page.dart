@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:nuduwa_with_flutter/controller/main_page_controller.dart';
+import 'package:nuduwa_with_flutter/controller/map_page_controller.dart';
 import 'package:nuduwa_with_flutter/screens/map/map_page.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/screens/profile/my_profile_page.dart';
 
 class MainPage extends StatelessWidget {
-  const MainPage({super.key});
+  final controller = Get.put(MainPageController());
 
+  MainPage({super.key});
+  
   @override
   Widget build(BuildContext context) {
-    MainPageController controller = Get.put(MainPageController());
-
     // 탭별 화면
     late List<Widget> tabPages = <Widget>[
       MapPage(
-        currentLatLng: controller.currentLatLng.value,
+        controller: Get.put(MapPageController(controller.currentLatLng.value)),
       ), // 외부 클래스로 정의
       MyProfilePage(),
     ];

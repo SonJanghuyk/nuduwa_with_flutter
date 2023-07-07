@@ -3,7 +3,9 @@ import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/controller/auth_controller.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  LoginPage({super.key});
+
+  final controller = AuthController.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +82,7 @@ class LoginPage extends StatelessWidget {
                   // 구글로그인 버튼
                   SnsLoginButton(
                     sns: 'Google',
-                    onPressed: AuthController.instance.signInWithGoogle, isLoading: AuthController.instance.isLoading,
+                    onPressed: controller.signInWithGoogle, isLoading: controller.isLoading,
                   ),
                 ],
               ),
@@ -93,11 +95,13 @@ class LoginPage extends StatelessWidget {
 }
 
 class SnsLoginButton extends StatelessWidget {
+  final controller = AuthController.instance;
+
   final String sns;
   final VoidCallback? onPressed;
   final RxBool isLoading;
 
-  const SnsLoginButton({
+  SnsLoginButton({
     super.key,
     required this.sns,
     required this.onPressed, required this.isLoading,
@@ -106,7 +110,7 @@ class SnsLoginButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: Get.find<AuthController>().isLoading.value ? null : onPressed,
+      onPressed: controller.isLoading.value ? null : onPressed,
       style: ButtonStyle(
         backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
         fixedSize: MaterialStateProperty.all<Size>(const Size(200, 80)),

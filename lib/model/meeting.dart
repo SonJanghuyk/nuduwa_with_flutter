@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:nuduwa_with_flutter/model/firebase_manager.dart';
 
 class Meeting {
   final String? id;
@@ -16,7 +18,7 @@ class Meeting {
   final DateTime meetingTime;
   final DateTime? publishedTime;
 
-  final String hostUID;
+  final String hostUid;
   String? hostName;
   String? hostImage;
 
@@ -31,7 +33,7 @@ class Meeting {
     this.goeHash,
     required this.meetingTime, 
     this.publishedTime, 
-    required this.hostUID,
+    required this.hostUid,
     this.hostName,
     this.hostImage,
   });
@@ -54,7 +56,7 @@ class Meeting {
       goeHash: data?['goeHash'],
       meetingTime: data?['meetingTime'].toDate(),
       publishedTime: data?['publishedTime'].toDate(),
-      hostUID: data?['hostUID']
+      hostUid: data?['hostUID']
     );
   }
 
@@ -70,7 +72,23 @@ class Meeting {
       if (goeHash != null) "goeHash": goeHash,
       "meetingTime": meetingTime,
       "publishedTime": FieldValue.serverTimestamp(),
-      "hostUID": hostUID      
+      "hostUID": hostUid      
     };
+  }
+}
+
+class MeetingManager extends GetxController with FirebaseManager {
+  static MeetingManager get instance => Get.find();
+
+  Future<void> createMeetingData(Meeting meeting) async {
+    final ref = meetingList.doc();
+    await ref.set(meeting);
+  }
+
+  Future<Meeting?> fetchMeeting(String meetingId) async {
+    final ref = meetingList.doc(meetingId);
+    var snapshot = await ref.get();        
+
+    return snapshot.data();
   }
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/controller/auth_controller.dart';
+import 'package:nuduwa_with_flutter/model/meeting.dart';
+import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/screens/main_page.dart';
 
 import 'firebase_options.dart';
@@ -12,7 +14,11 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   ).then((_) => Get.put(AuthController()));  // sns자동로그인 여부확인용
-  
+
+  // 모델 Manager GetPut
+  Get.lazyPut(() => UserManager());
+  Get.lazyPut(() => MeetingManager());
+
   runApp(const MyApp());
 }
 
@@ -26,7 +32,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MainPage(),
+      home: MainPage(),
     );
   }
 } 
