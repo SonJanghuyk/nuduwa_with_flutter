@@ -13,9 +13,10 @@ import 'package:nuduwa_with_flutter/screens/main_page.dart';
 import 'firebase_options.dart';
 
 void main() async {
-   // Model Manager GetPut (UserModel은 AuthController에서 GetPut)
-  Get.put(MeetingManager());
+  // Model Manager GetPut
   Get.put(UserManager());
+  Get.put(MeetingManager());  
+  Get.lazyPut(() => MemberManager());
   // 앱에 Firebase 추가
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(

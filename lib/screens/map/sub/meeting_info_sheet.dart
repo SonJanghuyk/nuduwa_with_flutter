@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/map_page_controller.dart';
-import 'package:nuduwa_with_flutter/model/meeting.dart';
+import 'package:nuduwa_with_flutter/model/member.dart';
 
-Future<dynamic> meetingInfoSheet(String meetingId) {
-  return showModalBottomSheet(
+Future<void> meetingInfoSheet(String meetingId) async {
+  final controller = MapPageController.instance;
+  controller.listenerForMembers(meetingId);
+
+  await showModalBottomSheet(
     context: Get.context!,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
@@ -17,6 +20,7 @@ Future<dynamic> meetingInfoSheet(String meetingId) {
     isScrollControlled: true,
     builder: (BuildContext context) => MeetingInfoScreen(meetingId: meetingId),
   );
+  controller.cancelListenerForMembers(meetingId);
 }
 
 class MeetingInfoScreen extends StatelessWidget {
@@ -160,24 +164,70 @@ class MeetingInfoScreen extends StatelessWidget {
                           Icons.calendar_month,
                         ),
                         const Spacer(),
-                        rowMeetingInfo(
-                          '참여인원 0/${controller.meetings[meetingId]!.$1.maxMemers}',
-                          Icons.people_outline,
-                        ),
+                        Obx(() {
+                          final countOfMembers = controller.members.length;
+                          return rowMeetingInfo(
+                              '참여인원 $countOfMembers/${controller.meetings[meetingId]!.$1.maxMemers}',
+                              Icons.people_outline);
+                        }),
                         const Spacer(),
-                        TextButton(
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.group_add_outlined),
-                              Text(
-                                '참여하기',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                            ],
-                          ),
-                          onPressed: () =>
-                              controller.meetingManager.joinMeeting(meetingId),
+                        Obx(
+                          () => controller.meetings[meetingId]!.$1.hostUid !=
+                                  controller.userManager.currentUid
+                              ? controller.members.any((Member member) =>
+                                      member.uid ==
+                                      controller.userManager.currentUid)
+                                  ? const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.groups_outlined),
+                                        SizedBox(width: 5),
+                                        Text(
+                                          '참여중',
+                                          style: TextStyle(
+                                              fontSize: 18, color: Colors.black),
+                                        ),
+                                      ],
+                                    )
+                                  : controller.members.length >=
+                                          controller
+                                              .meetings[meetingId]!.$1.maxMemers
+                                      ? const Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.group_off_outlined),
+                                            SizedBox(width: 5),
+                                            Text(
+                                              '인원초과',
+                                              style: TextStyle(
+                                                  fontSize: 18,
+                                                  color: Colors.red),
+                                            ),
+                                          ],
+                                        )
+                                      : !controller.isLoading.value
+                                          ? TextButton(
+                                              child: const Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(
+                                                      Icons.group_add_outlined),
+                                                  SizedBox(width: 5),
+                                                  Text(
+                                                    '참여하기',
+                                                    style:
+                                                        TextStyle(fontSize: 18),
+                                                  ),
+                                                ],
+                                              ),
+                                              onPressed: () => controller
+                                                  .joinMeeting(meetingId, controller.meetings[meetingId]!.$1.hostUid, controller.meetings[meetingId]!.$1.meetingTime),
+                                            )
+                                          : const CircularProgressIndicator()
+                              : const SizedBox.shrink(),
                         ),
                       ],
                     ),

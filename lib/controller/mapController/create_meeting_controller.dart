@@ -1,10 +1,8 @@
 import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:nuduwa_with_flutter/model/firebase_manager.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:http/http.dart' as http;
 
@@ -32,7 +30,7 @@ class CreateMeetingController extends GetxController {
     getLocationAddress();
   }
 
-  void createMeeting() {
+  void createMeeting() async {
     if (meetingManager.currentUid == null) {
       getXsnackbar('오류: 계정오류', '사용자 계정이 없습니다');
       return;
@@ -71,20 +69,13 @@ class CreateMeetingController extends GetxController {
       location: location,
       meetingTime: meetingTime,
       hostUid: meetingManager.currentUid!,
-      members: [Member(uid: meetingManager.currentUid!)],
     );
-    meetingManager.createMeetingData(newMeeting);
-    // final ref = FirebaseFirestore.instance.collection('meeting').withConverter(
-    //       fromFirestore: Meeting.fromFirestore,
-    //       toFirestore: (Meeting meeting, options) => meeting.toFirestore(),
-    //     );
     try {
-      meetingManager.createMeetingData(newMeeting).then((value) {
-        Get.snackbar('모임생성 완료', '모임생성이 완료되었습니다');
-      });
+      await meetingManager.createMeetingData(newMeeting);
       Get.back();
+      Get.snackbar('모임생성 완료', '모임생성이 완료되었습니다', snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
-      Get.snackbar('모임생성 오류', e.toString());
+      Get.snackbar('모임생성 오류', e.toString(), snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red);
     }
   }
 
@@ -96,7 +87,7 @@ class CreateMeetingController extends GetxController {
     );
   }
 
-  void getLocationAddress() async {    
+  void getLocationAddress() async {
     if (address.value != '') return;
     debugPrint('주소가져오기');
     final uri = Uri.https('maps.googleapis.com', '/maps/api/geocode/json', {

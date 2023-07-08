@@ -1,13 +1,15 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
+import 'package:nuduwa_with_flutter/model/member.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
+import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 import 'package:nuduwa_with_flutter/screens/map/sub/icon_of_meeting.dart';
 import 'package:nuduwa_with_flutter/screens/map/sub/meeting_info_sheet.dart';
 
@@ -17,6 +19,7 @@ class MapPageController extends GetxController {
   // Model Manager
   final userManager = UserManager.instance;
   final meetingManager = MeetingManager.instance;
+  final memberManager = MemberManager.instance;
 
   // GoogleMap
   var _mapController = Completer<GoogleMapController>();
@@ -31,14 +34,20 @@ class MapPageController extends GetxController {
 
   // Firestore Listener
   var snapshotMeetings = <String, (Meeting, Marker)>{};
+  var listener = <String, StreamSubscription<QuerySnapshot<Member>>>{};
 
   // CreateMeeting
   final isCreate = false.obs;
   Marker? newMarker;
   final newMarkerId = 'newMeeting';
-
   // JoinMeeting
   final isLoading = false.obs;
+
+  // Members
+  final members = <Member>[].obs;
+
+  // UserMeeting
+  final userMeetings = <UserMeeting>[].obs;
 
   MapPageController(LatLng? location)
       : currentLocation = location ?? const LatLng(0, 0);
@@ -56,17 +65,8 @@ class MapPageController extends GetxController {
     debugPrint("convertMeetings");
     meetings.value = Map.from(snapshotMeetings);
     if (newMarker != null) {
-      final temp = Meeting(
-          title: '',
-          description: '',
-          place: '',
-          maxMemers: 0,
-          category: '',
-          location: const LatLng(0, 0),
-          meetingTime: DateTime.now(),
-          hostUid: '',
-          members: []);
-      meetings[newMarkerId] = (temp, newMarker!);
+      final tempMeeting = meetingManager.tempMeetingData();
+      meetings[newMarkerId] = (tempMeeting, newMarker!);
     }
   }
 
@@ -103,7 +103,11 @@ class MapPageController extends GetxController {
           final meeting = doc.data();
           final loadingIcon = meeting.hostUid == userManager.currentUid
               ? loadingIconForCurrent
-              : loadingIconForDefault;
+              : members.any(
+                  (Member member) => member.uid == userManager.currentUid,
+                )
+                  ? loadingIconForJoin
+                  : loadingIconForDefault;
 
           // 우선 로딩아이콘으로 마커표시
           var markerForLoading = Marker(
@@ -137,9 +141,14 @@ class MapPageController extends GetxController {
       // Host 정보 가져오기
       meeting = await meetingManager.fetchHostData(meeting);
 
-      // Marker 이미지를 HostImage로 교체      
-      final iconColor =
-          meeting.hostUid == userManager.currentUid! ? Colors.red : Colors.blue;
+      // Marker 이미지를 HostImage로 교체
+      final iconColor = meeting.hostUid == userManager.currentUid!
+          ? Colors.red
+          : members.any(
+              (Member member) => member.uid == userManager.currentUid,
+            )
+              ? Colors.green
+              : Colors.blue;
       final webIcon =
           await meetingIcon.meetingIcon(meeting.hostImage, iconColor);
 
@@ -216,7 +225,69 @@ class MapPageController extends GetxController {
     convertMeetings();
   }
 
+  // 모임 맴버 리스너시작
+  void listenerForMembers(String meetingId) {
+    debugPrint('모임맴버리스너!!!!');
+
+    listener[meetingId] =
+        memberManager.memberList(meetingId).snapshots().listen((snapshot) {
+      final snapshotMembers = snapshot.docs
+          .where((doc) => doc.exists && !doc.metadata.hasPendingWrites)
+          .map((doc) => doc.data())
+          .toList();
+      members.value = snapshotMembers;
+    });
+  }
+
+  // 모임 맴버 리스너종료
+  void cancelListenerForMembers(String meetingId) {
+    debugPrint('모임맴버리스너종료!!');
+    if (listener[meetingId] == null) return;
+    listener[meetingId]!.cancel();
+    listener.remove(meetingId);
+  }
+
   // 모임 참여하기
-  void joinMeeting(String meetingId) {
+  void joinMeeting(
+      String meetingId, String hostUid, DateTime meetingTime) async {
+    isLoading.value = true;
+    debugPrint('로딩1: ${isLoading.value}');
+    try {
+      debugPrint('모임참여 성공0');
+      await memberManager.createMemberData(meetingId, hostUid, meetingTime);
+      debugPrint('모임참여 성공1');
+      Get.back();
+      debugPrint('모임참여 성공2');
+      Get.snackbar(
+        '모임참여 성공',
+        '모임에 참여하였습니다',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      debugPrint('모임참여 성공3');
+      isLoading.value = false;
+    } catch (e) {
+      debugPrint('모임참여 실패 ${e.toString()}');
+      Get.snackbar(
+        '모임참여 실패',
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+      );
+      isLoading.value = false;
+    }
+  }
+
+  // UserMeeting 리스너
+  void listenerForUserMeetings() {
+    userManager
+        .userMeetingList(userManager.currentUid!)
+        .snapshots()
+        .listen((snapshot) {
+      final snapshotUserMeeings = snapshot.docs
+          .where((doc) => doc.exists && !doc.metadata.hasPendingWrites)
+          .map((doc) => doc.data())
+          .toList();
+      userMeetings.value = snapshotUserMeeings;
+    });
   }
 }

@@ -31,20 +31,23 @@ class UserModel {
   ]) {
     final data = snapshot.data();
     final interests = data?['interests'] is Iterable
-            ? List.from(data?['interests']) as List<String>?
-            : null;
-            
+        ? List.from(data?['interests']) as List<String>?
+        : null;
+    final signUpTime = data?['signUpTime'] as Timestamp?;
+    if(signUpTime == null) {return throw '에러! signUpTime is null';}
+
     return UserModel(
-        id: snapshot.id,
-        name: data?['name'] as String?,
-        email: data?['email'] as String?,
-        image: data?['image'] as String?,
-        introdution: data?['introdution'] as String?,
-        interests: interests,
-        signUpTime: (data?['signUpTime'] as Timestamp).toDate(),
-        googleData: SnsData.fromJson(data?['googleData']),
+      id: snapshot.id,
+      name: data?['name'] as String?,
+      email: data?['email'] as String?,
+      image: data?['image'] as String?,
+      introdution: data?['introdution'] as String?,
+      interests: interests,
+      signUpTime: signUpTime.toDate(),
+      googleData: SnsData.fromJson(data?['googleData']),
     );
   }
+  
 
   Map<String, dynamic> toFirestore() {
     return {
@@ -79,7 +82,6 @@ class SnsData {
       snsEmail: data?['snsEmail'] as String?,
       snsImage: data?['snsImage'] as String?,
     );
-
   }
 
   Map<String, dynamic> toJson() {
@@ -100,11 +102,11 @@ class UserManager extends FirebaseManager {
     await ref.set(user);
   }
 
-  Future<UserModel?> fetchUser(String uid) async {
-    debugPrint('패치 유저:$uid');
+  Future<UserModel?> readUserData(String uid) async {
     final ref = userList.doc(uid);
-    var snapshot = await ref.get();        
+    final snapshot = await ref.get();
 
     return snapshot.data();
   }
+
 }

@@ -1,14 +1,11 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
-import 'package:nuduwa_with_flutter/screens/login_page.dart';
-import 'package:nuduwa_with_flutter/screens/main_page.dart';
 
 class AuthController extends GetxController {
   static AuthController instance = Get.find();
@@ -19,7 +16,8 @@ class AuthController extends GetxController {
   late Rx<User?> _user; // user 인증여부 확인(null이면 비회원)
   FirebaseAuth authentication = FirebaseAuth.instance;
 
-  final isLoading = false.obs; // 서버 로그인중
+  final isGoogleLoginLoading = false.obs; // 서버 로그인중
+  final isAppleLoginLoading = false.obs; // 서버 로그인중
 
   @override
   void onReady() {
@@ -38,8 +36,8 @@ class AuthController extends GetxController {
   }
 
   void signInWithGoogle() async {
-    if (isLoading.value) return;
-    isLoading.value = true;
+    if (isGoogleLoginLoading.value) return;
+    isGoogleLoginLoading.value = true;
     try {
       late UserCredential userCredential;
       if (kIsWeb) {
@@ -77,7 +75,7 @@ class AuthController extends GetxController {
       if (user == null) {
         return;
       }
-      final currentUser = await userManager.fetchUser(user.uid);
+      final currentUser = await userManager.readUserData(user.uid);
       if (currentUser == null) {
         registerUser(user);
       }
@@ -98,7 +96,7 @@ class AuthController extends GetxController {
       );
       debugPrint(e.toString());
     } finally {
-      isLoading.value = false;
+      isGoogleLoginLoading.value = false;
     }
   }
 

@@ -5,9 +5,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/create_meeting_controller.dart';
 import 'package:numberpicker/numberpicker.dart';
 
-Future<dynamic> createMeetingSheet(BuildContext context, LatLng location) {
+Future<dynamic> createMeetingSheet(LatLng location) {
   return showModalBottomSheet(
-    context: context,
+    context: Get.context!,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
         top: Radius.circular(15.0),
@@ -16,21 +16,21 @@ Future<dynamic> createMeetingSheet(BuildContext context, LatLng location) {
     barrierColor: Colors.white.withOpacity(0),
     backgroundColor: Colors.white,
     isScrollControlled: true,
-    builder: (BuildContext context) => CreateMeetingScreen(location: location),
+    builder: (_) => CreateMeetingScreen(
+        controller: Get.put(CreateMeetingController(location))),
   );
 }
 
 class CreateMeetingScreen extends StatelessWidget {
-  final LatLng location;
+  final CreateMeetingController controller;
+
   const CreateMeetingScreen({
     super.key,
-    required this.location,
+    required this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(CreateMeetingController(location));
-
     return Container(
       height: MediaQuery.of(context).size.height * 0.95,
       padding: const EdgeInsets.all(5),
@@ -47,13 +47,12 @@ class CreateMeetingScreen extends StatelessWidget {
             ),
             color: Colors.blue,
           ),
+
           // 모임 정보 입력창
           Expanded(
             child: GestureDetector(
-              onTap: () {
-                // 터치 이벤트 발생 시 키보드를 숨깁니다.
-                FocusScope.of(context).unfocus();
-              },
+              // 터치 이벤트 발생 시 키보드를 숨깁니다.
+              onTap: () => FocusScope.of(context).unfocus(),
               child: Container(
                 padding: const EdgeInsets.all(5.0),
                 color: const Color.fromARGB(29, 3, 168, 244),
@@ -514,6 +513,7 @@ class MeetingSetContainer extends StatelessWidget {
   }
 }
 
+// 삭제 예정
 class SampleMeetingSetContainer extends StatefulWidget {
   const SampleMeetingSetContainer({
     super.key,

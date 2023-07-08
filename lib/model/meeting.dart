@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:nuduwa_with_flutter/model/firebase_manager.dart';
+import 'package:nuduwa_with_flutter/model/member.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
 
 class Meeting {
@@ -24,8 +25,6 @@ class Meeting {
   String? hostName;
   String? hostImage;
 
-  final List<Member> members;
-
   Meeting({
     this.id,
     required this.title,
@@ -40,7 +39,6 @@ class Meeting {
     required this.hostUid,
     this.hostName,
     this.hostImage,
-    required this.members,
   });
 
   factory Meeting.fromFirestore(
@@ -50,12 +48,8 @@ class Meeting {
     final data = snapshot.data();
     final latitude = data?['latitude'];
     final longitude = data?['longitude'];
-    final membersData = data?['members'] as List<dynamic>?;
-    List<Member> members = [];
-    if (membersData != null) {
-      members =
-          membersData.map((memberData) => Member.fromJson(memberData)).toList();
-    }
+    if(latitude == null) {return throw '에러! some meeting data is null';}
+    
 
     return Meeting(
       id: snapshot.id,
@@ -69,7 +63,6 @@ class Meeting {
       meetingTime: data?['meetingTime'].toDate(),
       publishedTime: data?['publishedTime'].toDate(),
       hostUid: data?['hostUID'],
-      members: members,
     );
   }
 
@@ -88,60 +81,19 @@ class Meeting {
       "hostUID": hostUid
     };
   }
-
-  // combineHost(UserModel host) {
-  //   hostName = host.name;
-  //   hostImage = host.image ?? 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png?20200912122019';
-  // }
-}
-
-class Member {
-  final String uid;
-  String? name;
-  String? image;
-  final DateTime? joinTime;
-
-  Member({
-    required this.uid,
-    this.name,
-    this.image,
-    this.joinTime,
-  });
-
-  factory Member.fromJson(Map<String, dynamic>? data) {
-    return Member(
-      uid: data?['uid'] as String,
-      joinTime: (data?['joinTime'] as Timestamp).toDate(),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      "uid": uid,
-      "joinTime": FieldValue.serverTimestamp(),
-    };
-  }
-
-  factory Member.fromUser(UserModel user) {
-    return Member(uid: user.id!, name: user.name, image: user.image);
-  }
-
-  // combineUser(UserModel user) {
-  //   name = user.name;
-  //   image = user.image ??
-  //       'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png?20200912122019';
-  // }
 }
 
 class MeetingManager extends UserManager {
   static MeetingManager get instance => Get.find();
 
   Future<void> createMeetingData(Meeting meeting) async {
-    final ref = meetingList.doc();
-    await ref.set(meeting);
+    final ref = meetingList;
+    final newMeetingRef = await ref.add(meeting);
+    final meetingId = newMeetingRef.id;
+    await MemberManager.instance.createMemberData(meetingId, currentUid!, meeting.meetingTime);
   }
 
-  Future<Meeting?> fetchMeetingData(String meetingId) async {
+  Future<Meeting?> readMeetingData(String meetingId) async {
     final ref = meetingList.doc(meetingId);
     var snapshot = await ref.get();
 
@@ -149,7 +101,7 @@ class MeetingManager extends UserManager {
   }
 
   Future<Meeting> fetchHostData(Meeting meeting) async {
-    final host = await fetchUser(meeting.hostUid);
+    final host = await readUserData(meeting.hostUid);
     meeting.hostName = host?.name ?? '이름없음';
     meeting.hostImage = host?.image ??
         'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png?20200912122019';
@@ -157,15 +109,34 @@ class MeetingManager extends UserManager {
     return meeting;
   }
 
-  Future<void> joinMeeting(String meetingId) async {
-    final member = Member(uid: currentUid!);
-    final ref = meetingList.doc(meetingId);
-    ref.update({"members" : FieldValue.arrayUnion([member])});
+  Meeting tempMeetingData() {
+    return Meeting(
+      title: '',
+      description: '',
+      place: '',
+      maxMemers: 0,
+      category: '',
+      location: const LatLng(0, 0),
+      meetingTime: DateTime(0),
+      hostUid: '',
+    );
   }
 
-  Future<void> leaveMeeting(String meetingId) async {
-    final member = Member(uid: currentUid!);
-    final ref = meetingList.doc(meetingId);
-    ref.update({"members" : FieldValue.arrayUnion([member])});
+/*
+  Future<RxList<Meeting?>> listenerForMeetings() async {
+    final meetings = RxList<Meeting?>();
+    final ref = meetingList;
+    final completer = Completer<RxList<Meeting?>>();
+
+    ref.snapshots().listen((snapshot) {
+      meetings.value = snapshot.docs.map((doc) => doc.data()).toList();
+      if (!completer.isCompleted) {
+        completer.complete(meetings);
+      }
+    });
+    await completer.future;
+
+    return meetings;
   }
+*/
 }

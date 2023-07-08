@@ -9,7 +9,7 @@ class MainPage extends StatelessWidget {
   final controller = Get.put(MainPageController());
 
   MainPage({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     // 탭별 화면
@@ -26,7 +26,15 @@ class MainPage extends StatelessWidget {
           // 로딩 상태
           if (controller.permissionMessage.value == '') {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 50),
+                  Text('내 위치 가져오는 중'),
+                ],
+              ),
             );
           }
 
@@ -34,7 +42,7 @@ class MainPage extends StatelessWidget {
           if (controller.permissionMessage.value == '위치 권한이 허가 되었습니다.') {
             if (controller.currentLatLng.value != null) {
               return Scaffold(
-                body: Obx(() => tabPages[controller.tabIndex.value]),
+                body: tabPages[controller.tabIndex.value],
 
                 // 하단 텝바
                 bottomNavigationBar: Obx(() => BottomNavigationBar(
