@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/model/firebase_manager.dart';
+import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 
@@ -48,31 +48,8 @@ class Member {
   }
 }
 
-class MemberManager extends UserManager {
-  static MemberManager get instance => Get.find();
+// class MemberManager extends UserManager {
+//   static MemberManager get instance => Get.find();
 
-  Future<void> createMemberData(
-      String meetingId, String hostUid, DateTime meetingTime) async {
-    final member = Member(uid: currentUid!);
-    final ref = memberList(meetingId).doc();
-    await Future.wait([
-      ref.set(member),
-      UserMeetingManager.instance
-          .createUserMeetingData(meetingId, hostUid, meetingTime),
-    ]);
-  }
+// }
 
-  Future<void> deleteMemberData(String meetingId, String uid) async {
-    final query = memberList(meetingId).where('uid', isEqualTo: uid);
-    final snapshot = await query.get();
-    final ref = snapshot.docs.first.reference;
-    await ref.delete();
-  }
-
-  Future<Member?> readMemberData(String meetingId, String uid) async {
-    final ref = memberList(meetingId).where('uid', isEqualTo: uid);
-    var snapshot = await ref.get();
-
-    return snapshot.docs.first.data();
-  }
-}

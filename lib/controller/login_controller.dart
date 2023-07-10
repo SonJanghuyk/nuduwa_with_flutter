@@ -6,15 +6,19 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
+import 'package:nuduwa_with_flutter/service/auth_service.dart';
+import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
-class AuthController extends GetxController {
-  static AuthController instance = Get.find();
+class LoginController extends GetxController {
+  static LoginController instance = Get.find();
 
   // Firestore에서 user정보 가져오는 Manager
-  final userManager = UserManager.instance;
+  final firebaseService = FirebaseService.instance;
 
-  late Rx<User?> _user; // user 인증여부 확인(null이면 비회원)
-  FirebaseAuth authentication = FirebaseAuth.instance;
+  // late Rx<User?> _user; // user 인증여부 확인(null이면 비회원)
+  // RxBool isUserAuthenticated = false.obs;
+
+  // FirebaseAuth authentication = FirebaseAuth.instance;
 
   final isGoogleLoginLoading = false.obs; // 서버 로그인중
   final isAppleLoginLoading = false.obs; // 서버 로그인중
@@ -22,18 +26,23 @@ class AuthController extends GetxController {
   @override
   void onReady() {
     super.onReady();
-    _user = Rx<User?>(authentication.currentUser);
-    _user.bindStream(authentication.userChanges());
-    ever(_user, _moveToPage);
+
+    Get.put(AuthService());
+
+    // _user = Rx<User?>(authentication.currentUser);
+    // _user.bindStream(authentication.userChanges());
+    // ever(_user, _moveToPage);
   }
 
-  _moveToPage(User? user) {
-    if (user == null) {
-      Get.offAllNamed('loginPage');
-    } else {
-      Get.offAllNamed('/');
-    }
-  }
+  // _moveToPage(User? user) {    
+  //   if (user == null) {
+  //     Get.offAllNamed('login');
+  //     isUserAuthenticated.value = false;
+  //   } else {
+  //     Get.offAllNamed('/main');
+  //     isUserAuthenticated.value = true;
+  //   }
+  // }
 
   void signInWithGoogle() async {
     if (isGoogleLoginLoading.value) return;
@@ -75,7 +84,7 @@ class AuthController extends GetxController {
       if (user == null) {
         return;
       }
-      final currentUser = await userManager.readUserData(user.uid);
+      final currentUser = await firebaseService.readUserData(user.uid);
       if (currentUser == null) {
         registerUser(user);
       }
@@ -111,13 +120,11 @@ class AuthController extends GetxController {
         id: user.uid,
         name: user.displayName,
         email: user.email,
-        image: user.photoURL,
+        imageUrl: user.photoURL,
         googleData: googleData);
 
-    await userManager.createUserData(userModel);
+    await firebaseService.createUserData(userModel);
   }
 
-  void logout() {
-    authentication.signOut();
-  }
+  
 }

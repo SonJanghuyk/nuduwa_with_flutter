@@ -120,7 +120,7 @@ class MapPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(5.0),
                     ),
                     onPressed: () {
-                      createMeetingSheet(controller.center);
+                      createMeetingSheet();
                       controller.clickedMeetingCreateButton();
                     },
                     child: const Text(

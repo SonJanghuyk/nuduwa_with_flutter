@@ -1,24 +1,27 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/model/firebase_manager.dart';
+import 'package:nuduwa_with_flutter/service/firebase_service.dart';
+import 'package:http/http.dart' as http;
 
 class UserModel {
   final String? id;
   final String? name;
   final String? email;
-  final String? image;
+  final String? imageUrl;
+  
   final String? introdution;
   final List<String>? interests;
   final DateTime? signUpTime;
 
   final SnsData? googleData;
 
-  UserModel({
+  UserModel( {
     this.id,
     this.name,
     this.email,
-    this.image,
+    this.imageUrl,
     this.introdution,
     this.interests,
     this.signUpTime,
@@ -40,7 +43,7 @@ class UserModel {
       id: snapshot.id,
       name: data?['name'] as String?,
       email: data?['email'] as String?,
-      image: data?['image'] as String?,
+      imageUrl: data?['image'] as String?,
       introdution: data?['introdution'] as String?,
       interests: interests,
       signUpTime: signUpTime.toDate(),
@@ -53,7 +56,7 @@ class UserModel {
     return {
       if (name != null) "name": name,
       if (email != null) "email": email,
-      if (image != null) "image": image,
+      if (imageUrl != null) "image": imageUrl,
       if (introdution != null) "introdution": introdution,
       if (interests != null) "interests": interests,
       "signUpTime": FieldValue.serverTimestamp(),
@@ -94,19 +97,8 @@ class SnsData {
   }
 }
 
-class UserManager extends FirebaseManager {
-  static UserManager get instance => Get.find();
+// class UserManager extends FirebaseService {
+//   static UserManager get instance => Get.find();
 
-  Future<void> createUserData(UserModel user) async {
-    final ref = userList.doc(user.id);
-    await ref.set(user);
-  }
-
-  Future<UserModel?> readUserData(String uid) async {
-    final ref = userList.doc(uid);
-    final snapshot = await ref.get();
-
-    return snapshot.data();
-  }
-
-}
+  
+// }

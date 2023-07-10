@@ -1,27 +1,26 @@
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:nuduwa_with_flutter/controller/mapController/map_page_controller.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:http/http.dart' as http;
+import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class CreateMeetingController extends GetxController {
-  final meetingManager = MeetingManager.instance;
+  final firebaseService = FirebaseService.instance;
   final title = ''.obs;
   final description = ''.obs;
   final place = ''.obs;
   var maxMemers = 0;
   var category = '';
 
-  final LatLng location;
+  LatLng location = MapPageController.instance.center;
   String? goeHash;
 
   DateTime meetingTime = DateTime(0);
 
   final address = ''.obs;
-
-  CreateMeetingController(this.location);
 
   @override
   void onInit() {
@@ -31,11 +30,13 @@ class CreateMeetingController extends GetxController {
   }
 
   void createMeeting() async {
-    if (meetingManager.currentUid == null) {
+    location = MapPageController.instance.center;
+    if (firebaseService.currentUid == null) {
       getXsnackbar('오류: 계정오류', '사용자 계정이 없습니다');
       return;
     }
     if (title.value.isEmpty || title.value.length < 2) {
+      debugPrint(address.value);
       getXsnackbar('오류: 모임제목 오류', '모임제목을 2글자이상 입력해주세요');
       return;
     }
@@ -68,10 +69,10 @@ class CreateMeetingController extends GetxController {
       category: category,
       location: location,
       meetingTime: meetingTime,
-      hostUid: meetingManager.currentUid!,
+      hostUid: firebaseService.currentUid!,
     );
     try {
-      await meetingManager.createMeetingData(newMeeting);
+      await firebaseService.createMeetingData(newMeeting);
       Get.back();
       Get.snackbar('모임생성 완료', '모임생성이 완료되었습니다', snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
@@ -97,6 +98,7 @@ class CreateMeetingController extends GetxController {
     });
     try {
       final response = await http.get(uri);
+      debugPrint('주소: ${response.body.toString()}');
       address.value =
           jsonDecode(response.body)['results'][0]['formatted_address'];
     } catch (e) {

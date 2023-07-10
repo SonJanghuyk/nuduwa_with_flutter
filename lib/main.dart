@@ -3,25 +3,30 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
-import 'package:nuduwa_with_flutter/controller/auth_controller.dart';
+import 'package:nuduwa_with_flutter/controller/login_controller.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
+import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 import 'package:nuduwa_with_flutter/screens/login_page.dart';
 import 'package:nuduwa_with_flutter/screens/main_page.dart';
+import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 import 'firebase_options.dart';
 
 void main() async {
   // Model Manager GetPut
-  Get.put(UserManager());
-  Get.put(MeetingManager());  
-  Get.lazyPut(() => MemberManager());
+  // Get.put(UserManager());
+  // Get.put(MeetingManager());  
+  // Get.put(UserMeetingManager());
+  // Get.put(MemberManager());
+  Get.put(FirebaseService());
+  
   // 앱에 Firebase 추가
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-  ).then((_) => Get.put(AuthController()));  // 로그인 토큰이 있으면 바로 로그인 
+  ).then((_) => Get.put(LoginController()));  // 로그인 토큰이 있으면 바로 로그인 
 
   // DateTime DateFormat 초기화
   initializeDateFormatting();
@@ -43,9 +48,9 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       getPages: [
         GetPage(name: '/', page: () => MainPage()),
-        GetPage(name: '/loginPage', page: () => LoginPage()),
+        GetPage(name: '/main', page: () => MainPage()),
+        GetPage(name: '/login', page: () => LoginPage()),
       ],
-      // home: MainPage(),
     );
   }
 } 

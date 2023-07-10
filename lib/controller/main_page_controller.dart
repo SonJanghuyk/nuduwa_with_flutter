@@ -1,6 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:nuduwa_with_flutter/controller/login_controller.dart';
+
+import '../model/user.dart';
+import '../model/user_meeting.dart';
 
 class MainPageController extends GetxController {
   // 위치 권한 메시지
@@ -12,6 +17,9 @@ class MainPageController extends GetxController {
   // 텝인덱스
   final tabIndex = RxInt(0);
 
+  // UserMeeting
+  final userMeetings = <UserMeeting>[].obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -21,6 +29,13 @@ class MainPageController extends GetxController {
       permissionMessage.value = result.$1;
       currentLatLng.value = result.$2;
     });
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+
+    // ever(AuthController.instance.isUserAuthenticated, listenerForUserMeetings);
   }
 
   // 위치 권한 체크
@@ -53,11 +68,30 @@ class MainPageController extends GetxController {
 
     final currentPosition = await Geolocator.getCurrentPosition();
 
-    return ('위치 권한이 허가 되었습니다.', LatLng(currentPosition.latitude, currentPosition.longitude));
+    return (
+      '위치 권한이 허가 되었습니다.',
+      LatLng(currentPosition.latitude, currentPosition.longitude)
+    );
   }
 
   void changeIndex(int index) {
     tabIndex(index);
   }
 
+  // UserMeeting 리스너
+  listenerForUserMeetings(bool isAuth) {
+    // debugPrint('UserMeeting 리스너1');
+    // if (!isAuth) return;
+    // userManager
+    //     .userMeetingList(userManager.currentUid!)
+    //     .snapshots()
+    //     .listen((snapshot) {
+    //   final snapshotUserMeeings = snapshot.docs
+    //       .where((doc) => doc.exists && !doc.metadata.hasPendingWrites)
+    //       .map((doc) => doc.data())
+    //       .toList();
+    //   debugPrint('UserMeeting 리스너2');
+    //   userMeetings.value = snapshotUserMeeings;
+    // });
+  }
 }

@@ -5,7 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/create_meeting_controller.dart';
 import 'package:numberpicker/numberpicker.dart';
 
-Future<dynamic> createMeetingSheet(LatLng location) {
+Future<dynamic> createMeetingSheet() {
   return showModalBottomSheet(
     context: Get.context!,
     shape: const RoundedRectangleBorder(
@@ -16,18 +16,13 @@ Future<dynamic> createMeetingSheet(LatLng location) {
     barrierColor: Colors.white.withOpacity(0),
     backgroundColor: Colors.white,
     isScrollControlled: true,
-    builder: (_) => CreateMeetingScreen(
-        controller: Get.put(CreateMeetingController(location))),
-  );
+    builder: (_) => CreateMeetingScreen(),);
 }
 
 class CreateMeetingScreen extends StatelessWidget {
-  final CreateMeetingController controller;
+  final controller = Get.put(CreateMeetingController());
 
-  const CreateMeetingScreen({
-    super.key,
-    required this.controller,
-  });
+  CreateMeetingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

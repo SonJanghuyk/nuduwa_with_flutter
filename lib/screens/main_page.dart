@@ -15,7 +15,7 @@ class MainPage extends StatelessWidget {
     // 탭별 화면
     late List<Widget> tabPages = <Widget>[
       MapPage(
-        controller: Get.put(MapPageController(controller.currentLatLng.value)),
+        controller: Get.put(MapPageController(location: controller.currentLatLng.value, userMeetings: controller.userMeetings)),
       ), // 외부 클래스로 정의
       MyProfilePage(),
     ];

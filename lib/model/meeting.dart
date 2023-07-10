@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
+import 'package:http/http.dart' as http;
 
 class Meeting {
   final String? id;
@@ -23,7 +25,8 @@ class Meeting {
 
   final String hostUid;
   String? hostName;
-  String? hostImage;
+  String? hostImageUrl;
+  Uint8List? hostImageData; // imageUrl 웹이미지 가져와서 저장하는 변수
 
   Meeting({
     this.id,
@@ -38,7 +41,8 @@ class Meeting {
     this.publishedTime,
     required this.hostUid,
     this.hostName,
-    this.hostImage,
+    this.hostImageUrl,
+    this.hostImageData,
   });
 
   factory Meeting.fromFirestore(
@@ -83,44 +87,10 @@ class Meeting {
   }
 }
 
-class MeetingManager extends UserManager {
-  static MeetingManager get instance => Get.find();
+// class MeetingManager extends UserManager {
+//   static MeetingManager get instance => Get.find();
 
-  Future<void> createMeetingData(Meeting meeting) async {
-    final ref = meetingList;
-    final newMeetingRef = await ref.add(meeting);
-    final meetingId = newMeetingRef.id;
-    await MemberManager.instance.createMemberData(meetingId, currentUid!, meeting.meetingTime);
-  }
-
-  Future<Meeting?> readMeetingData(String meetingId) async {
-    final ref = meetingList.doc(meetingId);
-    var snapshot = await ref.get();
-
-    return snapshot.data();
-  }
-
-  Future<Meeting> fetchHostData(Meeting meeting) async {
-    final host = await readUserData(meeting.hostUid);
-    meeting.hostName = host?.name ?? '이름없음';
-    meeting.hostImage = host?.image ??
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png?20200912122019';
-
-    return meeting;
-  }
-
-  Meeting tempMeetingData() {
-    return Meeting(
-      title: '',
-      description: '',
-      place: '',
-      maxMemers: 0,
-      category: '',
-      location: const LatLng(0, 0),
-      meetingTime: DateTime(0),
-      hostUid: '',
-    );
-  }
+  
 
 /*
   Future<RxList<Meeting?>> listenerForMeetings() async {
@@ -139,4 +109,4 @@ class MeetingManager extends UserManager {
     return meetings;
   }
 */
-}
+// }

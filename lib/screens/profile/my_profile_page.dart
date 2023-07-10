@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:nuduwa_with_flutter/controller/auth_controller.dart';
-import 'package:nuduwa_with_flutter/model/firebase_manager.dart';
+import 'package:nuduwa_with_flutter/controller/login_controller.dart';
+import 'package:nuduwa_with_flutter/service/firebase_service.dart';
+import 'package:nuduwa_with_flutter/service/auth_service.dart';
 class MyProfilePage extends StatelessWidget {
-  final controller = AuthController.instance;
+  final controller = LoginController.instance;
 
   MyProfilePage({super.key});
 
@@ -32,12 +33,12 @@ class MyProfilePage extends StatelessWidget {
               color: Colors.black,
             ),
             onPressed: () {
-              controller.logout();
+              AuthService.instance.logout();
             },
           ),
         ],
       ),
-      body: Text(controller.userManager.currentUid ?? '이름없음'),
+      body: Text(controller.firebaseService.currentUid ?? '이름없음'),
     );
   }
 }

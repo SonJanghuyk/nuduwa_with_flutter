@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/controller/auth_controller.dart';
+import 'package:nuduwa_with_flutter/controller/login_controller.dart';
 
 class LoginPage extends StatelessWidget {
-  final controller = AuthController.instance;
+  final controller = LoginController.instance;
 
   LoginPage({super.key});
 
@@ -97,7 +97,7 @@ class LoginPage extends StatelessWidget {
 }
 
 class SnsLoginButton extends StatelessWidget {
-  final controller = AuthController.instance;
+  final controller = LoginController.instance;
 
   final String sns;
   final VoidCallback? onPressed;

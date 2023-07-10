@@ -75,11 +75,11 @@ class MeetingInfoScreen extends StatelessWidget {
                   SizedBox(
                     width: 100,
                     height: 100,
-                    child: controller.meetings[meetingId]!.$1.hostImage != null
+                    child: controller.meetings[meetingId]!.$1.hostImageUrl != null
                         ? CircleAvatar(
                             radius: 50,
                             backgroundImage: NetworkImage(
-                              controller.meetings[meetingId]!.$1.hostImage!,
+                              controller.meetings[meetingId]!.$1.hostImageUrl!,
                             ),
                           )
                         : const Center(
@@ -173,10 +173,10 @@ class MeetingInfoScreen extends StatelessWidget {
                         const Spacer(),
                         Obx(
                           () => controller.meetings[meetingId]!.$1.hostUid !=
-                                  controller.userManager.currentUid
+                                  controller.firebaseService.currentUid
                               ? controller.members.any((Member member) =>
                                       member.uid ==
-                                      controller.userManager.currentUid)
+                                      controller.firebaseService.currentUid)
                                   ? const Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,

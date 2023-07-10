@@ -5,15 +5,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class IconOfMeeting {
-  Future<BitmapDescriptor> meetingIcon(String? url, Color color) async {
-    const double imageSize = 80.0; // 이미지 크기
-    const double borderWidth = 10.0; // 테두리 두께
-    const double triangleSize = 30.0; // 하단 꼭지점 크기
+class DrawIconOfMeeting {
+  double imageSize; // 이미지 크기
+  double borderWidth; // 테두리 두께
+  double triangleSize; // 하단 꼭지점 크기
 
-    final webImage = await _drawWebImage(url, imageSize);
-    final iconImage = await _drawIconImage(color, imageSize, borderWidth, triangleSize);
-    final ui.Image markerImage = await _overlayImages(webImage, iconImage);
+  DrawIconOfMeeting(
+    this.imageSize,
+    this.borderWidth,
+    this.triangleSize,
+  );
+
+  Future<Map<String, BitmapDescriptor>> drawLoadingIcons(Map<String, ui.Image> iconImages) async {
+    // 웹 이미지 가져오는동안 보여줄 이미지
+    var image = await loadingImage();
+
+    // image iconImages를 합쳐서 Marker 아이콘 만들기
+    final loadingIconImages = await Future.wait([
+      for (var iconImage in iconImages.values)
+        createIconImage(image, iconImage),    
+    ]);
+    
+    // loadingIconImages로 만들걸 쓰기 쉽게 Map으로 변환
+    final loadingIcons = {
+      for (var index = 0; index < loadingIconImages.length; index++)
+        iconImages.keys.toList()[index] : loadingIconImages[index],
+    };
+
+    return loadingIcons;
+  }
+
+  Future<BitmapDescriptor> createIconImage(Uint8List userImage, ui.Image iconImage) async {
+    final codec = await ui.instantiateImageCodec(userImage);
+    final frameInfo = await codec.getNextFrame();
+    final meetingImage = await _drawCircleImage(frameInfo, imageSize);
+    final ui.Image markerImage = await _overlayImages(meetingImage, iconImage);
 
     // BitmapDescriptor 생성
     final ByteData? byteData =
@@ -21,35 +47,18 @@ class IconOfMeeting {
     final Uint8List resizedImageData = byteData!.buffer.asUint8List();
     final BitmapDescriptor bitmapDescriptor =
         BitmapDescriptor.fromBytes(resizedImageData);
-
     return bitmapDescriptor;
   }
 
-  // 웹이미지 원 모양으로 그리는 함수
-  Future<ui.Image> _drawWebImage(String? url, double imageSize) async {
-    late ui.FrameInfo frameInfo;
-    if (url != null) {
-      // 이미지 네트워크로부터 바이트 데이터 가져오기
-      final response = await http.get(Uri.parse(url));
-      Uint8List imageData = response.bodyBytes;
-
-      // 이미지를 디코딩하여 화면에 표시하기 위해 Image 객체 생성
-      final ui.Codec codec = await ui.instantiateImageCodec(imageData);
-      frameInfo = await codec.getNextFrame();
-
-    } else {
-      final ByteData assetData = await rootBundle.load('assets/images/nuduwa_logo.png');
-      final Uint8List bytes = assetData.buffer.asUint8List();
-      final ui.Codec codec = await ui.instantiateImageCodec(bytes);
-      frameInfo = await codec.getNextFrame();
-    }
-
-    final image = await _drawCircleImage(frameInfo, imageSize);
-
-    return image;
+  /// 웹이미지 가져오는 동안 표시될 이미지
+  Future<Uint8List> loadingImage() async {
+    final ByteData assetData = await rootBundle.load('assets/images/nuduwa_logo.png');
+    return assetData.buffer.asUint8List();
   }
 
-  Future<ui.Image> _drawCircleImage(ui.FrameInfo frameInfo, double imageSize) async {
+  /// 이미지 원 모양으로 만들기
+  Future<ui.Image> _drawCircleImage(
+      ui.FrameInfo frameInfo, double imageSize) async {
     final ui.Image image = frameInfo.image;
     final int imageLength = image.width > image.height
         ? image.height
@@ -117,31 +126,64 @@ class IconOfMeeting {
   }
 
   /// 아이콘이미지 만드는 함수
-  Future<ui.Image> _drawIconImage(
-      Color color, double imageSize, double borderWidth, double triangleSize) async {
+  Future<ui.Image> drawIconImage(Color color) async {
     final double iconSize = imageSize + (borderWidth * 2); // 아이콘 크기
 
-    final ui.PictureRecorder pictureRecorder2 = ui.PictureRecorder();
-    final Canvas canvasIcon = Canvas(pictureRecorder2);
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvasIcon = Canvas(pictureRecorder);
     final Paint redCirclePaint = Paint()..color = color;
 
     final double iconCenter = imageSize / 2 + borderWidth;
     // 세모 그리기
     final ui.Path trianglePath = ui.Path()
       ..moveTo(iconCenter, iconCenter * 2 + triangleSize) // 세모의 하단 꼭지점 시작점
-      ..lineTo(iconCenter / 2, iconCenter + iconCenter * 2/3) // 좌측 꼭지점
-      ..lineTo(
-          iconCenter + iconCenter / 2, iconCenter + iconCenter * 2/3) // 우측 꼭지점
+      ..lineTo(iconCenter / 2, iconCenter + iconCenter * 2 / 3) // 좌측 꼭지점
+      ..lineTo(iconCenter + iconCenter / 2,
+          iconCenter + iconCenter * 2 / 3) // 우측 꼭지점
       ..close(); // 세모 완성
 
     canvasIcon.drawCircle(
         Offset(iconCenter, iconCenter), iconCenter, redCirclePaint);
     canvasIcon.drawPath(trianglePath, redCirclePaint);
 
-    final ui.Image iconImage = await pictureRecorder2
+    final ui.Image iconImage = await pictureRecorder
         .endRecording()
         .toImage(iconSize.toInt(), iconSize.toInt() + triangleSize.toInt());
 
     return iconImage;
   }
 }
+/*
+
+  // 웹이미지 원 모양으로 그리는 함수
+  Future<ui.Image> _drawWebImage(String? url, double imageSize) async {
+    late ui.FrameInfo frameInfo;
+    if (url != null) {
+      // 이미지 네트워크로부터 바이트 데이터 가져오기
+      final response = await http.get(Uri.parse(url));
+      Uint8List imageData = response.bodyBytes;
+
+      // 이미지를 디코딩하여 화면에 표시하기 위해 Image 객체 생성
+      final ui.Codec codec = await ui.instantiateImageCodec(imageData);
+      frameInfo = await codec.getNextFrame();
+    } else {
+      final ByteData assetData =
+          await rootBundle.load('assets/images/nuduwa_logo.png');
+      final Uint8List bytes = assetData.buffer.asUint8List();
+      final ui.Codec codec = await ui.instantiateImageCodec(bytes);
+      frameInfo = await codec.getNextFrame();
+    }
+
+    final image = await _drawCircleImage(frameInfo, imageSize);
+
+    return image;
+  }
+
+
+
+
+
+
+
+
+  */

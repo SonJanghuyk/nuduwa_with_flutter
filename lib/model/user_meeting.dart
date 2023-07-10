@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/model/firebase_manager.dart';
+import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
 
@@ -53,32 +53,13 @@ class UserMeeting {
       "meetingId": meetingId,
       "hostUid": hostUid,
       "isEnd": isEnd,
-      "nonReviewMembers": nonReviewMembers,
       "meetingDate": meetingDate,
     };
   }
 }
 
-class UserMeetingManager extends UserManager {
-  static UserMeetingManager get instance => Get.find();
+// class UserMeetingManager extends UserManager {
+//   static UserMeetingManager get instance => Get.find();
 
-  Future<void> createUserMeetingData(String meetingId, String hostUid, DateTime meetingTime) async {
-    final userMeeting = UserMeeting(meetingId: meetingId, hostUid: hostUid, isEnd: false, meetingDate: meetingTime);
-    final ref = userMeetingList(currentUid!).doc();
-    await ref.set(userMeeting);
-  }
-
-  Future<void> deleteUserMeetingData(String meetingId, String uid) async {
-    final query = userMeetingList(uid).where('meetingId', isEqualTo: meetingId);
-    final snapshot = await query.get();
-    final ref = snapshot.docs.first.reference;
-    await ref.delete();
-  }
-
-  Future<UserMeeting?> readMemberData(String meetingId, String uid) async {
-    final ref = userMeetingList(uid).where('meetingId', isEqualTo: meetingId);
-    var snapshot = await ref.get();
-
-    return snapshot.docs.first.data();
-  }
-}
+  
+// }
