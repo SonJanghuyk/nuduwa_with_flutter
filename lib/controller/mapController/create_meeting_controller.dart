@@ -65,7 +65,7 @@ class CreateMeetingController extends GetxController {
       title: title.value,
       description: description.value,
       place: place.value,
-      maxMemers: maxMemers,
+      maxMembers: maxMemers,
       category: category,
       location: location,
       meetingTime: meetingTime,
@@ -98,7 +98,7 @@ class CreateMeetingController extends GetxController {
     });
     try {
       final response = await http.get(uri);
-      debugPrint('주소: ${response.body.toString()}');
+      // debugPrint('주소: ${response.body.toString()}');
       address.value =
           jsonDecode(response.body)['results'][0]['formatted_address'];
     } catch (e) {

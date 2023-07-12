@@ -3,10 +3,13 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/map_page_controller.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
+import 'package:nuduwa_with_flutter/utils/assets.dart';
 
 Future<void> meetingInfoSheet(String meetingId) async {
   final controller = MapPageController.instance;
   controller.listenerForMembers(meetingId);
+  controller
+      .downloadHostImage(controller.meetings[meetingId]!.meeting.hostImageUrl);
 
   await showModalBottomSheet(
     context: Get.context!,
@@ -56,11 +59,12 @@ class MeetingInfoScreen extends StatelessWidget {
     return GestureDetector(
       onVerticalDragUpdate: (dragDetails) {
         if (dragDetails.delta.dy > 0) Get.back();
-
         height.value = 600;
       },
-      child: Obx(
-        () => AnimatedContainer(
+      child: Obx(() {
+        final meetings = controller.meetings;
+        final meeting = meetings[meetingId]!.meeting;
+        return AnimatedContainer(
           height: height.value,
           width: MediaQuery.of(context).size.width,
           padding: const EdgeInsets.all(20),
@@ -75,20 +79,13 @@ class MeetingInfoScreen extends StatelessWidget {
                   SizedBox(
                     width: 100,
                     height: 100,
-                    child: controller.meetings[meetingId]!.$1.hostImageUrl != null
-                        ? CircleAvatar(
-                            radius: 50,
-                            backgroundImage: NetworkImage(
-                              controller.meetings[meetingId]!.$1.hostImageUrl!,
-                            ),
-                          )
-                        : const Center(
-                            child: SizedBox(
-                              width: 30,
-                              height: 30,
-                              child: CircularProgressIndicator(),
-                            ),
-                          ),
+                    child: Obx(() => controller.hostImage.value == null
+                        ? const Center(child: CircularProgressIndicator())
+                        : CircleAvatar(
+                            radius: 20,
+                            backgroundImage: controller.hostImage.value,
+                            backgroundColor: Colors.white, // 로딩 중일 때 보여줄 배경색
+                          )),
                   ),
                   const SizedBox(width: 30),
 
@@ -99,29 +96,31 @@ class MeetingInfoScreen extends StatelessWidget {
                       SizedBox(
                         width: MediaQuery.of(context).size.width - 170,
                         height: 30,
-                        child: controller.meetings[meetingId]!.$1.hostName !=
-                                null
-                            ? Text(
-                                controller.meetings[meetingId]!.$1.hostName!,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              )
-                            : const Row(
-                                children: [
-                                  SizedBox(width: 10),
-                                  SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator()),
-                                ],
-                              ),
+                        child:
+                            controller.meetings[meetingId]!.meeting.hostName !=
+                                    null
+                                ? Text(
+                                    controller
+                                        .meetings[meetingId]!.meeting.hostName!,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  )
+                                : const Row(
+                                    children: [
+                                      SizedBox(width: 10),
+                                      SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator()),
+                                    ],
+                                  ),
                       ),
 
                       // MeetingTime
                       Text(
-                        '${formatDateTime(controller.meetings[meetingId]!.$1.meetingTime)}에 만나요!',
+                        '${formatDateTime(controller.meetings[meetingId]!.meeting.meetingTime)}에 만나요!',
                         style: const TextStyle(
                           fontSize: 15,
                         ),
@@ -135,7 +134,7 @@ class MeetingInfoScreen extends StatelessWidget {
               // MeetingTitle
               Center(
                 child: Text(
-                  controller.meetings[meetingId]!.$1.title,
+                  meeting.title,
                   style: const TextStyle(
                     fontSize: 35,
                   ),
@@ -149,30 +148,20 @@ class MeetingInfoScreen extends StatelessWidget {
                     child: Column(
                       children: [
                         const Spacer(),
-                        rowMeetingInfo(
-                          controller.meetings[meetingId]!.$1.place,
-                          Icons.location_on_outlined,
-                        ),
+                        RowMeetingInfo(text: controller.meetings[meetingId]!.meeting.place, icon: Icons.location_on_outlined),
                         const Spacer(),
-                        rowMeetingInfo(
-                          controller.meetings[meetingId]!.$1.description,
-                          Icons.edit_outlined,
-                        ),
+                        RowMeetingInfo(text: controller.meetings[meetingId]!.meeting.description, icon: Icons.edit_outlined),
                         const Spacer(),
-                        rowMeetingInfo(
-                          '${formatDateTime(controller.meetings[meetingId]!.$1.meetingTime)}에 만날꺼에요!',
-                          Icons.calendar_month,
-                        ),
+                        RowMeetingInfo(text: '${formatDateTime(controller.meetings[meetingId]!.meeting.meetingTime)}에 만날꺼에요!', icon: Icons.calendar_month),
                         const Spacer(),
                         Obx(() {
                           final countOfMembers = controller.members.length;
-                          return rowMeetingInfo(
-                              '참여인원 $countOfMembers/${controller.meetings[meetingId]!.$1.maxMemers}',
-                              Icons.people_outline);
+                          return RowMeetingInfo(text: '참여인원 $countOfMembers/${controller.meetings[meetingId]!.meeting.maxMembers}', icon: Icons.people_outline);
                         }),
                         const Spacer(),
                         Obx(
-                          () => controller.meetings[meetingId]!.$1.hostUid !=
+                          () => controller
+                                      .meetings[meetingId]!.meeting.hostUid !=
                                   controller.firebaseService.currentUid
                               ? controller.members.any((Member member) =>
                                       member.uid ==
@@ -186,13 +175,14 @@ class MeetingInfoScreen extends StatelessWidget {
                                         Text(
                                           '참여중',
                                           style: TextStyle(
-                                              fontSize: 18, color: Colors.black),
+                                              fontSize: 18,
+                                              color: Colors.black),
                                         ),
                                       ],
                                     )
                                   : controller.members.length >=
-                                          controller
-                                              .meetings[meetingId]!.$1.maxMemers
+                                          controller.meetings[meetingId]!
+                                              .meeting.maxMembers
                                       ? const Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
@@ -223,8 +213,17 @@ class MeetingInfoScreen extends StatelessWidget {
                                                   ),
                                                 ],
                                               ),
-                                              onPressed: () => controller
-                                                  .joinMeeting(meetingId, controller.meetings[meetingId]!.$1.hostUid, controller.meetings[meetingId]!.$1.meetingTime),
+                                              onPressed: () =>
+                                                  controller.joinMeeting(
+                                                      meetingId,
+                                                      controller
+                                                          .meetings[meetingId]!
+                                                          .meeting
+                                                          .hostUid,
+                                                      controller
+                                                          .meetings[meetingId]!
+                                                          .meeting
+                                                          .meetingTime),
                                             )
                                           : const CircularProgressIndicator()
                               : const SizedBox.shrink(),
@@ -235,12 +234,24 @@ class MeetingInfoScreen extends StatelessWidget {
                 ),
             ],
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
+}
 
-  Row rowMeetingInfo(String text, IconData icon) {
+class RowMeetingInfo extends StatelessWidget {
+  const RowMeetingInfo({
+    super.key,
+    required this.text,
+    required this.icon,
+  });
+
+  final String text;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       children: [
         Icon(

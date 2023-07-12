@@ -28,21 +28,7 @@ class LoginController extends GetxController {
     super.onReady();
 
     Get.put(AuthService());
-
-    // _user = Rx<User?>(authentication.currentUser);
-    // _user.bindStream(authentication.userChanges());
-    // ever(_user, _moveToPage);
   }
-
-  // _moveToPage(User? user) {    
-  //   if (user == null) {
-  //     Get.offAllNamed('login');
-  //     isUserAuthenticated.value = false;
-  //   } else {
-  //     Get.offAllNamed('/main');
-  //     isUserAuthenticated.value = true;
-  //   }
-  // }
 
   void signInWithGoogle() async {
     if (isGoogleLoginLoading.value) return;

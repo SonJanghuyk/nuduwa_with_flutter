@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/controller/login_controller.dart';
+import 'package:nuduwa_with_flutter/utils/assets.dart';
 
 class LoginPage extends StatelessWidget {
   final controller = LoginController.instance;
@@ -22,7 +23,7 @@ class LoginPage extends StatelessWidget {
 
                   // 로고
                   Image.asset(
-                    'assets/images/nuduwa_logo.png',
+                    Assets.imageNuduwaLogo,
                     width: 70,
                     height: 70,
                     fit: BoxFit.cover,
@@ -131,8 +132,8 @@ class SnsLoginButton extends StatelessWidget {
                 children: [
                   Image.asset(
                     sns == 'Google'
-                        ? 'assets/images/google.png'
-                        : 'assets/images/apple.png',
+                        ? Assets.imageGoogleLogo
+                        : Assets.imageAppleLogo,
                     color: Colors.white,
                     width: 45,
                     height: 45,

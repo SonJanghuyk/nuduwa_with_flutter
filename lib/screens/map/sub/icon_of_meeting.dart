@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:nuduwa_with_flutter/utils/assets.dart';
 
 class DrawIconOfMeeting {
   double imageSize; // 이미지 크기
@@ -16,14 +17,15 @@ class DrawIconOfMeeting {
     this.triangleSize,
   );
 
+  /// 로딩중 지도에 표시할 아이콘 만들기
   Future<Map<String, BitmapDescriptor>> drawLoadingIcons(Map<String, ui.Image> iconImages) async {
     // 웹 이미지 가져오는동안 보여줄 이미지
-    var image = await loadingImage();
+    final image = await _loadingImage();
 
-    // image iconImages를 합쳐서 Marker 아이콘 만들기
+    // image와 iconImages를 합쳐서 Marker 아이콘 만들기
     final loadingIconImages = await Future.wait([
       for (var iconImage in iconImages.values)
-        createIconImage(image, iconImage),    
+        _drawIcon(image, iconImage),    
     ]);
     
     // loadingIconImages로 만들걸 쓰기 쉽게 Map으로 변환
@@ -35,9 +37,28 @@ class DrawIconOfMeeting {
     return loadingIcons;
   }
 
-  Future<BitmapDescriptor> createIconImage(Uint8List userImage, ui.Image iconImage) async {
-    final codec = await ui.instantiateImageCodec(userImage);
+  /// 지도에 표시할 아이콘 만들기
+  Future<BitmapDescriptor> drawMeetingIcon(String? imageUrl, ui.Image iconImage) async {
+    final imageData = await downloadImage(imageUrl);
+    return await _drawIcon(imageData, iconImage);
+  }
+
+  /// 웹에서 이미지 다운로드 없으면 NoImage 이미지 넣기
+  static Future<Uint8List> downloadImage(String? imageUrl) async {
+    if (imageUrl == null) {
+      final ByteData assetData = await rootBundle.load(Assets.imageNoImage);
+      return assetData.buffer.asUint8List();
+    } else {
+      final imageData = await http.get(Uri.parse(imageUrl));
+      return imageData.bodyBytes;
+    }
+  }
+
+  /// imageData와 iconImages를 합쳐서 Marker 아이콘 만들기
+  Future<BitmapDescriptor> _drawIcon(Uint8List imageData, ui.Image iconImage) async {
+    final codec = await ui.instantiateImageCodec(imageData);
     final frameInfo = await codec.getNextFrame();
+    // imageData 원모양으로 그리기
     final meetingImage = await _drawCircleImage(frameInfo, imageSize);
     final ui.Image markerImage = await _overlayImages(meetingImage, iconImage);
 
@@ -51,8 +72,8 @@ class DrawIconOfMeeting {
   }
 
   /// 웹이미지 가져오는 동안 표시될 이미지
-  Future<Uint8List> loadingImage() async {
-    final ByteData assetData = await rootBundle.load('assets/images/nuduwa_logo.png');
+  Future<Uint8List> _loadingImage() async {
+    final ByteData assetData = await rootBundle.load(Assets.imageLoading);
     return assetData.buffer.asUint8List();
   }
 
@@ -126,7 +147,7 @@ class DrawIconOfMeeting {
   }
 
   /// 아이콘이미지 만드는 함수
-  Future<ui.Image> drawIconImage(Color color) async {
+  Future<ui.Image> drawIconFrame(Color color) async {
     final double iconSize = imageSize + (borderWidth * 2); // 아이콘 크기
 
     final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
@@ -153,37 +174,3 @@ class DrawIconOfMeeting {
     return iconImage;
   }
 }
-/*
-
-  // 웹이미지 원 모양으로 그리는 함수
-  Future<ui.Image> _drawWebImage(String? url, double imageSize) async {
-    late ui.FrameInfo frameInfo;
-    if (url != null) {
-      // 이미지 네트워크로부터 바이트 데이터 가져오기
-      final response = await http.get(Uri.parse(url));
-      Uint8List imageData = response.bodyBytes;
-
-      // 이미지를 디코딩하여 화면에 표시하기 위해 Image 객체 생성
-      final ui.Codec codec = await ui.instantiateImageCodec(imageData);
-      frameInfo = await codec.getNextFrame();
-    } else {
-      final ByteData assetData =
-          await rootBundle.load('assets/images/nuduwa_logo.png');
-      final Uint8List bytes = assetData.buffer.asUint8List();
-      final ui.Codec codec = await ui.instantiateImageCodec(bytes);
-      frameInfo = await codec.getNextFrame();
-    }
-
-    final image = await _drawCircleImage(frameInfo, imageSize);
-
-    return image;
-  }
-
-
-
-
-
-
-
-
-  */

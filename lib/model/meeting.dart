@@ -1,12 +1,7 @@
-import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:nuduwa_with_flutter/model/member.dart';
-import 'package:nuduwa_with_flutter/model/user.dart';
-import 'package:http/http.dart' as http;
 
 class Meeting {
   final String? id;
@@ -14,36 +9,34 @@ class Meeting {
   final String title;
   final String description;
   final String place;
-  final int maxMemers;
+  final int maxMembers;
   final String category;
 
   final LatLng location;
   final String? goeHash;
 
   final DateTime meetingTime;
-  final DateTime? publishedTime;
+  final DateTime publishedTime;
 
   final String hostUid;
   String? hostName;
   String? hostImageUrl;
-  Uint8List? hostImageData; // imageUrl 웹이미지 가져와서 저장하는 변수
 
   Meeting({
     this.id,
     required this.title,
     required this.description,
     required this.place,
-    required this.maxMemers,
+    required this.maxMembers,
     required this.category,
     required this.location,
     this.goeHash,
     required this.meetingTime,
-    this.publishedTime,
+    DateTime? publishedTime,
     required this.hostUid,
     this.hostName,
     this.hostImageUrl,
-    this.hostImageData,
-  });
+  }) : publishedTime = publishedTime ?? DateTime.now().toUtc().add(const Duration(hours: 9));
 
   factory Meeting.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> snapshot,
@@ -52,15 +45,16 @@ class Meeting {
     final data = snapshot.data();
     final latitude = data?['latitude'];
     final longitude = data?['longitude'];
-    if(latitude == null) {return throw '에러! some meeting data is null';}
-    
+    if (latitude == null) {
+      return throw '에러! some meeting data is null';
+    }
 
     return Meeting(
       id: snapshot.id,
       title: data?['title'],
       description: data?['description'],
       place: data?['place'],
-      maxMemers: data?['maxMemers'],
+      maxMembers: data?['maxMembers'],
       category: data?['category'],
       location: LatLng(latitude, longitude),
       goeHash: data?['goeHash'],
@@ -75,7 +69,7 @@ class Meeting {
       "title": title,
       "description": description,
       "place": place,
-      "maxMemers": maxMemers,
+      "maxMembers": maxMembers,
       "category": category,
       "latitude": location.latitude,
       "longitude": location.longitude,
@@ -85,6 +79,37 @@ class Meeting {
       "hostUID": hostUid
     };
   }
+
+  factory Meeting.clone(Meeting meeting) {
+    return Meeting(
+      id: meeting.id,
+      title: meeting.title,
+      description: meeting.description,
+      place: meeting.place,
+      maxMembers: meeting.maxMembers,
+      category: meeting.category,
+      location: meeting.location,
+      goeHash: meeting.goeHash,
+      meetingTime: meeting.meetingTime,
+      publishedTime: meeting.publishedTime,
+      hostUid: meeting.hostUid,
+      hostName: meeting.hostName,
+      hostImageUrl: meeting.hostImageUrl,
+    );
+  }
+}
+
+enum MeetingCategory {
+  hobby('hobby', '취미활동'),
+  meal('meal', '식사'),
+  drink('drink', '술자리'),
+  exercise('exercise', '운동'),
+  date('date', '소개팅'),
+  talk('talk', '수다');
+
+  final String category;
+  final String displayName;
+  const MeetingCategory(this.category, this.displayName);
 }
 
 // class MeetingManager extends UserManager {

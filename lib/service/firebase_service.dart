@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -10,6 +11,7 @@ import 'package:nuduwa_with_flutter/model/member.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 import 'package:http/http.dart' as http;
+import 'package:nuduwa_with_flutter/service/auth_service.dart';
 
 class FirebaseService extends GetxService {
   static FirebaseService get instance => Get.find();
@@ -17,13 +19,13 @@ class FirebaseService extends GetxService {
   // 사용자ID
   String? get currentUid => FirebaseAuth.instance.currentUser?.uid;
 
+  // Firebase CRUD
   /*
   Firestore - User      - UserMeeting
                         └
             └ Meeting   - Member
 
   */
-
   // Firestore 경로
   FirebaseFirestore get db => FirebaseFirestore.instance;
   // Users Collection
@@ -32,7 +34,7 @@ class FirebaseService extends GetxService {
             fromFirestore: UserModel.fromFirestore,
             toFirestore: (UserModel user, options) => user.toFirestore(),
           );
-          
+
   // Meetings Collection
   CollectionReference<Meeting> get meetingList =>
       db.collection('Meeting').withConverter<Meeting>(
@@ -60,7 +62,8 @@ class FirebaseService extends GetxService {
         .collection('UserMeeting')
         .withConverter<UserMeeting>(
           fromFirestore: UserMeeting.fromFirestore,
-          toFirestore: (UserMeeting userMeeting, options) => userMeeting.toFirestore(),
+          toFirestore: (UserMeeting userMeeting, options) =>
+              userMeeting.toFirestore(),
         );
   }
 
@@ -77,20 +80,25 @@ class FirebaseService extends GetxService {
     return snapshot.data();
   }
 
-  Future<Uint8List> downloadUserImageData(String? url) async {
-    if (url != null) {
-      final response = await http.get(Uri.parse(url));
-      return response.bodyBytes;
-    } else {
-      final ByteData assetData =
-      await rootBundle.load('assets/images/nuduwa_logo.png');
-      return assetData.buffer.asUint8List();
-    }
-  }
+  // Future<Uint8List> downloadUserImageData(String? url) async {
+  //   if (url != null) {
+  //     final response = await http.get(Uri.parse(url));
+  //     return response.bodyBytes;
+  //   } else {
+  //     final ByteData assetData =
+  //         await rootBundle.load('assets/images/nuduwa_logo.png');
+  //     return assetData.buffer.asUint8List();
+  //   }
+  // }
 
   // UserMeeting
-  Future<void> createUserMeetingData(String meetingId, String hostUid, DateTime meetingTime) async {
-    final userMeeting = UserMeeting(meetingId: meetingId, hostUid: hostUid, isEnd: false, meetingDate: meetingTime);
+  Future<void> createUserMeetingData(
+      String meetingId, String hostUid, DateTime meetingTime) async {
+    final userMeeting = UserMeeting(
+        meetingId: meetingId,
+        hostUid: hostUid,
+        isEnd: false,
+        meetingDate: meetingTime);
     final ref = userMeetingList(currentUid!).doc();
     await ref.set(userMeeting);
   }
@@ -111,10 +119,16 @@ class FirebaseService extends GetxService {
 
   // Meeting
   Future<void> createMeetingData(Meeting meeting) async {
+    debugPrint(meeting.toFirestore().toString());
     final ref = meetingList;
-    final newMeetingRef = await ref.add(meeting);
-    final meetingId = newMeetingRef.id;
-    await createMemberData(meetingId, currentUid!, meeting.meetingTime);
+    try {
+      final newMeetingRef = await ref.add(meeting);
+      final meetingId = newMeetingRef.id;
+      debugPrint(meetingId);
+      await createMemberData(meetingId, currentUid!, meeting.meetingTime);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<Meeting?> readMeetingData(String meetingId) async {
@@ -126,12 +140,11 @@ class FirebaseService extends GetxService {
 
   Future<Meeting> fetchHostData(Meeting meeting) async {
     final host = await readUserData(meeting.hostUid);
+    debugPrint(host!.name);
     meeting.hostName = host?.name ?? '이름없음';
     meeting.hostImageUrl = host?.imageUrl ??
         'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png?20200912122019';
-    final imageData = await http.get(Uri.parse(meeting.hostImageUrl!));
-    meeting.hostImageData = imageData.bodyBytes;
-    
+
     return meeting;
   }
 
@@ -140,7 +153,7 @@ class FirebaseService extends GetxService {
       title: '',
       description: '',
       place: '',
-      maxMemers: 0,
+      maxMembers: 0,
       category: '',
       location: const LatLng(0, 0),
       meetingTime: DateTime(0),
@@ -153,10 +166,14 @@ class FirebaseService extends GetxService {
       String meetingId, String hostUid, DateTime meetingTime) async {
     final member = Member(uid: currentUid!);
     final ref = memberList(meetingId).doc();
-    await Future.wait([
-      ref.set(member),
-      createUserMeetingData(meetingId, hostUid, meetingTime),
-    ]);
+    try {
+      await Future.wait([
+        ref.set(member),
+        createUserMeetingData(meetingId, hostUid, meetingTime),
+      ]);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> deleteMemberData(String meetingId, String uid) async {
@@ -171,5 +188,5 @@ class FirebaseService extends GetxService {
     var snapshot = await ref.get();
 
     return snapshot.docs.first.data();
-  }  
+  }
 }

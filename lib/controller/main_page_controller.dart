@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nuduwa_with_flutter/controller/login_controller.dart';
+import 'package:nuduwa_with_flutter/service/data_service.dart';
 
 import '../model/user.dart';
 import '../model/user_meeting.dart';
@@ -34,6 +35,8 @@ class MainPageController extends GetxController {
   @override
   void onReady() {
     super.onReady();
+
+    Get.put(DataService());
 
     // ever(AuthController.instance.isUserAuthenticated, listenerForUserMeetings);
   }

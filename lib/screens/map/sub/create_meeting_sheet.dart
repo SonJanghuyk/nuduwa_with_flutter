@@ -3,6 +3,7 @@ import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/create_meeting_controller.dart';
+import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 Future<dynamic> createMeetingSheet() {
@@ -10,13 +11,14 @@ Future<dynamic> createMeetingSheet() {
     context: Get.context!,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
-        top: Radius.circular(15.0),
+        top: Radius.circular(20.0),
       ),
     ),
     barrierColor: Colors.white.withOpacity(0),
     backgroundColor: Colors.white,
     isScrollControlled: true,
-    builder: (_) => CreateMeetingScreen(),);
+    builder: (_) => CreateMeetingScreen(),
+  );
 }
 
 class CreateMeetingScreen extends StatelessWidget {
@@ -72,7 +74,7 @@ class CreateMeetingScreen extends StatelessWidget {
                       content: [
                         Row(
                           children: [
-                            Text(controller.address.value),
+                            Obx(() => Text(controller.address.value, overflow: TextOverflow.ellipsis)),
                             const Spacer(),
                           ],
                         ),
@@ -128,8 +130,8 @@ class CreateMeetingScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.add_task),
-                  SizedBox(width: 5),
-                  Text('모임 생성'),
+                  SizedBox(width: 5, height: 50),
+                  Text('모임 생성', style: TextStyle(fontSize: 20)),
                 ],
               ),
             ),
@@ -195,54 +197,34 @@ class _CategoryPickerState extends State<CategoryPicker> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Row(
-        children: [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _controller.category = '운동';
-              });
-            },
-            child: Text('운동'),
-            style: ButtonStyle(
-              foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-              backgroundColor: MaterialStateProperty.all<Color>(
-                _controller.category == '운동' ? Colors.blue : Colors.grey,
-              ),
-            ),
+    return Wrap(
+      children: [
+        for (final category in MeetingCategory.values)
+          pickButton(category.displayName),
+      ],
+    );
+  }
+
+  Padding pickButton(String category) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 5),
+      child: TextButton(
+        onPressed: () {
+          setState(() {
+            _controller.category = category;
+          });
+        },
+        style: ButtonStyle(
+          fixedSize: const MaterialStatePropertyAll<Size>(Size(80, 10)),
+          foregroundColor: const MaterialStatePropertyAll<Color>(Colors.white),
+          backgroundColor: MaterialStatePropertyAll<Color>(
+            _controller.category == category ? Colors.blue : Colors.grey,
           ),
-          SizedBox(width: 5),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _controller.category = '공부';
-              });
-            },
-            child: Text('공부'),
-            style: ButtonStyle(
-              foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-              backgroundColor: MaterialStateProperty.all<Color>(
-                _controller.category == '공부' ? Colors.blue : Colors.grey,
-              ),
-            ),
-          ),
-          SizedBox(width: 5),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _controller.category = '먹기';
-              });
-            },
-            child: Text('먹기'),
-            style: ButtonStyle(
-              foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-              backgroundColor: MaterialStateProperty.all<Color>(
-                _controller.category == '먹기' ? Colors.blue : Colors.grey,
-              ),
-            ),
-          ),
-        ],
+        ),
+        child: Text(
+          category,
+          style: TextStyle(fontSize: 15),
+        ),
       ),
     );
   }
@@ -274,6 +256,7 @@ class _MaxNumberPickerState extends State<MaxNumberPicker> {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
           padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
@@ -377,7 +360,7 @@ class _TimePickerState extends State<TimePicker> {
     super.initState();
     _controller = widget.controller;
     _controller.meetingTime =
-        DateTime.now().add(const Duration(minutes: 5)); //현재시간+5분;
+        DateTime.now().add(const Duration(minutes: 5)); //현재 한국시간+5분;
   }
 
   @override
@@ -474,36 +457,41 @@ class MeetingSetContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const SizedBox(width: 20),
-            Text(title),
-          ],
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-          margin: const EdgeInsets.all(5.0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 1,
-                spreadRadius: 1,
-              ),
-            ],
+    final width = MediaQuery.of(context).size.width;
+    final widthOfWidget = width > 830 ? 800.0 : width - 30;
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 20),
+            child: Text(title),
           ),
-          child: Form(
-            child: Column(
-              children: content,
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+            margin: const EdgeInsets.all(5.0),
+            width: widthOfWidget - 10,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 1,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Form(
+              child: Column(
+                children: content,
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

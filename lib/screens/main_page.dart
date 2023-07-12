@@ -3,6 +3,7 @@ import 'package:nuduwa_with_flutter/controller/main_page_controller.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/map_page_controller.dart';
 import 'package:nuduwa_with_flutter/screens/map/map_page.dart';
 import 'package:get/get.dart';
+import 'package:nuduwa_with_flutter/screens/meeting/meeting_page.dart';
 import 'package:nuduwa_with_flutter/screens/profile/my_profile_page.dart';
 
 class MainPage extends StatelessWidget {
@@ -15,8 +16,9 @@ class MainPage extends StatelessWidget {
     // 탭별 화면
     late List<Widget> tabPages = <Widget>[
       MapPage(
-        controller: Get.put(MapPageController(location: controller.currentLatLng.value, userMeetings: controller.userMeetings)),
-      ), // 외부 클래스로 정의
+        controller: Get.put(MapPageController(location: controller.currentLatLng.value)),
+      ),
+      MeetingPage(),
       MyProfilePage(),
     ];
 
@@ -64,6 +66,10 @@ class MainPage extends StatelessWidget {
                         BottomNavigationBarItem(
                           icon: Icon(Icons.map),
                           label: '찾기',
+                        ),
+                        BottomNavigationBarItem(
+                          icon: Icon(Icons.people),
+                          label: '모임',
                         ),
                         BottomNavigationBarItem(
                           icon: Icon(Icons.person),

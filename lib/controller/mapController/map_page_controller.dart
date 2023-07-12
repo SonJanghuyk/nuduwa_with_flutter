@@ -8,35 +8,40 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
-import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 import 'package:nuduwa_with_flutter/screens/map/sub/icon_of_meeting.dart';
 import 'package:nuduwa_with_flutter/screens/map/sub/meeting_info_sheet.dart';
+import 'package:nuduwa_with_flutter/service/data_service.dart';
 import 'dart:ui' as ui;
 
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
+import 'package:nuduwa_with_flutter/utils/assets.dart';
 
 class MapPageController extends GetxController {
   static MapPageController get instance => Get.find();
+
+  final dataService = DataService.instance;
 
   // Model Manager
   final firebaseService = FirebaseService.instance;
 
   // GoogleMap
   var _mapController = Completer<GoogleMapController>();
-  final meetings = <String, (Meeting, Marker)>{}.obs;
+  final meetings = <String, ({Meeting meeting, Marker marker})>{}.obs;
+  // 구글 지도에서 POI아이콘 삭제
+  final mapStyle = Rx<String?>(null);
 
   // Location
   var currentLocation = const LatLng(0, 0);
   var center = const LatLng(0, 0);
 
   // Draw MapMarker Icons
-  final iconOfMeeting = DrawIconOfMeeting(80.0, 10.0, 30.0);
-  late final Map<String, ui.Image> iconImages;
+  final drawIconOfMeeting = DrawIconOfMeeting(80.0, 10.0, 30.0);
+  late final Map<String, ui.Image> iconFrames;
   late final Map<String, BitmapDescriptor> loadingIcons;
 
   // Firestore Listener
-  final snapshotMeetings = <String, (Meeting, Marker)>{};
+  final snapshotMeetings = <String, ({Meeting meeting, Marker marker})>{};
   final listener = <String, StreamSubscription<QuerySnapshot<Member>>>{};
 
   // CreateMeeting
@@ -50,10 +55,13 @@ class MapPageController extends GetxController {
   // Members
   final members = <Member>[].obs;
 
-  // UserMeeting
-  RxList<UserMeeting> userMeetings;
+  // Category Filter
+  final category = '필터'.obs;
 
-  MapPageController({required LatLng? location, required this.userMeetings}) {
+  // MeetingInfoSheet
+  final hostImage = Rx<ImageProvider?>(null);
+
+  MapPageController({required LatLng? location}) {
     currentLocation = location ?? const LatLng(0, 0);
   }
 
@@ -62,42 +70,65 @@ class MapPageController extends GetxController {
     debugPrint("MapPageController");
     super.onInit();
     center = currentLocation;
-    await drawIconImages();
-    listenerForMeetingsOfMap();
+    final [mapstyle, _] = await Future.wait<dynamic>([
+      rootBundle.loadString('assets/map_style.txt'),
+      _drawIconImages(),
+    ]);
+    mapStyle.value = mapstyle;
+    _listenerForMeetingsOfMap();
   }
 
-  // 서버에서 가져오는 모임 데이터와 모임 만들기 때 생성되는 마커 합치기
-  void convertMeetings() {
-    meetings.value = Map.from(snapshotMeetings);
-    if (newMarker != null) {
-      final tempMeeting = firebaseService.tempMeetingData();
-      meetings[newMarkerId] = (tempMeeting, newMarker!);
+  @override
+  void onReady() {
+    ever(dataService.userMeetings, _updateMeetingIcon);
+    ever(dataService.leavedMeeting, _updateMeetingIcon);
+  }
+
+  /// 모임 참여하거나 나가면 아이콘 색 바꾸기
+  Future<void> _updateMeetingIcon(List<UserMeeting?> userMeetings) async {
+    debugPrint('updateMeetingIcon');
+    if (userMeetings.isEmpty) return;
+    for (final userMeeting in userMeetings) {
+      if (snapshotMeetings.keys.contains(userMeeting!.meetingId)) {
+        fetchMeetingIcon(snapshotMeetings[userMeeting.meetingId]!.meeting);
+      }
     }
   }
 
-  Future<void> drawIconImages() async {
+  /// 서버에서 가져오는 모임 데이터와 모임 만들기 때 생성되는 마커 합치기
+  void _convertMeetings() {
+    meetings.value = Map.from(snapshotMeetings);
+    if (newMarker != null) {
+      final tempMeeting = firebaseService.tempMeetingData();
+      meetings[newMarkerId] = (meeting: tempMeeting, marker: newMarker!);
+    }
+  }
+
+  /// 지도에 보여줄 아이콘 이미지 미리 만들어놓기
+  Future<void> _drawIconImages() async {
     // 여러 색깔 아이콘 이미지
-    final imagesWithColor = await Future.wait([
-      for (final color in IconColors.values) iconOfMeeting.drawIconImage(color.color)
-    ]);    
-    iconImages = Map.fromIterables(IconColors.values.map((e) => e.name), imagesWithColor);
+    final framesWithColor = await Future.wait([
+      for (final color in IconColors.values)
+        drawIconOfMeeting.drawIconFrame(color.color)
+    ]);
+    iconFrames = Map.fromIterables(
+        IconColors.values.map((e) => e.name), framesWithColor);
 
     // 웹 이미지 가져오는동안 보여줄 아이콘
-    loadingIcons = await iconOfMeeting.drawLoadingIcons(iconImages);
+    loadingIcons = await drawIconOfMeeting.drawLoadingIcons(iconFrames);
   }
 
   /// 서버에서 실시간으로 모임 데이터 & 모임 마커 가져오기
-  void listenerForMeetingsOfMap() {
-    debugPrint("listenerForMeetings");   
-    
+  void _listenerForMeetingsOfMap() {
     firebaseService.meetingList.snapshots().listen((snapshot) {
       debugPrint("지도모임리스너");
-      snapshotMeetings.clear();      
+      snapshotMeetings.clear();
 
       for (final doc in snapshot.docs) {
         try {
           // 데이터가 없거나 로컬 데이터이면 contiue
           if (!doc.exists || doc.metadata.hasPendingWrites) continue;
+          debugPrint(doc.data().toFirestore().toString());
 
           // 이미 불러온 데이터면 가져와서 continue
           final meetingId = doc.id;
@@ -112,7 +143,11 @@ class MapPageController extends GetxController {
           // Host 여부, 참여 여부에 따라 다른색 아이콘
           final loadingIcon = meeting.hostUid == firebaseService.currentUid
               ? loadingIcons[IconColors.host.name]
-              : userMeetings.where((userMeeting) => userMeeting.meetingId == meeting.id).toList().isNotEmpty
+              : dataService.userMeetings
+                      .where(
+                          (userMeeting) => userMeeting.meetingId == meeting.id)
+                      .toList()
+                      .isNotEmpty
                   ? loadingIcons[IconColors.join.name]
                   : loadingIcons[IconColors.defalt.name];
 
@@ -127,57 +162,57 @@ class MapPageController extends GetxController {
               }
             },
           );
-          snapshotMeetings[meetingId] = (meeting, markerForLoading);
+          snapshotMeetings[meetingId] =
+              (meeting: meeting, marker: markerForLoading);
 
           // 웹이미지 다 가져오면 마커표시
-          fetchHostData(meeting);
+          fetchMeetingIcon(meeting);
         } catch (e) {
           debugPrint('리스너에러!!: $e');
           continue;
         }
       }
-      convertMeetings();
+      _convertMeetings();
     });
     debugPrint("리슨");
   }
 
   // Host 정보 가져와서 모임 데이터에 이미지 넣기
-  Future<void> fetchHostData(Meeting meeting) async {
+  Future<void> fetchMeetingIcon(Meeting meeting) async {
     debugPrint('시작!fetchHostData');
     try {
       // Host 정보 가져오기
-      meeting = await firebaseService.fetchHostData(meeting);
+      if (meeting.hostName == null) meeting = await firebaseService.fetchHostData(meeting);
 
       // 가져온 Host Image로 Icon 교체
-      updateMeetingIcon(meeting);
-      
-    } catch (e) {
-      debugPrint('에러!fetchHostData: ${e.toString()}');
-      rethrow;
-    }
-  }
-
-  Future<void> updateMeetingIcon(Meeting meeting) async {
-    // Host 여부, 참여 여부에 따라 다른색 아이콘
-    final iconColor = meeting.hostUid == firebaseService.currentUid!
+      // Host 여부, 참여 여부에 따라 다른색 아이콘
+      final iconColor = meeting.hostUid == firebaseService.currentUid!
           ? IconColors.host.name
-          : userMeetings.where((userMeeting) => userMeeting.meetingId == meeting.id).toList().isNotEmpty
-              ? IconColors.join.name        
+          : dataService.userMeetings
+                  .where((userMeeting) => userMeeting.meetingId == meeting.id)
+                  .toList()
+                  .isNotEmpty
+              ? IconColors.join.name
               : IconColors.defalt.name;
 
-    // Marker 이미지를 HostImage로 교체
-    final icon = await iconOfMeeting.createIconImage(meeting.hostImageData!, iconImages[iconColor]!);
+      // Marker 이미지를 HostImage로 교체
+      final icon = await drawIconOfMeeting.drawMeetingIcon(
+          meeting.hostImageUrl!, iconFrames[iconColor]!);
 
-    // Web이미지로 마커 새로 그리기
+      // Web이미지로 마커 새로 그리기
       var marker = Marker(
         markerId: MarkerId(meeting.id!),
         position: meeting.location,
         icon: icon,
         onTap: () => meetingInfoSheet(meeting.id!),
       );
-      snapshotMeetings[meeting.id!] = (meeting, marker);
-      meetings[meeting.id!] = (meeting, marker);
-      convertMeetings();
+      snapshotMeetings[meeting.id!] = (meeting: meeting, marker: marker);
+      // meetings[meeting.id!] = (meeting, marker);
+      _convertMeetings();
+    } catch (e) {
+      debugPrint('에러!fetchHostData: ${e.toString()}');
+      rethrow;
+    }
   }
 
   // 현재 위치로 지도 이동
@@ -201,10 +236,7 @@ class MapPageController extends GetxController {
     _mapController = Completer<GoogleMapController>();
     _mapController.complete(controller);
 
-    // 구글 지도에서 POI아이콘 삭제
-    rootBundle.loadString('assets/map_style.txt').then((value) {
-      controller.setMapStyle(value);
-    });
+    controller.setMapStyle(mapStyle.value);
   }
 
   // 지도 이동시 수행
@@ -217,7 +249,7 @@ class MapPageController extends GetxController {
       positionParam: position.target,
     );
     newMarker = updatedMarker;
-    convertMeetings();
+    _convertMeetings();
   }
 
   // 모임 만들기 클릭시 지도 중앙에 마커 생성
@@ -234,7 +266,7 @@ class MapPageController extends GetxController {
       isCreate.value = false;
       newMarker = null;
     }
-    convertMeetings();
+    _convertMeetings();
   }
 
   // 모임 맴버 리스너시작
@@ -289,7 +321,25 @@ class MapPageController extends GetxController {
     }
   }
 
-  
+  // 카테고리 필터
+  void clickedFilter(MeetingCategory? category) {
+    this.category.value = category?.displayName ?? '필터';
+    for (var meeting in snapshotMeetings.values) {
+      final visible = (category == null)
+          ? true
+          : meeting.meeting.category == category.displayName;
+      Marker updatedMarker = meeting.marker.copyWith(visibleParam: visible);
+      snapshotMeetings[meeting.meeting.id!] =
+          (meeting: meeting.meeting, marker: updatedMarker);
+    }
+    _convertMeetings();
+  }
+
+  Future<void> downloadHostImage(String? url) async {
+    if (url == null) hostImage.value = const AssetImage(Assets.imageNoImage);
+    final imageBytes = await DrawIconOfMeeting.downloadImage(url);
+    hostImage.value = Image.memory(imageBytes).image;
+  }
 }
 
 enum IconColors {
