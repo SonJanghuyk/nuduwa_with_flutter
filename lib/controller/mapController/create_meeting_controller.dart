@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/map_page_controller.dart';
@@ -91,9 +92,12 @@ class CreateMeetingController extends GetxController {
   void getLocationAddress() async {
     if (address.value != '') return;
     debugPrint('주소가져오기');
+    final String? key = dotenv.env['GOOGLE_MAP_API_KEY'];
+    debugPrint('API키: $key');
+    if (key == null) address.value = 'API 키가 없습니다';
     final uri = Uri.https('maps.googleapis.com', '/maps/api/geocode/json', {
       'latlng': '${location.latitude},${location.longitude}',
-      'key': 'AIzaSyD7HNss1CtBe-KstkVFyLjHwNeBr7Yj06c',
+      'key': key,
       'language': 'ko',
     });
     try {

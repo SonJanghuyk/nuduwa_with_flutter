@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
@@ -8,17 +9,16 @@ import 'package:nuduwa_with_flutter/screens/login_page.dart';
 import 'package:nuduwa_with_flutter/screens/main_page.dart';
 import 'package:nuduwa_with_flutter/screens/meeting/meeting_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
-import 'package:flutter_config/flutter_config.dart';
 
 import 'firebase_options.dart';
 
 void main() async {  
   WidgetsFlutterBinding.ensureInitialized();
 
+  await dotenv.load(fileName: 'keys.env');
+
   // Firebase CRUD
     Get.put(FirebaseService());
-
-  await FlutterConfig.loadEnvVariables();
     
   // 앱에 Firebase 추가   
   await Firebase.initializeApp(

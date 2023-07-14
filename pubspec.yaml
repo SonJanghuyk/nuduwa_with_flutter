@@ -60,7 +60,8 @@ dependencies:
   # Splash Screen
   flutter_native_splash: ^2.3.1
 
-  flutter_config: ^2.0.0
+  # Use .env File
+  flutter_dotenv: ^5.0.2
 
 flutter_native_splash:
   color: "#1b1c1a"
@@ -92,6 +93,7 @@ flutter:
   assets:
     - assets/map_style.txt
     - assets/images/
+    - keys.env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
