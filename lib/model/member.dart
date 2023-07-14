@@ -8,15 +8,15 @@ import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 class Member {
   final String? id;
   final String uid;
-  final String? name;
-  final String? image;
+  String? name;
+  String? imageUrl;
   final DateTime? joinTime;
 
   Member({
     this.id,
     required this.uid,
     this.name,
-    this.image,
+    this.imageUrl,
     this.joinTime,
   });
 
@@ -33,7 +33,7 @@ class Member {
       id: snapshot.id,
       uid: data?['uid'] as String,
       name: data?['name'] as String?,
-      image: data?['image'] as String?,
+      imageUrl: data?['image'] as String?,
       joinTime: joinTime.toDate(),
     );
   }
@@ -42,9 +42,19 @@ class Member {
     return {
       "uid": uid,
       if (name != null) "name": name,
-      if (image != null) "image": image,
+      if (imageUrl != null) "image": imageUrl,
       "joinTime": FieldValue.serverTimestamp(),
     };
+  }
+
+  factory Member.clone(Member member) {
+    return Member(
+      id: member.id,
+      uid: member.uid,
+      name: member.name,
+      imageUrl: member.imageUrl,
+      joinTime: member.joinTime,
+    );
   }
 }
 

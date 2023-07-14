@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -36,7 +37,7 @@ class MapPageController extends GetxController {
   var center = const LatLng(0, 0);
 
   // Draw MapMarker Icons
-  final drawIconOfMeeting = DrawIconOfMeeting(80.0, 10.0, 30.0);
+  final drawIconOfMeeting = DrawIconOfMeeting(!kIsWeb ? 80.0 : 26.666, !kIsWeb ? 10.0 : 3.333, !kIsWeb ? 30.0 : 10.0);
   late final Map<String, ui.Image> iconFrames;
   late final Map<String, BitmapDescriptor> loadingIcons;
 

@@ -14,11 +14,21 @@ class MeetingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppbarOfNuduwa(title: '모임'),
-      body: ListView.separated(
-        itemCount: service.userMeetings.length,
-        itemBuilder: (context, index) => MeetingCard(controller: Get.put(MeetingCardController(userMeeting: service.userMeetings[index]), tag: service.userMeetings[index].meetingId)),
-        separatorBuilder: (context, index) => const SizedBox(height: 0, child: Divider()),
+      appBar: const AppbarOfNuduwa(title: '내 모임'),
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: Obx(() => ListView.separated(
+                itemCount: service.userMeetings.length,
+                itemBuilder: (context, index) => MeetingCard(
+                    controller: Get.put(
+                        MeetingCardController(
+                            userMeeting: service.userMeetings[index]),
+                        tag: service.userMeetings[index].meetingId)),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 0, child: Divider()),
+              )),
+        ),
       ),
     );
   }

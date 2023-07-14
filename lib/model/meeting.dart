@@ -16,11 +16,13 @@ class Meeting {
   final String? goeHash;
 
   final DateTime meetingTime;
-  final DateTime publishedTime;
+  DateTime publishedTime;
 
   final String hostUid;
   String? hostName;
   String? hostImageUrl;
+
+  final bool isEnd;
 
   Meeting({
     this.id,
@@ -36,7 +38,10 @@ class Meeting {
     required this.hostUid,
     this.hostName,
     this.hostImageUrl,
-  }) : publishedTime = publishedTime ?? DateTime.now().toUtc().add(const Duration(hours: 9));
+    bool? isEnd,
+  })  : publishedTime = publishedTime ??
+            DateTime.now().toUtc().add(const Duration(hours: 9)),
+        isEnd = isEnd ?? false;
 
   factory Meeting.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> snapshot,
@@ -61,6 +66,7 @@ class Meeting {
       meetingTime: data?['meetingTime'].toDate(),
       publishedTime: data?['publishedTime'].toDate(),
       hostUid: data?['hostUID'],
+      isEnd: data?['isEnd'],
     );
   }
 
@@ -76,7 +82,8 @@ class Meeting {
       if (goeHash != null) "goeHash": goeHash,
       "meetingTime": meetingTime,
       "publishedTime": FieldValue.serverTimestamp(),
-      "hostUID": hostUid
+      "hostUID": hostUid,
+      "isEnd" : isEnd,
     };
   }
 
@@ -95,6 +102,7 @@ class Meeting {
       hostUid: meeting.hostUid,
       hostName: meeting.hostName,
       hostImageUrl: meeting.hostImageUrl,
+      isEnd: meeting.isEnd,
     );
   }
 }

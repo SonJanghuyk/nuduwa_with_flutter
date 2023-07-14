@@ -1,17 +1,13 @@
-import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/model/user_meeting.dart';
-import 'package:http/http.dart' as http;
-import 'package:nuduwa_with_flutter/service/auth_service.dart';
 
 class FirebaseService extends GetxService {
   static FirebaseService get instance => Get.find();
@@ -103,7 +99,7 @@ class FirebaseService extends GetxService {
     await ref.set(userMeeting);
   }
 
-  Future<void> deleteUserMeetingData(String meetingId, String uid) async {
+  Future<void> deleteUserMeetingData({required String meetingId, required String uid}) async {
     final query = userMeetingList(uid).where('meetingId', isEqualTo: meetingId);
     final snapshot = await query.get();
     final ref = snapshot.docs.first.reference;
@@ -140,12 +136,26 @@ class FirebaseService extends GetxService {
 
   Future<Meeting> fetchHostData(Meeting meeting) async {
     final host = await readUserData(meeting.hostUid);
-    debugPrint(host!.name);
     meeting.hostName = host?.name ?? '이름없음';
-    meeting.hostImageUrl = host?.imageUrl ??
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png?20200912122019';
-
+    meeting.hostImageUrl = host?.imageUrl;
     return meeting;
+  }
+
+  Future<void> updateMeetingData(
+      {required String meetingId,
+      String? title,
+      String? description,
+      String? place}) async {
+    final ref = meetingList.doc(meetingId);
+    try {
+      await ref.update({
+        if (title != null) "title": title,
+        if (description != null) "description": description,
+        if (place != null) "place": place,
+      });
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Meeting tempMeetingData() {
@@ -176,7 +186,7 @@ class FirebaseService extends GetxService {
     }
   }
 
-  Future<void> deleteMemberData(String meetingId, String uid) async {
+  Future<void> deleteMemberData({required String meetingId, required String uid}) async {
     final query = memberList(meetingId).where('uid', isEqualTo: uid);
     final snapshot = await query.get();
     final ref = snapshot.docs.first.reference;
@@ -188,5 +198,12 @@ class FirebaseService extends GetxService {
     var snapshot = await ref.get();
 
     return snapshot.docs.first.data();
+  }
+
+  Future<Member> fetchMemberData(Member member) async {
+    final user = await readUserData(member.uid);
+    member.name = user?.name ?? '이름없음';
+    member.imageUrl = user?.imageUrl;
+    return member;
   }
 }

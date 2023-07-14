@@ -4,10 +4,6 @@ import 'package:get/get.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:nuduwa_with_flutter/controller/login_controller.dart';
-import 'package:nuduwa_with_flutter/model/meeting.dart';
-import 'package:nuduwa_with_flutter/model/member.dart';
-import 'package:nuduwa_with_flutter/model/user.dart';
-import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 import 'package:nuduwa_with_flutter/screens/login_page.dart';
 import 'package:nuduwa_with_flutter/screens/main_page.dart';
 import 'package:nuduwa_with_flutter/screens/meeting/meeting_page.dart';
@@ -66,11 +62,16 @@ class AppbarOfNuduwa extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text(
-        title,
-        style: TextStyle(color: Colors.black),
+      title: Container(
+        alignment: Alignment.topLeft,
+        padding: const EdgeInsets.only(left: 20),
+        child: Text(
+          title,
+          style: TextStyle(color: Colors.black),
+        ),
       ),
       backgroundColor: Colors.transparent, // 투명한 배경
+      // backgroundColor: Colors.red, 
       elevation: 0, // 그림자 제거
       actions: iconButtons,
     );

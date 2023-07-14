@@ -16,7 +16,7 @@ class MeetingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      onTap: () => Get.to(MeetingDetailPage(controller: controller)),
+      onTap: () => controller.onTapListTile(),
       title: SizedBox(
         height: 100,
         child: Obx(() => controller.meeting.value == null
@@ -34,14 +34,17 @@ class MeetingCard extends StatelessWidget {
                         SizedBox(
                           width: 40,
                           height: 40,
-                          child: Obx(() => controller.hostImage.value == null
-                              ? const Center(child: CircularProgressIndicator())
-                              : CircleAvatar(
-                                  radius: 20,
-                                  backgroundImage: controller.hostImage.value,
-                                  backgroundColor:
-                                      Colors.white, // 로딩 중일 때 보여줄 배경색
-                                )),
+                          child: Obx(() =>
+                              controller.hostImage.value == null
+                                  ? const Center(
+                                      child: CircularProgressIndicator())
+                                  : CircleAvatar(
+                                      radius: 20,
+                                      backgroundImage:
+                                          controller.hostImage.value,
+                                      backgroundColor:
+                                          Colors.white, // 로딩 중일 때 보여줄 배경색
+                                    )),
                         ),
                         const SizedBox(width: 10),
                         Column(
@@ -62,11 +65,18 @@ class MeetingCard extends StatelessWidget {
                             Text(
                               '${DateFormat("y년 M월 d일 a h:mm").format(controller.meeting.value!.meetingTime)}에 만나요',
                               style: TextStyle(
-                                  fontSize: 12, color: Colors.grey.shade600),
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600),
                             ),
-                            Text(
-                              controller.meeting.value!.title,
-                              style: const TextStyle(fontSize: 30),
+                            SizedBox(
+                              width: 333,
+                              child: Text(
+                                controller.meeting.value!.title,
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -79,7 +89,7 @@ class MeetingCard extends StatelessWidget {
                     Stack(
                       children: [
                         Align(
-                          alignment: Alignment.topRight,
+                          alignment: const Alignment(1.0, -1.25),
                           child: ClipPath(
                             clipper: TrapezoidClipper(),
                             child: Container(
@@ -92,7 +102,9 @@ class MeetingCard extends StatelessWidget {
                         Align(
                           alignment: Alignment.topRight,
                           child: Padding(
-                            padding: const EdgeInsets.only(top: 19, right: 8),
+                            padding:
+                                // const EdgeInsets.only(top: 19, right: 8),
+                                const EdgeInsets.only(top: 15, right: 9),
                             child: Transform.rotate(
                               angle: math.pi / 4, // 45도 회전
                               child: const Text(

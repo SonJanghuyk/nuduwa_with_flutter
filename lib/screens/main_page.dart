@@ -39,13 +39,18 @@ class MainPage extends StatelessWidget {
               ),
             );
           }
-
+      
           // 위치 권한 허가된 상태
           if (controller.permissionMessage.value == '위치 권한이 허가 되었습니다.') {
             if (controller.currentLatLng.value != null) {
               return Scaffold(
-                body: tabPages[controller.tabIndex.value],
-
+                body: Stack(
+                  children: [
+                    tabPages[controller.tabIndex.value],
+                    if(controller.overlayPage.value != null) controller.overlayPage.value!
+                  ],
+                ),
+      
                 // 하단 텝바
                 bottomNavigationBar: Obx(() => BottomNavigationBar(
                       // 현재 인덱스를 selectedIndex에 저장
@@ -84,7 +89,7 @@ class MainPage extends StatelessWidget {
               );
             }
           }
-
+      
           // 위치 권한 없는 상태
           return Center(
             child: Text(

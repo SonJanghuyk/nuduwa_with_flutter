@@ -1,14 +1,14 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:nuduwa_with_flutter/controller/login_controller.dart';
 import 'package:nuduwa_with_flutter/service/data_service.dart';
 
-import '../model/user.dart';
 import '../model/user_meeting.dart';
 
 class MainPageController extends GetxController {
+  static MainPageController instance = Get.find();
+
   // 위치 권한 메시지
   final permissionMessage = RxString('');
 
@@ -17,6 +17,7 @@ class MainPageController extends GetxController {
 
   // 텝인덱스
   final tabIndex = RxInt(0);
+  final overlayPage = Rx<Widget?>(null);
 
   // UserMeeting
   final userMeetings = <UserMeeting>[].obs;
@@ -79,22 +80,6 @@ class MainPageController extends GetxController {
 
   void changeIndex(int index) {
     tabIndex(index);
-  }
-
-  // UserMeeting 리스너
-  listenerForUserMeetings(bool isAuth) {
-    // debugPrint('UserMeeting 리스너1');
-    // if (!isAuth) return;
-    // userManager
-    //     .userMeetingList(userManager.currentUid!)
-    //     .snapshots()
-    //     .listen((snapshot) {
-    //   final snapshotUserMeeings = snapshot.docs
-    //       .where((doc) => doc.exists && !doc.metadata.hasPendingWrites)
-    //       .map((doc) => doc.data())
-    //       .toList();
-    //   debugPrint('UserMeeting 리스너2');
-    //   userMeetings.value = snapshotUserMeeings;
-    // });
+    overlayPage.value = null;
   }
 }
