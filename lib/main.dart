@@ -8,15 +8,19 @@ import 'package:nuduwa_with_flutter/screens/login_page.dart';
 import 'package:nuduwa_with_flutter/screens/main_page.dart';
 import 'package:nuduwa_with_flutter/screens/meeting/meeting_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
+import 'package:flutter_config/flutter_config.dart';
 
 import 'firebase_options.dart';
 
 void main() async {  
+  WidgetsFlutterBinding.ensureInitialized();
+
   // Firebase CRUD
     Get.put(FirebaseService());
+
+  await FlutterConfig.loadEnvVariables();
     
-  // 앱에 Firebase 추가
-  WidgetsFlutterBinding.ensureInitialized();
+  // 앱에 Firebase 추가   
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   ).then((_) => Get.put(LoginController()));  // 로그인 여부
