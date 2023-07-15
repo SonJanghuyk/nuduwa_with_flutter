@@ -25,7 +25,6 @@ class CreateMeetingController extends GetxController {
 
   @override
   void onInit() {
-    debugPrint("CreateMeetingController");
     super.onInit();
     getLocationAddress();
   }
@@ -37,7 +36,6 @@ class CreateMeetingController extends GetxController {
       return;
     }
     if (title.value.isEmpty || title.value.length < 2) {
-      debugPrint(address.value);
       getXsnackbar('오류: 모임제목 오류', '모임제목을 2글자이상 입력해주세요');
       return;
     }
@@ -93,8 +91,7 @@ class CreateMeetingController extends GetxController {
     if (address.value != '') return;
     debugPrint('주소가져오기');
     final String? key = dotenv.env['GOOGLE_MAP_API_KEY'];
-    debugPrint('API키: $key');
-    if (key == null) address.value = 'API 키가 없습니다';
+    if (key == null) return;
     final uri = Uri.https('maps.googleapis.com', '/maps/api/geocode/json', {
       'latlng': '${location.latitude},${location.longitude}',
       'key': key,
@@ -102,7 +99,6 @@ class CreateMeetingController extends GetxController {
     });
     try {
       final response = await http.get(uri);
-      // debugPrint('주소: ${response.body.toString()}');
       address.value =
           jsonDecode(response.body)['results'][0]['formatted_address'];
     } catch (e) {

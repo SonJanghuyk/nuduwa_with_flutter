@@ -37,7 +37,8 @@ class MapPageController extends GetxController {
   var center = const LatLng(0, 0);
 
   // Draw MapMarker Icons
-  final drawIconOfMeeting = DrawIconOfMeeting(!kIsWeb ? 80.0 : 26.666, !kIsWeb ? 10.0 : 3.333, !kIsWeb ? 30.0 : 10.0);
+  final drawIconOfMeeting = DrawIconOfMeeting(
+      !kIsWeb ? 80.0 : 26.666, !kIsWeb ? 10.0 : 3.333, !kIsWeb ? 30.0 : 10.0);
   late final Map<String, ui.Image> iconFrames;
   late final Map<String, BitmapDescriptor> loadingIcons;
 
@@ -68,7 +69,6 @@ class MapPageController extends GetxController {
 
   @override
   void onInit() async {
-    debugPrint("MapPageController");
     super.onInit();
     center = currentLocation;
     final [mapstyle, _] = await Future.wait<dynamic>([
@@ -121,15 +121,14 @@ class MapPageController extends GetxController {
 
   /// 서버에서 실시간으로 모임 데이터 & 모임 마커 가져오기
   void _listenerForMeetingsOfMap() {
-    firebaseService.meetingList.snapshots().listen((snapshot) {
-      debugPrint("지도모임리스너");
+    final ref = firebaseService.meetingList;
+    final listener = ref.snapshots().listen((snapshot) {
       snapshotMeetings.clear();
 
       for (final doc in snapshot.docs) {
         try {
           // 데이터가 없거나 로컬 데이터이면 contiue
           if (!doc.exists || doc.metadata.hasPendingWrites) continue;
-          debugPrint(doc.data().toFirestore().toString());
 
           // 이미 불러온 데이터면 가져와서 continue
           final meetingId = doc.id;
@@ -137,7 +136,6 @@ class MapPageController extends GetxController {
             snapshotMeetings[meetingId] = meetings[meetingId]!;
             continue;
           }
-          debugPrint('모임: ${doc.data().title}');
 
           final meeting = doc.data();
 
@@ -175,6 +173,7 @@ class MapPageController extends GetxController {
       }
       _convertMeetings();
     });
+    firebaseService.addListener(ref: ref, listener: listener);
     debugPrint("리슨");
   }
 
@@ -183,7 +182,8 @@ class MapPageController extends GetxController {
     debugPrint('시작!fetchHostData');
     try {
       // Host 정보 가져오기
-      if (meeting.hostName == null) meeting = await firebaseService.fetchHostData(meeting);
+      if (meeting.hostName == null)
+        meeting = await firebaseService.fetchHostData(meeting);
 
       // 가져온 Host Image로 Icon 교체
       // Host 여부, 참여 여부에 따라 다른색 아이콘
@@ -234,10 +234,14 @@ class MapPageController extends GetxController {
 
   // 구글지도 초기화
   void onMapCreated(GoogleMapController controller) async {
-    _mapController = Completer<GoogleMapController>();
-    _mapController.complete(controller);
+    try {
+      _mapController = Completer<GoogleMapController>();
+      _mapController.complete(controller);
 
-    controller.setMapStyle(mapStyle.value);
+      controller.setMapStyle(mapStyle.value);
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 
   // 지도 이동시 수행
@@ -296,19 +300,14 @@ class MapPageController extends GetxController {
   void joinMeeting(
       String meetingId, String hostUid, DateTime meetingTime) async {
     isLoading.value = true;
-    debugPrint('로딩1: ${isLoading.value}');
     try {
-      debugPrint('모임참여 성공0');
       await firebaseService.createMemberData(meetingId, hostUid, meetingTime);
-      debugPrint('모임참여 성공1');
       Get.back();
-      debugPrint('모임참여 성공2');
       Get.snackbar(
         '모임참여 성공',
         '모임에 참여하였습니다',
         snackPosition: SnackPosition.BOTTOM,
       );
-      debugPrint('모임참여 성공3');
       isLoading.value = false;
     } catch (e) {
       debugPrint('모임참여 실패 ${e.toString()}');

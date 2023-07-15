@@ -89,7 +89,7 @@ class LoginController extends GetxController {
           style: const TextStyle(color: Colors.white),
         ),
       );
-      debugPrint(e.toString());
+      debugPrint("에러!! 로그인에러: ${e.toString()}");
     } finally {
       isGoogleLoginLoading.value = false;
     }

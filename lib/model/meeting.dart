@@ -1,6 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class Meeting {
@@ -39,7 +38,7 @@ class Meeting {
     this.hostName,
     this.hostImageUrl,
     bool? isEnd,
-  })  : publishedTime = publishedTime ??
+  }) : publishedTime = publishedTime ??
             DateTime.now().toUtc().add(const Duration(hours: 9)),
         isEnd = isEnd ?? false;
 
@@ -71,6 +70,8 @@ class Meeting {
   }
 
   Map<String, dynamic> toFirestore() {
+    debugPrint('toFirestore');
+    /*
     return {
       "title": title,
       "description": description,
@@ -85,6 +86,23 @@ class Meeting {
       "hostUID": hostUid,
       "isEnd" : isEnd,
     };
+    */
+    final map = {
+      "title": title,
+      "description": description,
+      "place": place,
+      "maxMembers": maxMembers,
+      "category": category,
+      "latitude": location.latitude,
+      "longitude": location.longitude,
+      if (goeHash != null) "goeHash": goeHash,
+      "meetingTime": meetingTime,
+      "publishedTime": FieldValue.serverTimestamp(),
+      "hostUID": hostUid,
+      "isEnd" : isEnd,
+    };
+    debugPrint(map.toString());
+    return map;
   }
 
   factory Meeting.clone(Meeting meeting) {

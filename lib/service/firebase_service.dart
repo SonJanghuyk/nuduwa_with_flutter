@@ -1,3 +1,4 @@
+import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
+import 'package:nuduwa_with_flutter/model/message.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 
@@ -15,6 +17,9 @@ class FirebaseService extends GetxService {
   // 사용자ID
   String? get currentUid => FirebaseAuth.instance.currentUser?.uid;
 
+  // listener
+  final _listeners = <dynamic, StreamSubscription>{};
+
   // Firebase CRUD
   /*
   Firestore - User      - UserMeeting
@@ -22,23 +27,44 @@ class FirebaseService extends GetxService {
             └ Meeting   - Member
 
   */
+
   // Firestore 경로
   FirebaseFirestore get db => FirebaseFirestore.instance;
-  // Users Collection
+
+  //
+  //  User
+  //
+  /// User Collection
   CollectionReference<UserModel> get userList =>
       db.collection('User').withConverter<UserModel>(
             fromFirestore: UserModel.fromFirestore,
             toFirestore: (UserModel user, options) => user.toFirestore(),
           );
 
-  // Meetings Collection
+  /// User.UserMeeting Collection
+  CollectionReference<UserMeeting> userMeetingList(String uid) {
+    return db
+        .collection('User')
+        .doc(uid)
+        .collection('UserMeeting')
+        .withConverter<UserMeeting>(
+          fromFirestore: UserMeeting.fromFirestore,
+          toFirestore: (UserMeeting userMeeting, options) =>
+              userMeeting.toFirestore(),
+        );
+  }
+
+  //
+  //  Meeting
+  //
+  /// Meeting Collection
   CollectionReference<Meeting> get meetingList =>
       db.collection('Meeting').withConverter<Meeting>(
             fromFirestore: Meeting.fromFirestore,
             toFirestore: (Meeting meeting, options) => meeting.toFirestore(),
           );
 
-  // Meetings.Mebers Collection
+  /// Meeting.Member Collection
   CollectionReference<Member> memberList(String meetingId) {
     return db
         .collection('Meeting')
@@ -50,17 +76,31 @@ class FirebaseService extends GetxService {
         );
   }
 
-  // Users.UserMeeting Collection
-  CollectionReference<UserMeeting> userMeetingList(String uid) {
+  /// Meeting.Message Collection
+  CollectionReference<Message> messageList(String meetingId) {
     return db
-        .collection('User')
-        .doc(uid)
-        .collection('UserMeeting')
-        .withConverter<UserMeeting>(
-          fromFirestore: UserMeeting.fromFirestore,
-          toFirestore: (UserMeeting userMeeting, options) =>
-              userMeeting.toFirestore(),
+        .collection('Meeting')
+        .doc(meetingId)
+        .collection('Message')
+        .withConverter<Message>(
+          fromFirestore: Message.fromFirestore,
+          toFirestore: (Message message, options) => message.toFirestore(),
         );
+  }
+
+  // Listener
+  void addListener(
+      {required dynamic ref, required StreamSubscription listener}) {
+    if (_listeners[ref] == null) {
+      _listeners[ref] = listener;
+    }
+  }
+
+  void cancelListener({required dynamic ref}) {
+    if (_listeners[ref] != null) {
+      _listeners[ref]?.cancel();
+      _listeners.remove(ref);
+    }
   }
 
   // User
@@ -99,7 +139,8 @@ class FirebaseService extends GetxService {
     await ref.set(userMeeting);
   }
 
-  Future<void> deleteUserMeetingData({required String meetingId, required String uid}) async {
+  Future<void> deleteUserMeetingData(
+      {required String meetingId, required String uid}) async {
     final query = userMeetingList(uid).where('meetingId', isEqualTo: meetingId);
     final snapshot = await query.get();
     final ref = snapshot.docs.first.reference;
@@ -123,7 +164,8 @@ class FirebaseService extends GetxService {
       debugPrint(meetingId);
       await createMemberData(meetingId, currentUid!, meeting.meetingTime);
     } catch (e) {
-      rethrow;
+      debugPrint('에러: ${e.toString()}');
+      // rethrow;
     }
   }
 
@@ -186,7 +228,8 @@ class FirebaseService extends GetxService {
     }
   }
 
-  Future<void> deleteMemberData({required String meetingId, required String uid}) async {
+  Future<void> deleteMemberData(
+      {required String meetingId, required String uid}) async {
     final query = memberList(meetingId).where('uid', isEqualTo: uid);
     final snapshot = await query.get();
     final ref = snapshot.docs.first.reference;
@@ -201,9 +244,28 @@ class FirebaseService extends GetxService {
   }
 
   Future<Member> fetchMemberData(Member member) async {
-    final user = await readUserData(member.uid);
-    member.name = user?.name ?? '이름없음';
-    member.imageUrl = user?.imageUrl;
-    return member;
+    try {
+      final user = await readUserData(member.uid);
+      member.name = user?.name ?? '이름없음';
+      member.imageUrl = user?.imageUrl;
+      return member;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  //
+  // Meeting.Message
+  //
+  // Message
+  Future<void> createMessageData(
+      String meetingId, String uid, String text) async {
+    final message = Message(senderUid: uid, text: text);
+    final ref = messageList(meetingId).doc();
+    try {
+      await ref.set(message);
+    } catch (e) {
+      rethrow;
+    }
   }
 }
