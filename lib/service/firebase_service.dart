@@ -262,9 +262,11 @@ class FirebaseService extends GetxService {
       String meetingId, String uid, String text) async {
     final message = Message(senderUid: uid, text: text);
     final ref = messageList(meetingId).doc();
+    debugPrint('createMessageData');
     try {
       await ref.set(message);
     } catch (e) {
+      debugPrint('오류!! createMessageData: ${e.toString()}');
       rethrow;
     }
   }

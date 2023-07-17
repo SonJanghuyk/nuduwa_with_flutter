@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_card_controller.dart';
-import 'package:nuduwa_with_flutter/screens/meeting/sub/meeting_detail_page.dart';
 import 'dart:math' as math;
 
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
@@ -35,6 +34,8 @@ class MeetingCard extends StatelessWidget {
                           width: 40,
                           height: 40,
                           child: Obx(() =>
+
+                              // ------- HostImage -------
                               controller.hostImage.value == null
                                   ? const Center(
                                       child: CircularProgressIndicator())
@@ -47,44 +48,48 @@ class MeetingCard extends StatelessWidget {
                                     )),
                         ),
                         const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            controller.meeting.value!.hostName == null
-                                ? const Center(
-                                    child: SizedBox(
-                                    width: 23,
-                                    height: 23,
-                                    child: CircularProgressIndicator(),
-                                  ))
-                                : Text(
-                                    controller.meeting.value!.hostName!,
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                            const SizedBox(height: 3),
-                            Text(
-                              '${DateFormat("y년 M월 d일 a h:mm").format(controller.meeting.value!.meetingTime)}에 만나요',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade600),
-                            ),
-                            SizedBox(
-                              width: 333,
-                              child: Text(
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                        
+                              // ------- HostName -------
+                              SizedBox(
+                                  height: 20,
+                                  child:
+                                controller.meeting.value!.hostName==null ?
+                                const SizedBox(
+                                  width: 20,
+                                  child: CircularProgressIndicator())
+                                : Text(controller.meeting.value!.hostName!,
+                                    style: const TextStyle(fontSize: 16)),
+                                ),
+                              const SizedBox(height: 3),
+                        
+                              // ------- MeetingTime -------
+                              Text(
+                                '${DateFormat("y년 M월 d일 a h:mm").format(controller.meeting.value!.meetingTime)}에 만나요',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600),
+                              ),
+                        
+                              // ------- Title -------
+                              Text(
                                 controller.meeting.value!.title,
                                 style: const TextStyle(
                                   fontSize: 28,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
                   // 사용자가 Host 일때
-                  if (controller.userMeeting.hostUid ==
+                  if (controller.meeting.value!.hostUid ==
                       FirebaseService.instance.currentUid)
                     Stack(
                       children: [

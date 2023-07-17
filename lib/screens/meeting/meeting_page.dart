@@ -23,7 +23,7 @@ class MeetingPage extends StatelessWidget {
                 itemBuilder: (context, index) => MeetingCard(
                     controller: Get.put(
                         MeetingCardController(
-                            userMeeting: service.userMeetings[index]),
+                            meetingId: service.userMeetings[index].meetingId),
                         tag: service.userMeetings[index].meetingId)),
                 separatorBuilder: (context, index) =>
                     const SizedBox(height: 0, child: Divider()),

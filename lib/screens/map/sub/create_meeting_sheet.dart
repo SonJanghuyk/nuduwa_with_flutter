@@ -48,7 +48,7 @@ class CreateMeetingScreen extends StatelessWidget {
           Expanded(
             child: GestureDetector(
               // 터치 이벤트 발생 시 키보드를 숨깁니다.
-              onTap: () => FocusScope.of(context).unfocus(),
+              onTap: FocusScope.of(context).unfocus,
               child: Container(
                 padding: const EdgeInsets.all(5.0),
                 color: const Color.fromARGB(29, 3, 168, 244),

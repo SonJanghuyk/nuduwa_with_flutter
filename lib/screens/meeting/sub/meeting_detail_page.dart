@@ -3,24 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_card_controller.dart';
+import 'package:nuduwa_with_flutter/controller/meetingController/meeting_detail_controller.dart';
 import 'package:nuduwa_with_flutter/main.dart';
 import 'package:nuduwa_with_flutter/screens/map/sub/meeting_info_sheet.dart';
 import 'package:nuduwa_with_flutter/screens/meeting/sub/meeting_chat_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class MeetingDetailPage extends StatelessWidget {
-  final MeetingCardController controller;
-  final VoidCallback onClose;
+  final String meetingId;
+  final MeetingDetailController controller;
+  final MeetingCardController meetingCardController;
 
-  MeetingDetailPage(
-      {super.key, required this.controller, required this.onClose}) {
-    controller.listenerForMembers(controller.meeting.value!.id!);
-  }
+  MeetingDetailPage({super.key, required this.meetingId,}) 
+    : controller = Get.put(MeetingDetailController(meetingId: meetingId), tag: meetingId),
+    meetingCardController = MeetingCardController.instance(tag: meetingId);
+
 
   @override
   Widget build(BuildContext context) {
     final isHost =
-        controller.userMeeting.hostUid == FirebaseService.instance.currentUid!;
+        meetingCardController.meeting.value!.hostUid == FirebaseService.instance.currentUid!;
 
     return Scaffold(
       appBar: AppbarOfNuduwa(
@@ -29,7 +31,7 @@ class MeetingDetailPage extends StatelessWidget {
           Expanded(
             child: Obx(() => !controller.isEdit.value
                 ? IconButton(
-                    onPressed: onClose,
+                    onPressed: controller.close,
                     icon: const Row(children: [
                       Icon(
                         Icons.arrow_back_ios_new,
@@ -87,16 +89,16 @@ class MeetingDetailPage extends StatelessWidget {
                               text: '모임 삭제',
                               icon: Icons.delete_forever_outlined,
                               color: Colors.red,
-                              ontap: onClose,
+                              ontap: controller.close,
                             ),
                           ]
                         : [
                             meetingMenuItem(
-                                text: '모임 나가기',
-                                icon: Icons.exit_to_app,
-                                color: Colors.red,
-                                ontap: controller.leaveMeeting,
-                                )
+                              text: '모임 나가기',
+                              icon: Icons.exit_to_app,
+                              color: Colors.red,
+                              ontap: controller.leaveMeeting,
+                            )
                           ],
                   )
                 : Expanded(
@@ -118,7 +120,7 @@ class MeetingDetailPage extends StatelessWidget {
         ],
       ),
       body: Obx(() {
-        final meeting = controller.meeting.value;
+        final meeting = meetingCardController.meeting.value;
         if (meeting == null) {
           // 서버에서 데이터 가져오는 중일때
           return const Center(child: CircularProgressIndicator());
@@ -139,13 +141,13 @@ class MeetingDetailPage extends StatelessWidget {
                               width: 60,
                               height: 60,
                               child: Obx(() =>
-                                  controller.hostImage.value == null
+                                  meetingCardController.hostImage.value == null
                                       ? const Center(
                                           child: CircularProgressIndicator())
                                       : CircleAvatar(
                                           radius: 20,
                                           backgroundImage:
-                                              controller.hostImage.value,
+                                              meetingCardController.hostImage.value,
                                           backgroundColor:
                                               Colors.white, // 로딩 중일 때 보여줄 배경색
                                         )),
@@ -155,8 +157,17 @@ class MeetingDetailPage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // ------- HostName -------
-                                Text(meeting.hostName!,
-                                    style: const TextStyle(fontSize: 15)),
+                                SizedBox(
+                                  height: 20,
+                                  child:
+                                meeting.hostName==null ?
+                                const SizedBox(
+                                  width: 20,
+                                  child: CircularProgressIndicator())
+                                : Text(meeting.hostName!,
+                                    style: const TextStyle(fontSize: 17)),
+                                ),
+                                const SizedBox(height: 5),
 
                                 // ------- PublishedTime -------
                                 Text(
@@ -174,14 +185,15 @@ class MeetingDetailPage extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              const SizedBox(height: 30),
                               // ------- Title -------
                               Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 20, horizontal: 30),
+                                  padding: const EdgeInsets.only(left: 20),
                                   child: EditTextFormField(
                                     text: meeting.title,
                                     icon: null,
                                     size: 50,
+                                    maxLines: 2,
                                     isEdit: controller.isEdit,
                                     onSaved: (newValue) =>
                                         // 원래 값이랑 똑같은때 null
@@ -196,12 +208,14 @@ class MeetingDetailPage extends StatelessWidget {
                                       return null;
                                     },
                                   )),
+                              const SizedBox(height: 40),
 
                               // ------- Place -------
                               EditTextFormField(
                                 text: meeting.place,
                                 icon: Icons.location_on_outlined,
                                 size: 22,
+                                maxLines: 3,
                                 isEdit: controller.isEdit,
                                 onSaved: (newValue) =>
                                     // 원래 값이랑 똑같은때 null
@@ -210,8 +224,9 @@ class MeetingDetailPage extends StatelessWidget {
                                             ? newValue
                                             : null,
                                 validator: (value) {
-                                  if (value.length < 1)
+                                  if (value.length < 1) {
                                     return '장소는 한 글자 이상 입력해야합니다.';
+                                  }
                                   return null;
                                 },
                               ),
@@ -222,6 +237,7 @@ class MeetingDetailPage extends StatelessWidget {
                                 text: meeting.description,
                                 icon: Icons.edit_outlined,
                                 size: 22,
+                                maxLines: 10,
                                 isEdit: controller.isEdit,
                                 onSaved: (newValue) =>
                                     // 원래 값이랑 똑같은때 null
@@ -230,8 +246,9 @@ class MeetingDetailPage extends StatelessWidget {
                                             ? newValue
                                             : null,
                                 validator: (value) {
-                                  if (value.length < 1)
+                                  if (value.length < 1) {
                                     return '내용은 한 글자 이상 입력해야합니다.';
+                                  }
                                   return null;
                                 },
                               ),
@@ -300,11 +317,14 @@ class MeetingDetailPage extends StatelessWidget {
                 ),
                 Center(
                   child: Padding(
-                    padding: const EdgeInsets.only(top:8.0),
+                    padding: const EdgeInsets.only(top: 8.0),
                     child: TextButton(
-                      onPressed: () => Get.to(MeetingChatPage(controller: controller,)),
+                      onPressed: () => Get.to(() => MeetingChatPage(
+                        meetingId: meetingId,
+                      )),
                       style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(Colors.blue),
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.blue),
                           fixedSize:
                               MaterialStateProperty.all(const Size(200, 45))),
                       child: const Row(
@@ -366,6 +386,7 @@ class EditTextFormField extends StatelessWidget {
   final String text;
   final IconData? icon;
   final double size;
+  final int maxLines;
   final Rx<bool> isEdit;
   final FormFieldSetter onSaved;
   final FormFieldValidator validator;
@@ -375,9 +396,10 @@ class EditTextFormField extends StatelessWidget {
     required this.text,
     required this.icon,
     required this.size,
+    required this.maxLines,
     required this.isEdit,
     required this.onSaved,
-    required this.validator,
+    required this.validator, 
   });
 
   @override
@@ -390,33 +412,29 @@ class EditTextFormField extends StatelessWidget {
             size: size,
           ),
         const SizedBox(width: 5),
-        Obx(() => !isEdit.value
-            ? SizedBox(
-              width: icon!=null ? 330 : 322,
-              child: Text(
-                  text,
-                  style: TextStyle(fontSize: size),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: icon!=null ? 5 : 1,
-                ),
-            )
-            : SizedBox(
-                width: icon!=null ? 330 : 322,
-                height: 70,
-                child: TextFormField(
-                  onSaved: onSaved,
-                  validator: validator,
-                  initialValue: text,
-                  autovalidateMode: AutovalidateMode.always,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.black),
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(5.0),
-                        ),),
-                  ),
-                ),
-              )),
+        Obx(() => Expanded(
+              child: !isEdit.value
+                  ? Text(
+                      text,
+                      style: TextStyle(fontSize: size),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: maxLines
+                    )
+                  : TextFormField(
+                      onSaved: onSaved,
+                      validator: validator,
+                      initialValue: text,
+                      autovalidateMode: AutovalidateMode.always,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(5.0),
+                          ),
+                        ),
+                      ),
+                    ),
+            )),
       ],
     );
   }
