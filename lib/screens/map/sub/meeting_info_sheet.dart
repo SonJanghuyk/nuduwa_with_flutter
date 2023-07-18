@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/map_page_controller.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
-import 'package:nuduwa_with_flutter/utils/assets.dart';
 
 Future<void> meetingInfoSheet(String meetingId) async {
   final controller = MapPageController.instance;

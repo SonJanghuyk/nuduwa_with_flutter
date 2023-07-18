@@ -71,7 +71,7 @@ class AppbarOfNuduwa extends StatelessWidget implements PreferredSizeWidget {
         padding: const EdgeInsets.only(left: 20),
         child: Text(
           title,
-          style: TextStyle(color: Colors.black),
+          style: const TextStyle(color: Colors.black),
         ),
       ),
       backgroundColor: Colors.transparent, // 투명한 배경

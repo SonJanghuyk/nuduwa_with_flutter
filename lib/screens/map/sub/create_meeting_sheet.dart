@@ -222,7 +222,7 @@ class _CategoryPickerState extends State<CategoryPicker> {
         ),
         child: Text(
           category,
-          style: TextStyle(fontSize: 15),
+          style: const TextStyle(fontSize: 15),
         ),
       ),
     );
@@ -272,9 +272,9 @@ class _MaxNumberPickerState extends State<MaxNumberPicker> {
           ),
           child: Row(
             children: [
-              Text(
+              const Text(
                 '최대 인원수 : ',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   color: Colors.white,
                 ),
@@ -296,9 +296,9 @@ class _MaxNumberPickerState extends State<MaxNumberPicker> {
                 onChanged: (value) =>
                     setState(() => _controller.maxMemers = value),
               ),
-              Text(
+              const Text(
                 '명',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   color: Colors.white,
                 ),
@@ -306,7 +306,7 @@ class _MaxNumberPickerState extends State<MaxNumberPicker> {
             ],
           ),
         ),
-        SizedBox(width: 40),
+        const SizedBox(width: 40),
         Column(
           children: [
             IconButton(

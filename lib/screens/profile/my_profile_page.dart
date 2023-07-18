@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nuduwa_with_flutter/controller/login_controller.dart';
 import 'package:nuduwa_with_flutter/main.dart';
-import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/service/auth_service.dart';
 
 class MyProfilePage extends StatelessWidget {

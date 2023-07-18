@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_card_controller.dart';
 import 'package:nuduwa_with_flutter/main.dart';
 import 'package:nuduwa_with_flutter/screens/meeting/sub/meeting_card.dart';
-import 'package:nuduwa_with_flutter/screens/profile/my_profile_page.dart';
 import 'package:nuduwa_with_flutter/service/data_service.dart';
 
 class MeetingPage extends StatelessWidget {

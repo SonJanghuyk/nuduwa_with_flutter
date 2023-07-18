@@ -182,8 +182,9 @@ class MapPageController extends GetxController {
     debugPrint('시작!fetchHostData');
     try {
       // Host 정보 가져오기
-      if (meeting.hostName == null)
+      if (meeting.hostName == null) {
         meeting = await firebaseService.fetchHostData(meeting);
+      }
 
       // 가져온 Host Image로 Icon 교체
       // Host 여부, 참여 여부에 따라 다른색 아이콘
