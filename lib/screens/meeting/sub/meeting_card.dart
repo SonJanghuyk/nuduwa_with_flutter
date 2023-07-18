@@ -55,7 +55,7 @@ class MeetingCard extends StatelessWidget {
                         
                               // ------- HostName -------
                               SizedBox(
-                                  height: 20,
+                                  height: 22,
                                   child:
                                 controller.meeting.value!.hostName==null ?
                                 const SizedBox(

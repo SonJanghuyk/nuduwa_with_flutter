@@ -26,7 +26,7 @@ class MeetingChatPage extends StatelessWidget {
       key: _scaffoldKey,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         centerTitle: true,
         title: Obx(() => Text(
               '${MeetingCardController.instance(tag: meetingId).meeting.value!.title} (${meetingDetailController.members.length})',
@@ -43,7 +43,7 @@ class MeetingChatPage extends StatelessWidget {
               ),
             ],
           ),
-          onPressed: () => Get.back(),
+          onPressed: Get.back,
         ),
         leadingWidth: 100,
         actions: [
@@ -57,7 +57,7 @@ class MeetingChatPage extends StatelessWidget {
       ),
       body: SafeArea(
         child: Expanded(
-          child: Container(
+          child: SizedBox(
             width: MediaQuery.of(context).size.width,
             child: Column(
               children: [
@@ -118,27 +118,27 @@ class MeetingChatPage extends StatelessWidget {
       // 옆으로 나오는 sheet를 추가
       endDrawer: SafeArea(
         child: Drawer(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(24, 16, 0, 0),
-                child: Text(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 0, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
                   '대화 상대',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: meetingDetailController.members.length,
-                  itemBuilder: memberCard,
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: meetingDetailController.members.length,
+                    itemBuilder: memberCard,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -159,30 +159,13 @@ class MeetingChatPage extends StatelessWidget {
         member.uid == FirebaseService.instance.currentUid
             ? '나 - ${member.name}'
             : '${member.name}',
-        style: TextStyle(fontSize: 18),
+        style: const TextStyle(fontSize: 18),
       ),
-      onTap: () {
-        showMenu(
-            context: context,
-            position: RelativeRect.fromLTRB(
-              46, // 리스트 항목 측정값을 기준으로 메뉴의 가로 위치 조절
-              kToolbarHeight +
-                  (index * 56), // 툴바 높이와 항목 높이(56)를 고려하여 메뉴 세로 위치 조절
-              0, // 상단
-              0, // 하단
-            ),
-            items: [
-              PopupMenuItem(
-                value: 'edit',
-                child: Text('Edit'),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Text('Delete'),
-              ),
-            ]);
+      onTap: () => controller.showUserProfile(member.uid),
+      onLongPress: () {
+        
       },
-    );
+    );    
   }
 
   Widget chatItem(BuildContext context, int index) {
@@ -250,7 +233,8 @@ class LeftChatItem extends StatelessWidget {
                       // ------ Text ------
                       Container(
                         margin: const EdgeInsets.only(right: 55),
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 12),
                         decoration: const BoxDecoration(
                           color: Colors.blue,
                           borderRadius: BorderRadius.only(
@@ -351,7 +335,8 @@ class RightChatItem extends StatelessWidget {
             children: [
               Container(
                 margin: const EdgeInsets.only(left: 55),
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                 decoration: const BoxDecoration(
                   color: Colors.blue,
                   borderRadius: BorderRadius.only(

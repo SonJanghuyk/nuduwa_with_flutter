@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/controller/main_page_controller.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
-import 'package:nuduwa_with_flutter/model/message.dart';
 import 'package:nuduwa_with_flutter/screens/map/sub/icon_of_meeting.dart';
 import 'package:nuduwa_with_flutter/screens/meeting/sub/meeting_detail_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';

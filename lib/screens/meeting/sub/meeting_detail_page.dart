@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -14,52 +13,147 @@ class MeetingDetailPage extends StatelessWidget {
   final MeetingDetailController controller;
   final MeetingCardController meetingCardController;
 
-  MeetingDetailPage({super.key, required this.meetingId,}) 
-    : controller = Get.put(MeetingDetailController(meetingId: meetingId), tag: meetingId),
-    meetingCardController = MeetingCardController.instance(tag: meetingId);
-
+  MeetingDetailPage({
+    super.key,
+    required this.meetingId,
+  })  : controller = Get.put(MeetingDetailController(meetingId: meetingId),
+            tag: meetingId),
+        meetingCardController = MeetingCardController.instance(tag: meetingId);
 
   @override
   Widget build(BuildContext context) {
-    final isHost =
-        meetingCardController.meeting.value!.hostUid == FirebaseService.instance.currentUid!;
+    final isHost = meetingCardController.meeting.value!.hostUid ==
+        FirebaseService.instance.currentUid!;
 
     return Scaffold(
-      appBar: AppbarOfNuduwa(
-        title: '',
-        iconButtons: [
-          Expanded(
-            child: Obx(() => !controller.isEdit.value
-                ? IconButton(
-                    onPressed: controller.close,
-                    icon: const Row(children: [
-                      Icon(
-                        Icons.arrow_back_ios_new,
-                        size: 28,
-                      ),
-                      Text(
-                        '내 모임',
-                        style: TextStyle(fontSize: 20, color: Colors.blue),
-                      ),
-                    ]),
-                    color: Colors.blue,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(''),
+        leading: Obx(
+          () => !controller.isEdit.value
+              ? IconButton(
+                  onPressed: controller.close,
+                  icon: const Row(children: [
+                    Icon(
+                      Icons.arrow_back_ios_new,
+                      size: 28,
+                      color: Colors.blue,
+                    ),
+                    Text(
+                      '내 모임',
+                      style: TextStyle(fontSize: 20, color: Colors.blue),
+                    ),
+                  ]),
+                )
+              : IconButton(
+                  onPressed: controller.cancelEdit,
+                  icon: const Row(children: [
+                    Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Colors.red,
+                      size: 28,
+                    ),
+                    Text(
+                      '수정 취소',
+                      style: TextStyle(fontSize: 20, color: Colors.red),
+                    ),
+                  ]),
+                  color: Colors.blue,
+                ),
+        ),
+        leadingWidth: 120,
+        actions: [
+          Obx(
+            () => !controller.isEdit.value
+                ? PopupMenuButton(
+                    icon: const Icon(
+                      Icons.menu,
+                      color: Colors.blue,
+                    ),
+                    iconSize: 30,
+                    elevation: 1,
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints.expand(
+                        width: 150, height: isHost ? 100 : 40),
+                    offset: const Offset(0, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    itemBuilder: (BuildContext context) => isHost
+                        ? <PopupMenuEntry<String>>[
+                            meetingMenuItem(
+                              text: '모임 수정',
+                              icon: Icons.change_circle_outlined,
+                              color: Colors.black,
+                              ontap: controller.onEdit,
+                            ),
+                            meetingMenuItem(
+                              text: '모임 삭제',
+                              icon: Icons.delete_forever_outlined,
+                              color: Colors.red,
+                              ontap: controller.close,
+                            ),
+                          ]
+                        : [
+                            meetingMenuItem(
+                              text: '모임 나가기',
+                              icon: Icons.exit_to_app,
+                              color: Colors.red,
+                              ontap: controller.leaveMeeting,
+                            )
+                          ],
                   )
-                : IconButton(
-                    onPressed: controller.cancelEdit,
-                    icon: const Row(children: [
-                      Icon(
-                        Icons.arrow_back_ios_new,
-                        color: Colors.red,
-                        size: 28,
-                      ),
-                      Text(
-                        '수정 취소',
-                        style: TextStyle(fontSize: 20, color: Colors.red),
-                      ),
-                    ]),
-                    color: Colors.blue,
-                  )),
+                : Expanded(
+                    child: Obx(() => !controller.isLoading.value
+                        ? IconButton(
+                            onPressed: controller.updateEdit,
+                            icon: const Text(
+                              '수정 완료',
+                              style:
+                                  TextStyle(fontSize: 20, color: Colors.blue),
+                            ),
+                            color: Colors.blue,
+                          )
+                        : const Center(
+                            child: CircularProgressIndicator(),
+                          )),
+                  ),
           ),
+        ],
+      ),
+/*
+        iconButtons: [
+          Obx(() => !controller.isEdit.value
+              ? IconButton(
+                  onPressed: controller.close,
+                  icon: const Row(children: [
+                    Icon(
+                      Icons.arrow_back_ios_new,
+                      size: 28,
+                    ),
+                    Text(
+                      '내 모임',
+                      style: TextStyle(fontSize: 20, color: Colors.blue),
+                    ),
+                  ]),
+                  color: Colors.blue,
+                )
+              : IconButton(
+                  onPressed: controller.cancelEdit,
+                  icon: const Row(children: [
+                    Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Colors.red,
+                      size: 28,
+                    ),
+                    Text(
+                      '수정 취소',
+                      style: TextStyle(fontSize: 20, color: Colors.red),
+                    ),
+                  ]),
+                  color: Colors.blue,
+                )),
           const Spacer(),
           Obx(
             () => !controller.isEdit.value
@@ -118,7 +212,7 @@ class MeetingDetailPage extends StatelessWidget {
                   ),
           )
         ],
-      ),
+      ),*/
       body: Obx(() {
         final meeting = meetingCardController.meeting.value;
         if (meeting == null) {
@@ -146,8 +240,8 @@ class MeetingDetailPage extends StatelessWidget {
                                           child: CircularProgressIndicator())
                                       : CircleAvatar(
                                           radius: 20,
-                                          backgroundImage:
-                                              meetingCardController.hostImage.value,
+                                          backgroundImage: meetingCardController
+                                              .hostImage.value,
                                           backgroundColor:
                                               Colors.white, // 로딩 중일 때 보여줄 배경색
                                         )),
@@ -158,14 +252,13 @@ class MeetingDetailPage extends StatelessWidget {
                               children: [
                                 // ------- HostName -------
                                 SizedBox(
-                                  height: 20,
-                                  child:
-                                meeting.hostName==null ?
-                                const SizedBox(
-                                  width: 20,
-                                  child: CircularProgressIndicator())
-                                : Text(meeting.hostName!,
-                                    style: const TextStyle(fontSize: 17)),
+                                  height: 22,
+                                  child: meeting.hostName == null
+                                      ? const SizedBox(
+                                          width: 20,
+                                          child: CircularProgressIndicator())
+                                      : Text(meeting.hostName!,
+                                          style: const TextStyle(fontSize: 17)),
                                 ),
                                 const SizedBox(height: 5),
 
@@ -320,8 +413,8 @@ class MeetingDetailPage extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 8.0),
                     child: TextButton(
                       onPressed: () => Get.to(() => MeetingChatPage(
-                        meetingId: meetingId,
-                      )),
+                            meetingId: meetingId,
+                          )),
                       style: ButtonStyle(
                           backgroundColor:
                               MaterialStateProperty.all(Colors.blue),
@@ -399,7 +492,7 @@ class EditTextFormField extends StatelessWidget {
     required this.maxLines,
     required this.isEdit,
     required this.onSaved,
-    required this.validator, 
+    required this.validator,
   });
 
   @override
@@ -414,12 +507,10 @@ class EditTextFormField extends StatelessWidget {
         const SizedBox(width: 5),
         Obx(() => Expanded(
               child: !isEdit.value
-                  ? Text(
-                      text,
+                  ? Text(text,
                       style: TextStyle(fontSize: size),
                       overflow: TextOverflow.ellipsis,
-                      maxLines: maxLines
-                    )
+                      maxLines: maxLines)
                   : TextFormField(
                       onSaved: onSaved,
                       validator: validator,

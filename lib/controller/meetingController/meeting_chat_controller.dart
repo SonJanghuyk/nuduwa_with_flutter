@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/model/message.dart';
+import 'package:nuduwa_with_flutter/screens/profile/user_profile_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class MeetingChatController extends GetxController {
@@ -65,5 +66,9 @@ class MeetingChatController extends GetxController {
     } catch (e) {
       debugPrint('오류!! sendMessage: ${e.toString()}');
     }
+  }
+
+  void showUserProfile(String uid) {
+    Get.to(() => UserProfilePage(uid: uid));
   }
 }
