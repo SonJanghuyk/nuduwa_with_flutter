@@ -1,23 +1,27 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:nuduwa_with_flutter/controller/chatting_interface.dart';
 import 'package:nuduwa_with_flutter/model/message.dart';
 import 'package:nuduwa_with_flutter/screens/profile/user_profile_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
-class MeetingChatController extends GetxController {
+class MeetingChatController extends GetxController implements ChattingController {
   // tag is meetingId
   static MeetingChatController instance({required String tag}) =>
       Get.find(tag: tag);
 
   final firebaseService = FirebaseService.instance;
+  
   final String meetingId;
 
   // Listener Ref
   final CollectionReference<Message> messageColRef;
 
   // chatting
+  @override
   final messages = <Message>[].obs;
+  @override
   final textController = TextEditingController();
 
   MeetingChatController({required this.meetingId})
@@ -51,6 +55,7 @@ class MeetingChatController extends GetxController {
     }
   }
 
+  @override
   Future<void> sendMessage() async {
     debugPrint('sendMessage');
     final text = textController.text;

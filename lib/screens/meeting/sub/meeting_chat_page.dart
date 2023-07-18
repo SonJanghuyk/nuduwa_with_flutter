@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_card_controller.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_chat_controller.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_detail_controller.dart';
+import 'package:nuduwa_with_flutter/screens/chatting/sub/chatting_widget.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/utils/assets.dart';
 
@@ -22,7 +23,8 @@ class MeetingChatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return 
+    Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
         elevation: 0,
@@ -55,6 +57,10 @@ class MeetingChatPage extends StatelessWidget {
           ),
         ],
       ),
+      body: ChattingWidget(controller: controller, chatItem: chatItem),
+
+      /*
+
       body: SafeArea(
         child: Expanded(
           child: SizedBox(
@@ -114,6 +120,7 @@ class MeetingChatPage extends StatelessWidget {
           ),
         ),
       ),
+      */
 
       // 옆으로 나오는 sheet를 추가
       endDrawer: SafeArea(
