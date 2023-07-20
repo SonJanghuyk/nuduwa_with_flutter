@@ -5,10 +5,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:nuduwa_with_flutter/model/chatting.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
 import 'package:nuduwa_with_flutter/model/message.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
+import 'package:nuduwa_with_flutter/model/user_chatting.dart';
 import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 
 class FirebaseService extends GetxService {
@@ -23,8 +25,12 @@ class FirebaseService extends GetxService {
   // Firebase CRUD
   /*
   Firestore - User      - UserMeeting
-                        └
+                        └ UserChatting
             └ Meeting   - Member
+                        └ Message
+            └ Chatting  - Message
+
+
 
   */
 
@@ -41,7 +47,7 @@ class FirebaseService extends GetxService {
             toFirestore: (UserModel user, options) => user.toFirestore(),
           );
 
-  /// User.UserMeeting Collection
+  /// User/UserMeeting Collection
   CollectionReference<UserMeeting> userMeetingList(String uid) {
     return db
         .collection('User')
@@ -54,6 +60,21 @@ class FirebaseService extends GetxService {
         );
   }
 
+  /// User/UserChatting Collection
+  CollectionReference<UserChatting> userChattingList(String uid) {
+    return db
+        .collection('User')
+        .doc(uid)
+        .collection('UserChatting')
+        .withConverter<UserChatting>(
+          fromFirestore: UserChatting.fromFirestore,
+          toFirestore: (UserChatting userChatting, options) =>
+              userChatting.toFirestore(),
+        );
+  }
+
+
+
   //
   //  Meeting
   //
@@ -64,7 +85,7 @@ class FirebaseService extends GetxService {
             toFirestore: (Meeting meeting, options) => meeting.toFirestore(),
           );
 
-  /// Meeting.Member Collection
+  /// Meeting/Member Collection
   CollectionReference<Member> memberList(String meetingId) {
     return db
         .collection('Meeting')
@@ -76,11 +97,33 @@ class FirebaseService extends GetxService {
         );
   }
 
-  /// Meeting.Message Collection
-  CollectionReference<Message> messageList(String meetingId) {
+  /// Meeting/Message Collection
+  CollectionReference<Message> meetingMessageList(String meetingId) {
     return db
         .collection('Meeting')
         .doc(meetingId)
+        .collection('Message')
+        .withConverter<Message>(
+          fromFirestore: Message.fromFirestore,
+          toFirestore: (Message message, options) => message.toFirestore(),
+        );
+  }  
+
+  //
+  //  Chatting
+  //
+  /// Chatting Collection
+  CollectionReference<Chatting> get chattingList =>
+      db.collection('Chatting').withConverter<Chatting>(
+            fromFirestore: Chatting.fromFirestore,
+            toFirestore: (Chatting chatting, options) => chatting.toFirestore(),
+          );
+
+  /// Chatting/Message Collection
+  CollectionReference<Message> chattingMessageList(String chatttingId) {
+    return db
+        .collection('Chatting')
+        .doc(chatttingId)
         .collection('Message')
         .withConverter<Message>(
           fromFirestore: Message.fromFirestore,
@@ -149,6 +192,25 @@ class FirebaseService extends GetxService {
 
   Future<UserMeeting?> readUserMeetingData(String meetingId, String uid) async {
     final ref = userMeetingList(uid).where('meetingId', isEqualTo: meetingId);
+    var snapshot = await ref.get();
+
+    return snapshot.docs.first.data();
+  }
+
+  // UserChatting
+  Future<void> createUserChattingData({
+      required String chattingId, required String uid, required String otherUid}) async {
+    final userChatting = UserChatting(
+        chattingId: chattingId,
+        otherUid: otherUid,
+        lastReadTime: DateTime.now(),
+        );
+    final ref = userChattingList(uid).doc();
+    await ref.set(userChatting);
+  }
+
+  Future<UserChatting?> readUserChattingData({required String uid, required String otherUid}) async {
+    final ref = userChattingList(uid).where('otherUid', isEqualTo: otherUid);
     var snapshot = await ref.get();
 
     return snapshot.docs.first.data();
@@ -258,10 +320,10 @@ class FirebaseService extends GetxService {
   // Meeting.Message
   //
   // Message
-  Future<void> createMessageData(
+  Future<void> createMeetingMessageData(
       String meetingId, String uid, String text) async {
     final message = Message(senderUid: uid, text: text);
-    final ref = messageList(meetingId).doc();
+    final ref = meetingMessageList(meetingId).doc();
     debugPrint('createMessageData');
     try {
       await ref.set(message);
@@ -270,4 +332,31 @@ class FirebaseService extends GetxService {
       rethrow;
     }
   }
+
+  //
+  // Chatting
+  //
+  Future<DocumentReference<Chatting>> createChattingData({required String uid, required String otherUid}) async {
+    final chatting = Chatting(people: [uid, otherUid]);
+    final ref = chattingList.doc();
+    await ref.set(chatting);
+    return ref;
+  }
+
+  //
+  // Chatting.Message
+  //
+  Future<void> createChattingMessageData(
+      String chattingId, String uid, String text) async {
+    final message = Message(senderUid: uid, text: text);
+    final ref = chattingMessageList(chattingId).doc();
+    debugPrint('createMessageData');
+    try {
+      await ref.set(message);
+    } catch (e) {
+      debugPrint('오류!! createMessageData: ${e.toString()}');
+      rethrow;
+    }
+  }
+
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nuduwa_with_flutter/controller/main_page_controller.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/map_page_controller.dart';
+import 'package:nuduwa_with_flutter/screens/chatting/chatting_page.dart';
 import 'package:nuduwa_with_flutter/screens/map/map_page.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/screens/meeting/meeting_page.dart';
@@ -19,6 +20,7 @@ class MainPage extends StatelessWidget {
         controller: Get.put(MapPageController(location: controller.currentLatLng.value)),
       ),
       MeetingPage(),
+      ChattingPage(),
       MyProfilePage(),
     ];
 
@@ -75,6 +77,10 @@ class MainPage extends StatelessWidget {
                         BottomNavigationBarItem(
                           icon: Icon(Icons.people),
                           label: '모임',
+                        ),
+                        BottomNavigationBarItem(
+                          icon: Icon(Icons.chat_bubble),
+                          label: '채팅',
                         ),
                         BottomNavigationBarItem(
                           icon: Icon(Icons.person),

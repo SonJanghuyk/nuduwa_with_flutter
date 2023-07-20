@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_card_controller.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_detail_controller.dart';
-import 'package:nuduwa_with_flutter/main.dart';
 import 'package:nuduwa_with_flutter/screens/map/sub/meeting_info_sheet.dart';
 import 'package:nuduwa_with_flutter/screens/meeting/sub/meeting_chat_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
@@ -29,7 +28,7 @@ class MeetingDetailPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(''),
+        title: const Text(''),
         leading: Obx(
           () => !controller.isEdit.value
               ? IconButton(
@@ -62,7 +61,7 @@ class MeetingDetailPage extends StatelessWidget {
                   color: Colors.blue,
                 ),
         ),
-        leadingWidth: 120,
+        leadingWidth: 130,
         actions: [
           Obx(
             () => !controller.isEdit.value
@@ -104,21 +103,20 @@ class MeetingDetailPage extends StatelessWidget {
                             )
                           ],
                   )
-                : Expanded(
-                    child: Obx(() => !controller.isLoading.value
-                        ? IconButton(
-                            onPressed: controller.updateEdit,
-                            icon: const Text(
-                              '수정 완료',
-                              style:
-                                  TextStyle(fontSize: 20, color: Colors.blue),
-                            ),
-                            color: Colors.blue,
-                          )
-                        : const Center(
-                            child: CircularProgressIndicator(),
-                          )),
-                  ),
+                : Obx(() => !controller.isLoading.value
+                    ? IconButton(
+                        onPressed: controller.updateEdit,
+                        icon: const Text(
+                          '수정 완료',
+                          style:
+                              TextStyle(fontSize: 20, color: Colors.blue),
+                        ),
+                        color: Colors.blue,
+                        iconSize: 80,
+                      )
+                    : const Center(
+                        child: CircularProgressIndicator(),
+                      )),
           ),
         ],
       ),
@@ -220,221 +218,225 @@ class MeetingDetailPage extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         } else {
           // 서버에서 데이터 가져왔을 때
-          return Container(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            // ------- HostImage -------
-                            SizedBox(
-                              width: 60,
-                              height: 60,
-                              child: Obx(() =>
-                                  meetingCardController.hostImage.value == null
-                                      ? const Center(
-                                          child: CircularProgressIndicator())
-                                      : CircleAvatar(
-                                          radius: 20,
-                                          backgroundImage: meetingCardController
-                                              .hostImage.value,
-                                          backgroundColor:
-                                              Colors.white, // 로딩 중일 때 보여줄 배경색
-                                        )),
-                            ),
-                            const SizedBox(width: 10),
-                            Column(
+          return GestureDetector(
+            onTap: FocusScope.of(context).unfocus,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              // ------- HostImage -------
+                              SizedBox(
+                                width: 60,
+                                height: 60,
+                                child: Obx(() =>
+                                    meetingCardController.hostImage.value == null
+                                        ? const Center(
+                                            child: CircularProgressIndicator())
+                                        : CircleAvatar(
+                                            radius: 20,
+                                            backgroundImage: meetingCardController
+                                                .hostImage.value,
+                                            backgroundColor:
+                                                Colors.white, // 로딩 중일 때 보여줄 배경색
+                                          )),
+                              ),
+                              const SizedBox(width: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // ------- HostName -------
+                                  SizedBox(
+                                    height: 22,
+                                    child: meeting.hostName == null
+                                        ? const SizedBox(
+                                            width: 20,
+                                            child: CircularProgressIndicator())
+                                        : Text(meeting.hostName!,
+                                            style: const TextStyle(fontSize: 17)),
+                                  ),
+                                  const SizedBox(height: 5),
+          
+                                  // ------- PublishedTime -------
+                                  Text(
+                                    '${DateFormat("y년 M월 d일 a h:mm").format(meeting.publishedTime)}에 생성됨',
+                                    style: const TextStyle(
+                                        fontSize: 12, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+          
+                          Form(
+                            key: controller.formKey,
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // ------- HostName -------
-                                SizedBox(
-                                  height: 22,
-                                  child: meeting.hostName == null
-                                      ? const SizedBox(
-                                          width: 20,
-                                          child: CircularProgressIndicator())
-                                      : Text(meeting.hostName!,
-                                          style: const TextStyle(fontSize: 17)),
+                                const SizedBox(height: 30),
+                                // ------- Title -------
+                                Padding(
+                                    padding: const EdgeInsets.only(left: 20),
+                                    child: EditTextFormField(
+                                      text: meeting.title,
+                                      icon: null,
+                                      size: 50,
+                                      maxLines: 2,
+                                      isEdit: controller.isEdit,
+                                      onSaved: (newValue) =>
+                                          // 원래 값이랑 똑같은때 null
+                                          controller.editTitle =
+                                              newValue != meeting.title
+                                                  ? newValue
+                                                  : null,
+                                      validator: (value) {
+                                        if (value.length < 2) {
+                                          return '제목은 두 글자 이상 입력해야합니다.';
+                                        }
+                                        return null;
+                                      },
+                                    )),
+                                const SizedBox(height: 40),   
+          
+                                // ------- Description -------
+                                EditTextFormField(
+                                  text: meeting.description,
+                                  icon: Icons.edit_outlined,
+                                  size: 22,
+                                  maxLines: 10,
+                                  isEdit: controller.isEdit,
+                                  onSaved: (newValue) =>
+                                      // 원래 값이랑 똑같은때 null
+                                      controller.editDescription =
+                                          newValue != meeting.description
+                                              ? newValue
+                                              : null,
+                                  validator: (value) {
+                                    if (value.length < 1) {
+                                      return '내용은 한 글자 이상 입력해야합니다.';
+                                    }
+                                    return null;
+                                  },
                                 ),
-                                const SizedBox(height: 5),
+                                const SizedBox(height: 40),
 
-                                // ------- PublishedTime -------
-                                Text(
-                                  '${DateFormat("y년 M월 d일 a h:mm").format(meeting.publishedTime)}에 생성됨',
-                                  style: const TextStyle(
-                                      fontSize: 12, color: Colors.grey),
+                                // ------- Place -------
+                                EditTextFormField(
+                                  text: meeting.place,
+                                  icon: Icons.location_on_outlined,
+                                  size: 22,
+                                  maxLines: 3,
+                                  isEdit: controller.isEdit,
+                                  onSaved: (newValue) =>
+                                      // 원래 값이랑 똑같은때 null
+                                      controller.editPlace =
+                                          newValue != meeting.place
+                                              ? newValue
+                                              : null,
+                                  validator: (value) {
+                                    if (value.length < 1) {
+                                      return '장소는 한 글자 이상 입력해야합니다.';
+                                    }
+                                    return null;
+                                  },
                                 ),
+                                const SizedBox(height: 40),
+          
+                                // MeetingTime
+                                RowMeetingInfo(
+                                  text:
+                                      '${DateFormat("M월 d일 a h:mm").format(meeting.meetingTime)}에 만나요!',
+                                  icon: Icons.calendar_month,
+                                  // isEdit: controller.isEdit,
+                                ),
+                                const SizedBox(height: 30),
                               ],
                             ),
-                          ],
-                        ),
-
-                        Form(
-                          key: controller.formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 30),
-                              // ------- Title -------
-                              Padding(
-                                  padding: const EdgeInsets.only(left: 20),
-                                  child: EditTextFormField(
-                                    text: meeting.title,
-                                    icon: null,
-                                    size: 50,
-                                    maxLines: 2,
-                                    isEdit: controller.isEdit,
-                                    onSaved: (newValue) =>
-                                        // 원래 값이랑 똑같은때 null
-                                        controller.editTitle =
-                                            newValue != meeting.title
-                                                ? newValue
-                                                : null,
-                                    validator: (value) {
-                                      if (value.length < 2) {
-                                        return '제목은 두 글자 이상 입력해야합니다.';
-                                      }
-                                      return null;
-                                    },
-                                  )),
-                              const SizedBox(height: 40),
-
-                              // ------- Place -------
-                              EditTextFormField(
-                                text: meeting.place,
-                                icon: Icons.location_on_outlined,
-                                size: 22,
-                                maxLines: 3,
-                                isEdit: controller.isEdit,
-                                onSaved: (newValue) =>
-                                    // 원래 값이랑 똑같은때 null
-                                    controller.editPlace =
-                                        newValue != meeting.place
-                                            ? newValue
-                                            : null,
-                                validator: (value) {
-                                  if (value.length < 1) {
-                                    return '장소는 한 글자 이상 입력해야합니다.';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 40),
-
-                              // ------- Description -------
-                              EditTextFormField(
-                                text: meeting.description,
-                                icon: Icons.edit_outlined,
-                                size: 22,
-                                maxLines: 10,
-                                isEdit: controller.isEdit,
-                                onSaved: (newValue) =>
-                                    // 원래 값이랑 똑같은때 null
-                                    controller.editDescription =
-                                        newValue != meeting.description
-                                            ? newValue
-                                            : null,
-                                validator: (value) {
-                                  if (value.length < 1) {
-                                    return '내용은 한 글자 이상 입력해야합니다.';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 40),
-
-                              // MeetingTime
-                              RowMeetingInfo(
-                                text:
-                                    '${DateFormat("M월 d일 a h:mm").format(meeting.meetingTime)}에 만나요!',
-                                icon: Icons.calendar_month,
-                                // isEdit: controller.isEdit,
-                              ),
-                              const SizedBox(height: 30),
-                            ],
                           ),
-                        ),
-
-                        // Members
-                        Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.all(10),
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 15, horizontal: 10),
-                          decoration: const BoxDecoration(
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey,
-                                blurRadius: 5,
-                                spreadRadius: 2.5,
-                              )
-                            ],
-                            color: Colors.white,
-                          ),
-                          child: Column(children: [
-                            const Text('참여자'),
-                            Obx(() => Wrap(
-                                  children: [
-                                    for (final member
-                                        in controller.members.values)
-                                      Padding(
-                                        padding: const EdgeInsets.all(5.0),
-                                        child: SizedBox(
-                                          width: 35,
-                                          height: 35,
-                                          child: member.imageUrl == null
-                                              ? const Center(
-                                                  child:
-                                                      CircularProgressIndicator())
-                                              : CircleAvatar(
-                                                  radius: 18,
-                                                  backgroundImage: NetworkImage(
-                                                      member.imageUrl!),
-                                                  backgroundColor: Colors
-                                                      .white, // 로딩 중일 때 보여줄 배경색
-                                                ),
+          
+                          // Members
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.all(10),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 15, horizontal: 10),
+                            decoration: const BoxDecoration(
+                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  blurRadius: 5,
+                                  spreadRadius: 2.5,
+                                )
+                              ],
+                              color: Colors.white,
+                            ),
+                            child: Column(children: [
+                              const Text('참여자'),
+                              Obx(() => Wrap(
+                                    children: [
+                                      for (final member
+                                          in controller.members.values)
+                                        Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: SizedBox(
+                                            width: 35,
+                                            height: 35,
+                                            child: member.imageUrl == null
+                                                ? const Center(
+                                                    child:
+                                                        CircularProgressIndicator())
+                                                : CircleAvatar(
+                                                    radius: 18,
+                                                    backgroundImage: NetworkImage(
+                                                        member.imageUrl!),
+                                                    backgroundColor: Colors
+                                                        .white, // 로딩 중일 때 보여줄 배경색
+                                                  ),
+                                          ),
                                         ),
-                                      ),
-                                  ],
-                                )),
-                          ]),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: TextButton(
-                      onPressed: () => Get.to(() => MeetingChatPage(
-                            meetingId: meetingId,
-                          )),
-                      style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all(Colors.blue),
-                          fixedSize:
-                              MaterialStateProperty.all(const Size(200, 45))),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.chat_outlined, color: Colors.white),
-                          SizedBox(width: 5, height: 50),
-                          Text(
-                            '채팅 참가',
-                            style: TextStyle(fontSize: 20, color: Colors.white),
-                          ),
+                                    ],
+                                  )),
+                            ]),
+                          )
                         ],
                       ),
                     ),
                   ),
-                ),
-              ],
+                  !controller.isEdit.value ?
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: TextButton(
+                        onPressed: () => Get.to(() => MeetingChatPage(
+                              meetingId: meetingId,
+                            )),
+                        style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.all(Colors.blue),
+                            fixedSize:
+                                MaterialStateProperty.all(const Size(200, 45))),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.chat_outlined, color: Colors.white),
+                            SizedBox(width: 5, height: 50),
+                            Text(
+                              '채팅 참가',
+                              style: TextStyle(fontSize: 20, color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ): const Center()
+                ],
+              ),
             ),
           );
         }

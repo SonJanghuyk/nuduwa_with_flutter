@@ -64,7 +64,7 @@ class UserProfilePage extends StatelessWidget {
                           Icons.chat_bubble_outline,
                           size: 32,
                         ),
-                        Text('1:1 메시지'),
+                        Text('1:1 채팅'),
                       ],
                     ),
                     iconSize: 64,
