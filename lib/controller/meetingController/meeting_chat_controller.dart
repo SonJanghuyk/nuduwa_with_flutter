@@ -1,18 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/controller/chatting_interface.dart';
+import 'package:nuduwa_with_flutter/controller/chattingController/chatting_interface.dart';
 import 'package:nuduwa_with_flutter/model/message.dart';
 import 'package:nuduwa_with_flutter/screens/profile/user_profile_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
-class MeetingChatController extends GetxController implements ChattingController {
+class MeetingChatController extends GetxController
+    implements ChattingController {
   // tag is meetingId
   static MeetingChatController instance({required String tag}) =>
       Get.find(tag: tag);
 
   final firebaseService = FirebaseService.instance;
-  
+
   final String meetingId;
 
   // Listener Ref
@@ -23,14 +24,19 @@ class MeetingChatController extends GetxController implements ChattingController
   final messages = <Message>[].obs;
   @override
   final textController = TextEditingController();
+  @override
+  final scrollController = ScrollController();
+  @override
+  var isNotLast = false.obs;
 
   MeetingChatController({required this.meetingId})
-      : messageColRef = FirebaseService.instance.messageList(meetingId);
+      : messageColRef = FirebaseService.instance.meetingMessageList(meetingId);
 
   @override
   void onInit() {
     super.onInit();
     listenerForMessages();
+    scrollListener();
   }
 
   @override
@@ -44,11 +50,16 @@ class MeetingChatController extends GetxController implements ChattingController
     try {
       debugPrint('listenerForMessages');
       final listener =
-          messageColRef.orderBy('sendTime', descending: true).snapshots().listen((snapshot) {
+          messageColRef.orderBy('sendTime').snapshots().listen((snapshot) {
         final snapshotMessages = snapshot.docs.map((doc) => doc.data());
         messages.value = List.from(snapshotMessages);
         debugPrint('listenerForMessages ${messages.length}');
+        if(!isNotLast.value){
+          scrollLast();
+          debugPrint('down');
+        }        
       });
+      // scrollController.jumpTo(scrollController.position.maxScrollExtent);
       firebaseService.addListener(ref: messageColRef, listener: listener);
     } catch (e) {
       debugPrint('오류!! listenerForMessages: ${e.toString()}');
@@ -63,14 +74,33 @@ class MeetingChatController extends GetxController implements ChattingController
     try {
       textController.clear();
       FocusScope.of(Get.context!).unfocus();
-      await firebaseService.createMessageData(
+      await firebaseService.createMeetingMessageData(
           meetingId, firebaseService.currentUid!, text);
       debugPrint(messages.length.toString());
       debugPrint('sendMessage 끝');
-      
     } catch (e) {
       debugPrint('오류!! sendMessage: ${e.toString()}');
     }
+  }
+
+  @override
+  void scrollLast() {
+    scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+  }
+
+  void scrollListener() {
+    scrollController.addListener(() {
+      if (scrollController.offset !=
+          scrollController.position.maxScrollExtent) {
+        isNotLast.value = true;
+      } else {
+        isNotLast.value = false;
+      }
+    });
   }
 
   void showUserProfile(String uid) {
