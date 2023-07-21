@@ -11,7 +11,8 @@ class ChattingRoomPage extends StatelessWidget {
   final ChattingRoomController controller;
 
   ChattingRoomPage({super.key, required this.userChatting})
-      : controller = Get.put(ChattingRoomController(userChatting: userChatting));
+      : controller =
+            Get.put(ChattingRoomController(userChatting: userChatting));
 
   @override
   Widget build(BuildContext context) {
@@ -39,19 +40,39 @@ class ChattingRoomPage extends StatelessWidget {
           onPressed: Get.back,
         ),
         leadingWidth: 100,
-        // actions: [
-        //   IconButton(
-        //     icon: const Icon(Icons.menu, color: Colors.blue),
-        //     onPressed: () => _scaffoldKey.currentState
-        //         ?.openEndDrawer(), // Drawer를 여는 동작을 호출합니다.
-        //     tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
-        //   ),
-        // ],
+        actions: [
+          PopupMenuButton(
+            icon: const Icon(
+              Icons.menu,
+              color: Colors.blue,
+            ),
+            iconSize: 30,
+            elevation: 1,
+            padding: EdgeInsets.zero,
+            offset: const Offset(0, 50),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              menuItem(
+                text: '상대방 프로필',
+                icon: Icons.person_pin_rounded,
+                color: Colors.black,
+                ontap: () => controller.showUserProfile(userChatting.otherUid),
+              ),
+              menuItem(
+                text: '나가기',
+                icon: Icons.output,
+                color: Colors.red,
+                ontap: controller.clickedOut,
+              ),
+            ],
+          )
+        ],
       ),
       body: ChattingWidget(controller: controller, chatItem: chatItem),
     );
   }
-
 
   Widget chatItem(BuildContext context, int index) {
     final message = controller.messages[index];
@@ -64,6 +85,33 @@ class ChattingRoomPage extends StatelessWidget {
       name: controller.otherUser.value?.name,
       text: message.text,
       sendTime: message.sendTime,
+    );
+  }
+
+  PopupMenuItem<String> menuItem(
+      {required String text,
+      required IconData icon,
+      required Color color,
+      required VoidCallback ontap}) {
+    return PopupMenuItem<String>(
+      onTap: ontap,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 16,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Icon(
+            icon,
+            color: color,
+          ),
+        ],
+      ),
     );
   }
 }

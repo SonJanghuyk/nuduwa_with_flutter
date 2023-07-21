@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:nuduwa_with_flutter/model/member.dart';
+import 'package:nuduwa_with_flutter/model/user.dart';
+import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class Meeting {
   final String? id;
@@ -70,8 +73,6 @@ class Meeting {
   }
 
   Map<String, dynamic> toFirestore() {
-    debugPrint('toFirestore');
-    /*
     return {
       "title": title,
       "description": description,
@@ -86,23 +87,6 @@ class Meeting {
       "hostUID": hostUid,
       "isEnd" : isEnd,
     };
-    */
-    final map = {
-      "title": title,
-      "description": description,
-      "place": place,
-      "maxMembers": maxMembers,
-      "category": category,
-      "latitude": location.latitude,
-      "longitude": location.longitude,
-      if (goeHash != null) "goeHash": goeHash,
-      "meetingTime": meetingTime,
-      "publishedTime": FieldValue.serverTimestamp(),
-      "hostUID": hostUid,
-      "isEnd" : isEnd,
-    };
-    debugPrint(map.toString());
-    return map;
   }
 
   factory Meeting.clone(Meeting meeting) {
@@ -138,26 +122,88 @@ enum MeetingCategory {
   const MeetingCategory(this.category, this.displayName);
 }
 
-// class MeetingManager extends UserManager {
-//   static MeetingManager get instance => Get.find();
+class MeetingRepository{
+  static final MeetingRepository instance = MeetingRepository._internal();
 
-  
+  MeetingRepository._internal();
 
-/*
-  Future<RxList<Meeting?>> listenerForMeetings() async {
-    final meetings = RxList<Meeting?>();
-    final ref = meetingList;
-    final completer = Completer<RxList<Meeting?>>();
+  final firebase = FirebaseService.instance;
 
-    ref.snapshots().listen((snapshot) {
-      meetings.value = snapshot.docs.map((doc) => doc.data()).toList();
-      if (!completer.isCompleted) {
-        completer.complete(meetings);
-      }
-    });
-    await completer.future;
+  Future<DocumentReference<Meeting>?> createMeetingData(Meeting meeting) async {
+    if(firebase.currentUid==null){
+      debugPrint('createMeetingData에러: no CurrentUid');
+      return null;
+    }
 
-    return meetings;
+    final ref = firebase.meetingList;
+    try {
+      final newMeetingRef = await ref.add(meeting);
+      final meetingId = newMeetingRef.id;
+      await MemberRepository.instance.createMemberData(memberUid: firebase.currentUid!, meetingId: meetingId, hostUid: firebase.currentUid!);
+      return newMeetingRef;
+
+    } catch (e) {
+      debugPrint('createMeetingData에러: ${e.toString()}');
+      rethrow;
+    }
   }
-*/
-// }
+
+  Future<Meeting?> readMeetingData(String meetingId) async {
+    final ref = firebase.meetingList.doc(meetingId);
+    try{
+      final snapshot = await ref.get();
+      return snapshot.data();
+
+    }catch(e){
+      debugPrint('readMeetingData에러: ${e.toString()}');
+      rethrow;
+    } 
+
+    
+  }
+
+  Future<Meeting> fetchHostData(Meeting meeting) async {
+    try{
+      final host = await UserRepository.instance.readUserData(meeting.hostUid);
+      meeting.hostName = host?.name ?? '이름없음';
+      meeting.hostImageUrl = host?.imageUrl;
+      return meeting;
+
+    }catch(e){
+      debugPrint('fetchHostData에러: ${e.toString()}');
+      rethrow;
+    }       
+  }
+
+  Future<void> updateMeetingData(
+      {required String meetingId,
+      String? title,
+      String? description,
+      String? place}) async {
+    final ref = firebase.meetingList.doc(meetingId);
+    try {
+      await ref.update({
+        if (title != null) "title": title,
+        if (description != null) "description": description,
+        if (place != null) "place": place,
+      });
+
+    } catch (e) {
+      debugPrint('updateMeetingData에러: ${e.toString()}');
+      rethrow;
+    }
+  }
+
+  Meeting tempMeetingData() {
+    return Meeting(
+      title: '',
+      description: '',
+      place: '',
+      maxMembers: 0,
+      category: '',
+      location: const LatLng(0, 0),
+      meetingTime: DateTime(0),
+      hostUid: '',
+    );
+  }
+}

@@ -5,7 +5,7 @@ import 'package:nuduwa_with_flutter/utils/assets.dart';
 
 class UserProfilePage extends StatelessWidget {
   UserProfilePage({super.key, required this.uid})
-      : controller = Get.put(UserProfileController(uid: uid));
+      : controller = Get.put(UserProfileController());
 
   final String uid;
   final UserProfileController controller;
@@ -57,7 +57,7 @@ class UserProfilePage extends StatelessWidget {
               Row(
                 children: [
                   IconButton(
-                    onPressed: () {},
+                    onPressed: controller.clickedChattingButton,
                     icon: const Column(
                       children: [
                         Icon(

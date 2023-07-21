@@ -1,5 +1,6 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class UserModel {
   final String? id;
@@ -93,8 +94,47 @@ class SnsData {
   }
 }
 
-// class UserManager extends FirebaseService {
-//   static UserManager get instance => Get.find();
+class UserRepository{
+  static final UserRepository instance = UserRepository._internal();
 
-  
-// }
+  UserRepository._internal();
+
+  final firebase = FirebaseService.instance;
+
+  Future<DocumentReference<UserModel>> createUserData(UserModel user) async {
+    final ref = firebase.userList.doc(user.id);
+    try{
+      await ref.set(user);
+      return ref;
+
+    }catch(e){
+      debugPrint('createUserData에러: ${e.toString()}');
+      rethrow;
+    }    
+    
+  }
+
+  Future<UserModel?> readUserData(String uid) async {
+    final ref = firebase.userList.doc(uid);    
+    try{
+      final snapshot = await ref.get();
+      return snapshot.data();
+      
+    }catch(e){
+      debugPrint('readUserData에러: ${e.toString()}');
+      rethrow;
+    }    
+  }  
+
+    // Future<Uint8List> downloadUserImageData(String? url) async {
+  //   if (url != null) {
+  //     final response = await http.get(Uri.parse(url));
+  //     return response.bodyBytes;
+  //   } else {
+  //     final ByteData assetData =
+  //         await rootBundle.load('assets/images/nuduwa_logo.png');
+  //     return assetData.buffer.asUint8List();
+  //   }
+  // }
+
+}

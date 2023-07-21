@@ -90,7 +90,6 @@ class ChattingWidget extends StatelessWidget {
   }
 }
 
-
 class LeftChatItem extends StatelessWidget {
   const LeftChatItem({
     super.key,
@@ -132,7 +131,7 @@ class LeftChatItem extends StatelessWidget {
                   Text(name ?? '이름없음'),
                   const SizedBox(height: 4),
 
-                  MessageBox(text: text, sendTime: sendTime),
+                  MessageBox(text: text, sendTime: sendTime, isLeft: true),
                 ],
               ),
             ),
@@ -162,7 +161,7 @@ class RightChatItem extends StatelessWidget {
         padding: const EdgeInsets.all(6.0),
         child: Align(
           alignment: Alignment.topRight,
-          child: MessageBox(text: text, sendTime: sendTime),
+          child: MessageBox(text: text, sendTime: sendTime, isLeft: false),
           /*Stack(
             children: [
               Container(
@@ -246,10 +245,12 @@ class MessageBox extends StatelessWidget {
     super.key,
     required this.text,
     required this.sendTime,
+    required this.isLeft,
   });
 
   final String text;
   final DateTime sendTime;
+  final bool isLeft;
 
   @override
   Widget build(BuildContext context) {
@@ -257,23 +258,28 @@ class MessageBox extends StatelessWidget {
       children: [
         // ------ Text ------
         Container(
-          margin: const EdgeInsets.only(right: 55),
-          padding: const EdgeInsets.symmetric(
-              vertical: 8, horizontal: 12),
-          decoration: const BoxDecoration(
-            color: Colors.grey,
-            borderRadius: BorderRadius.only(
-              topRight: Radius.circular(10),
-              bottomLeft: Radius.circular(10),
-              bottomRight: Radius.circular(10),
-            ),
-          ),
+          margin: isLeft
+              ? const EdgeInsets.only(right: 55)
+              : const EdgeInsets.only(left: 55),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          decoration: BoxDecoration(
+              color: isLeft ? Colors.grey : Colors.blue,
+              borderRadius: isLeft
+                  ? const BorderRadius.only(
+                      topRight: Radius.circular(10),
+                      bottomLeft: Radius.circular(10),
+                      bottomRight: Radius.circular(10),
+                    )
+                  : const BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                      bottomLeft: Radius.circular(10),
+                      bottomRight: Radius.circular(10),
+                    )),
           // text 몇줄인지 계산
           child: LayoutBuilder(builder: (context, constraints) {
             final textSpan = TextSpan(
               text: text,
-              style: const TextStyle(
-                  fontSize: 16, color: Colors.white),
+              style: const TextStyle(fontSize: 16, color: Colors.white),
             );
             final textPainter = TextPainter(
               text: textSpan,
@@ -282,8 +288,7 @@ class MessageBox extends StatelessWidget {
             );
             textPainter.layout(maxWidth: constraints.maxWidth);
 
-            final lineCount =
-                textPainter.computeLineMetrics().length;
+            final lineCount = textPainter.computeLineMetrics().length;
 
             return Column(
               children: [
@@ -314,14 +319,14 @@ class MessageBox extends StatelessWidget {
 
         // ------ SendTime ------
         Positioned(
-          right: 0,
+          right: isLeft ? 0 : null,
+          left: isLeft ? null : 0,
           bottom: 0,
           child: SizedBox(
             width: 52,
             child: Text(
               DateFormat('a h:mm').format(sendTime),
-              style: const TextStyle(
-                  fontSize: 11, color: Colors.blueGrey),
+              style: const TextStyle(fontSize: 11, color: Colors.blueGrey),
             ),
           ),
         ),

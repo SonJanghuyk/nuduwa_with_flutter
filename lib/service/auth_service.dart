@@ -16,7 +16,7 @@ class AuthService extends GetxService {
     ever(_user, _moveToPage);
   }
 
-  _moveToPage(User? user) {    
+  void _moveToPage(User? user) {    
     if (user == null) {
       debugPrint('로그인이동');
       Get.offAllNamed('/login');

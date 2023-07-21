@@ -50,16 +50,12 @@ class MeetingChatController extends GetxController
     try {
       debugPrint('listenerForMessages');
       final listener =
-          messageColRef.orderBy('sendTime').snapshots().listen((snapshot) {
+          messageColRef.orderBy('sendTime', descending: true).snapshots().listen((snapshot) {
+            debugPrint('listenerForMessages2');
         final snapshotMessages = snapshot.docs.map((doc) => doc.data());
         messages.value = List.from(snapshotMessages);
         debugPrint('listenerForMessages ${messages.length}');
-        if(!isNotLast.value){
-          scrollLast();
-          debugPrint('down');
-        }        
       });
-      // scrollController.jumpTo(scrollController.position.maxScrollExtent);
       firebaseService.addListener(ref: messageColRef, listener: listener);
     } catch (e) {
       debugPrint('오류!! listenerForMessages: ${e.toString()}');
@@ -74,7 +70,7 @@ class MeetingChatController extends GetxController
     try {
       textController.clear();
       FocusScope.of(Get.context!).unfocus();
-      await firebaseService.createMeetingMessageData(
+      await MeetingMessageRepository.instance.createMeetingMessageData(
           meetingId, firebaseService.currentUid!, text);
       debugPrint(messages.length.toString());
       debugPrint('sendMessage 끝');
@@ -86,7 +82,7 @@ class MeetingChatController extends GetxController
   @override
   void scrollLast() {
     scrollController.animateTo(
-          scrollController.position.maxScrollExtent,
+          scrollController.position.minScrollExtent,
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOut,
         );
@@ -95,7 +91,7 @@ class MeetingChatController extends GetxController
   void scrollListener() {
     scrollController.addListener(() {
       if (scrollController.offset !=
-          scrollController.position.maxScrollExtent) {
+          scrollController.position.minScrollExtent) {
         isNotLast.value = true;
       } else {
         isNotLast.value = false;

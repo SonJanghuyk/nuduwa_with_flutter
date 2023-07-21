@@ -7,19 +7,16 @@ import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'sub/create_meeting_sheet.dart';
 
 class MapPage extends StatelessWidget {
-  final MapPageController controller;
+  final controller = MapPageController.instance;
 
-  const MapPage({
+  MapPage({
     super.key,
-    required this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Obx(() {
-        if (controller.mapStyle.value != null) {
-          return GoogleMap(
+      body: Obx(() => GoogleMap(
             onMapCreated: controller.onMapCreated,
             initialCameraPosition: CameraPosition(
               // 초기 지도 위치
@@ -34,11 +31,8 @@ class MapPage extends StatelessWidget {
                 .map((tuple) => tuple.marker)
                 .toSet(), // 지도 마커
             onCameraMove: controller.checkedCenter, // 지도 이동시 중심위치 저장
-          );
-        } else {
-          return const Center(child: CircularProgressIndicator());
-        }
-      }),
+          )
+      ),
       floatingActionButton: Stack(
         children: [
           // 필터 버튼

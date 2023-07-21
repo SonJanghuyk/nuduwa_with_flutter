@@ -13,12 +13,7 @@ class LoginController extends GetxController {
   static LoginController instance = Get.find();
 
   // Firestore에서 user정보 가져오는 Manager
-  final firebaseService = FirebaseService.instance;
-
-  // late Rx<User?> _user; // user 인증여부 확인(null이면 비회원)
-  // RxBool isUserAuthenticated = false.obs;
-
-  // FirebaseAuth authentication = FirebaseAuth.instance;
+  final userRepository = UserRepository.instance;
 
   final isGoogleLoginLoading = false.obs; // 서버 로그인중
   final isAppleLoginLoading = false.obs; // 서버 로그인중
@@ -27,7 +22,7 @@ class LoginController extends GetxController {
   void onReady() {
     super.onReady();
 
-    Get.put(AuthService());
+    // Get.put(AuthService());
   }
 
   void signInWithGoogle() async {
@@ -70,7 +65,7 @@ class LoginController extends GetxController {
       if (user == null) {
         return;
       }
-      final currentUser = await firebaseService.readUserData(user.uid);
+      final currentUser = await userRepository.readUserData(user.uid);
       if (currentUser == null) {
         registerUser(user);
       }
@@ -109,8 +104,7 @@ class LoginController extends GetxController {
         imageUrl: user.photoURL,
         googleData: googleData);
 
-    await firebaseService.createUserData(userModel);
+    await userRepository.createUserData(userModel);
   }
-
   
 }

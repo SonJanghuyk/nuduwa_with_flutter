@@ -71,7 +71,7 @@ class CreateMeetingController extends GetxController {
       hostUid: firebaseService.currentUid!,
     );
     try {
-      await firebaseService.createMeetingData(newMeeting);
+      await MeetingRepository.instance.createMeetingData(newMeeting);
       Get.back();
       Get.snackbar('모임생성 완료', '모임생성이 완료되었습니다', snackPosition: SnackPosition.BOTTOM);
     } catch (e) {

@@ -7,12 +7,12 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:nuduwa_with_flutter/controller/home_page_controller.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
 import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 import 'package:nuduwa_with_flutter/screens/map/sub/icon_of_meeting.dart';
 import 'package:nuduwa_with_flutter/screens/map/sub/meeting_info_sheet.dart';
-import 'package:nuduwa_with_flutter/service/data_service.dart';
 import 'dart:ui' as ui;
 
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
@@ -21,7 +21,7 @@ import 'package:nuduwa_with_flutter/utils/assets.dart';
 class MapPageController extends GetxController {
   static MapPageController get instance => Get.find();
 
-  final dataService = DataService.instance;
+  final homepageController = HomePageController.instance;
 
   // Model Manager
   final firebaseService = FirebaseService.instance;
@@ -30,7 +30,7 @@ class MapPageController extends GetxController {
   var _mapController = Completer<GoogleMapController>();
   final meetings = <String, ({Meeting meeting, Marker marker})>{}.obs;
   // 구글 지도에서 POI아이콘 삭제
-  final mapStyle = Rx<String?>(null);
+  final String mapStyle;
 
   // Location
   var currentLocation = const LatLng(0, 0);
@@ -63,7 +63,7 @@ class MapPageController extends GetxController {
   // MeetingInfoSheet
   final hostImage = Rx<ImageProvider?>(null);
 
-  MapPageController({required LatLng? location}) {
+  MapPageController({required LatLng? location, required this.mapStyle}) {
     currentLocation = location ?? const LatLng(0, 0);
   }
 
@@ -71,18 +71,16 @@ class MapPageController extends GetxController {
   void onInit() async {
     super.onInit();
     center = currentLocation;
-    final [mapstyle, _] = await Future.wait<dynamic>([
-      rootBundle.loadString('assets/map_style.txt'),
-      _drawIconImages(),
-    ]);
-    mapStyle.value = mapstyle;
+
+    await _drawIconImages();
+
     _listenerForMeetingsOfMap();
   }
 
   @override
   void onReady() {
-    ever(dataService.userMeetings, _updateMeetingIcon);
-    ever(dataService.leavedMeeting, _updateMeetingIcon);
+    ever(homepageController.userMeetings, _updateMeetingIcon);
+    ever(homepageController.leavedMeeting, _updateMeetingIcon);
   }
 
   /// 모임 참여하거나 나가면 아이콘 색 바꾸기
@@ -100,7 +98,7 @@ class MapPageController extends GetxController {
   void _convertMeetings() {
     meetings.value = Map.from(snapshotMeetings);
     if (newMarker != null) {
-      final tempMeeting = firebaseService.tempMeetingData();
+      final tempMeeting = MeetingRepository.instance.tempMeetingData();
       meetings[newMarkerId] = (meeting: tempMeeting, marker: newMarker!);
     }
   }
@@ -142,7 +140,7 @@ class MapPageController extends GetxController {
           // Host 여부, 참여 여부에 따라 다른색 아이콘
           final loadingIcon = meeting.hostUid == firebaseService.currentUid
               ? loadingIcons[IconColors.host.name]
-              : dataService.userMeetings
+              : homepageController.userMeetings
                       .where(
                           (userMeeting) => userMeeting.meetingId == meeting.id)
                       .toList()
@@ -183,14 +181,14 @@ class MapPageController extends GetxController {
     try {
       // Host 정보 가져오기
       if (meeting.hostName == null) {
-        meeting = await firebaseService.fetchHostData(meeting);
+        meeting = await MeetingRepository.instance.fetchHostData(meeting);
       }
 
       // 가져온 Host Image로 Icon 교체
       // Host 여부, 참여 여부에 따라 다른색 아이콘
       final iconColor = meeting.hostUid == firebaseService.currentUid!
           ? IconColors.host.name
-          : dataService.userMeetings
+          : homepageController.userMeetings
                   .where((userMeeting) => userMeeting.meetingId == meeting.id)
                   .toList()
                   .isNotEmpty
@@ -239,7 +237,7 @@ class MapPageController extends GetxController {
       _mapController = Completer<GoogleMapController>();
       _mapController.complete(controller);
 
-      controller.setMapStyle(mapStyle.value);
+      controller.setMapStyle(mapStyle);
     } catch (e) {
       debugPrint(e.toString());
     }
@@ -302,7 +300,10 @@ class MapPageController extends GetxController {
       String meetingId, String hostUid, DateTime meetingTime) async {
     isLoading.value = true;
     try {
-      await firebaseService.createMemberData(meetingId, hostUid, meetingTime);
+      await MemberRepository.instance.createMemberData(
+          memberUid: firebaseService.currentUid!,
+          meetingId: meetingId,
+          hostUid: hostUid);
       Get.back();
       Get.snackbar(
         '모임참여 성공',

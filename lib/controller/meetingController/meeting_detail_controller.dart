@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/controller/main_page_controller.dart';
+import 'package:nuduwa_with_flutter/controller/home_page_controller.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_card_controller.dart';
+import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
+import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class MeetingDetailController extends GetxController {
@@ -44,7 +46,7 @@ class MeetingDetailController extends GetxController {
   }
 
   void close() {
-    MainPageController.instance.overlayPage.value = null;
+    HomePageController.instance.overlayPage.value = null;
   }
 
   // 맴버 리스너시작
@@ -66,7 +68,7 @@ class MeetingDetailController extends GetxController {
           snapshotMembers[member.uid] = member;
 
           // 맴버 이름, 이미지 가져오기
-          member = await firebaseService.fetchMemberData(member);
+          member = await MemberRepository.instance.fetchMemberData(member);
           snapshotMembers[member.uid] = member;
           members[member.uid] = member;
         }
@@ -94,7 +96,7 @@ class MeetingDetailController extends GetxController {
       isLoading.value = true;
       formKey.currentState!.save();
       try {
-        await firebaseService.updateMeetingData(
+        await MeetingRepository.instance.updateMeetingData(
           meetingId: meetingId,
           title: editTitle,
           description: editDescription,
@@ -116,12 +118,12 @@ class MeetingDetailController extends GetxController {
 
   Future<void> leaveMeeting() async {
     await Future.wait([
-      firebaseService.deleteMemberData(
+      MemberRepository.instance.deleteMemberData(
           meetingId: meetingId, uid: firebaseService.currentUid!),
-      firebaseService.deleteUserMeetingData(
+      UserMeetingRepository.instance.deleteUserMeetingData(
           meetingId: meetingId, uid: firebaseService.currentUid!)
     ]);
-    MainPageController.instance.overlayPage.value = null;
+    HomePageController.instance.overlayPage.value = null;
     Get.snackbar('모임 나가기!', '"${MeetingCardController.instance(tag: meetingId).meeting.value!.title}" 모임에서 나갔습니다',
         backgroundColor: Colors.white, snackPosition: SnackPosition.BOTTOM);
   }

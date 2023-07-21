@@ -15,7 +15,7 @@ class ChattingPageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    listenerForChattingList();
+    listenerForUserChattingList();
   }
 
   @override
@@ -24,7 +24,7 @@ class ChattingPageController extends GetxController {
     firebaseService.cancelListener(ref: query);
   }
 
-  void listenerForChattingList() {
+  void listenerForUserChattingList() {
     if (firebaseService.currentUid == null) return;
 
     final ref = firebaseService.userChattingList(firebaseService.currentUid!);

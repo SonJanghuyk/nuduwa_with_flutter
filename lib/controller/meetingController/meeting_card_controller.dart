@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/controller/main_page_controller.dart';
+import 'package:nuduwa_with_flutter/controller/home_page_controller.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/screens/map/sub/icon_of_meeting.dart';
 import 'package:nuduwa_with_flutter/screens/meeting/sub/meeting_detail_page.dart';
@@ -69,7 +69,7 @@ class MeetingCardController extends GetxController {
           data!.publishedTime = meeting.value?.publishedTime ?? DateTime.now();
         }
         meeting.value = data;
-        final temp = await firebaseService.fetchHostData(meeting.value!);
+        final temp = await MeetingRepository.instance.fetchHostData(meeting.value!);
         meeting.value = Meeting.clone(temp);
         downloadHostImage(meeting.value!.hostImageUrl);
         debugPrint('listenerForMeeting끝');
@@ -87,13 +87,13 @@ class MeetingCardController extends GetxController {
   }
 
   void onTapListTile() {
-    MainPageController.instance.overlayPage.value = MeetingDetailPage(
+    HomePageController.instance.overlayPage.value = MeetingDetailPage(
       meetingId: meetingId,
     );
   }
 
   void onTapMeetingCard() {
-    MainPageController.instance.overlayPage.value = MeetingDetailPage(
+    HomePageController.instance.overlayPage.value = MeetingDetailPage(
       meetingId: meetingId
     );
   }

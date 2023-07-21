@@ -146,217 +146,32 @@ class FirebaseService extends GetxService {
     }
   }
 
-  // User
-  Future<void> createUserData(UserModel user) async {
-    final ref = userList.doc(user.id);
-    await ref.set(user);
-  }
-
-  Future<UserModel?> readUserData(String uid) async {
-    final ref = userList.doc(uid);
-    final snapshot = await ref.get();
-
-    return snapshot.data();
-  }
-
-  // Future<Uint8List> downloadUserImageData(String? url) async {
-  //   if (url != null) {
-  //     final response = await http.get(Uri.parse(url));
-  //     return response.bodyBytes;
-  //   } else {
-  //     final ByteData assetData =
-  //         await rootBundle.load('assets/images/nuduwa_logo.png');
-  //     return assetData.buffer.asUint8List();
-  //   }
-  // }
-
   // UserMeeting
-  Future<void> createUserMeetingData(
-      String meetingId, String hostUid, DateTime meetingTime) async {
-    final userMeeting = UserMeeting(
-        meetingId: meetingId,
-        hostUid: hostUid,
-        isEnd: false,
-        meetingDate: meetingTime);
-    final ref = userMeetingList(currentUid!).doc();
-    await ref.set(userMeeting);
-  }
-
-  Future<void> deleteUserMeetingData(
-      {required String meetingId, required String uid}) async {
-    final query = userMeetingList(uid).where('meetingId', isEqualTo: meetingId);
-    final snapshot = await query.get();
-    final ref = snapshot.docs.first.reference;
-    await ref.delete();
-  }
-
-  Future<UserMeeting?> readUserMeetingData(String meetingId, String uid) async {
-    final ref = userMeetingList(uid).where('meetingId', isEqualTo: meetingId);
-    var snapshot = await ref.get();
-
-    return snapshot.docs.first.data();
-  }
+  
 
   // UserChatting
-  Future<void> createUserChattingData({
-      required String chattingId, required String uid, required String otherUid}) async {
-    final userChatting = UserChatting(
-        chattingId: chattingId,
-        otherUid: otherUid,
-        lastReadTime: DateTime.now(),
-        );
-    final ref = userChattingList(uid).doc();
-    await ref.set(userChatting);
-  }
-
-  Future<UserChatting?> readUserChattingData({required String uid, required String otherUid}) async {
-    final ref = userChattingList(uid).where('otherUid', isEqualTo: otherUid);
-    var snapshot = await ref.get();
-
-    return snapshot.docs.first.data();
-  }
+  
 
   // Meeting
-  Future<void> createMeetingData(Meeting meeting) async {
-    debugPrint(meeting.toFirestore().toString());
-    final ref = meetingList;
-    try {
-      final newMeetingRef = await ref.add(meeting);
-      final meetingId = newMeetingRef.id;
-      debugPrint(meetingId);
-      await createMemberData(meetingId, currentUid!, meeting.meetingTime);
-    } catch (e) {
-      debugPrint('에러: ${e.toString()}');
-      // rethrow;
-    }
-  }
-
-  Future<Meeting?> readMeetingData(String meetingId) async {
-    final ref = meetingList.doc(meetingId);
-    var snapshot = await ref.get();
-
-    return snapshot.data();
-  }
-
-  Future<Meeting> fetchHostData(Meeting meeting) async {
-    final host = await readUserData(meeting.hostUid);
-    meeting.hostName = host?.name ?? '이름없음';
-    meeting.hostImageUrl = host?.imageUrl;
-    return meeting;
-  }
-
-  Future<void> updateMeetingData(
-      {required String meetingId,
-      String? title,
-      String? description,
-      String? place}) async {
-    final ref = meetingList.doc(meetingId);
-    try {
-      await ref.update({
-        if (title != null) "title": title,
-        if (description != null) "description": description,
-        if (place != null) "place": place,
-      });
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  Meeting tempMeetingData() {
-    return Meeting(
-      title: '',
-      description: '',
-      place: '',
-      maxMembers: 0,
-      category: '',
-      location: const LatLng(0, 0),
-      meetingTime: DateTime(0),
-      hostUid: '',
-    );
-  }
+  
 
   // Member
-  Future<void> createMemberData(
-      String meetingId, String hostUid, DateTime meetingTime) async {
-    final member = Member(uid: currentUid!);
-    final ref = memberList(meetingId).doc();
-    try {
-      await Future.wait([
-        ref.set(member),
-        createUserMeetingData(meetingId, hostUid, meetingTime),
-      ]);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  Future<void> deleteMemberData(
-      {required String meetingId, required String uid}) async {
-    final query = memberList(meetingId).where('uid', isEqualTo: uid);
-    final snapshot = await query.get();
-    final ref = snapshot.docs.first.reference;
-    await ref.delete();
-  }
-
-  Future<Member?> readMemberData(String meetingId, String uid) async {
-    final ref = memberList(meetingId).where('uid', isEqualTo: uid);
-    var snapshot = await ref.get();
-
-    return snapshot.docs.first.data();
-  }
-
-  Future<Member> fetchMemberData(Member member) async {
-    try {
-      final user = await readUserData(member.uid);
-      member.name = user?.name ?? '이름없음';
-      member.imageUrl = user?.imageUrl;
-      return member;
-    } catch (e) {
-      rethrow;
-    }
-  }
+  
 
   //
   // Meeting.Message
   //
   // Message
-  Future<void> createMeetingMessageData(
-      String meetingId, String uid, String text) async {
-    final message = Message(senderUid: uid, text: text);
-    final ref = meetingMessageList(meetingId).doc();
-    debugPrint('createMessageData');
-    try {
-      await ref.set(message);
-    } catch (e) {
-      debugPrint('오류!! createMessageData: ${e.toString()}');
-      rethrow;
-    }
-  }
+  
 
   //
   // Chatting
   //
-  Future<DocumentReference<Chatting>> createChattingData({required String uid, required String otherUid}) async {
-    final chatting = Chatting(people: [uid, otherUid]);
-    final ref = chattingList.doc();
-    await ref.set(chatting);
-    return ref;
-  }
+  
 
   //
   // Chatting.Message
   //
-  Future<void> createChattingMessageData(
-      String chattingId, String uid, String text) async {
-    final message = Message(senderUid: uid, text: text);
-    final ref = chattingMessageList(chattingId).doc();
-    debugPrint('createMessageData');
-    try {
-      await ref.set(message);
-    } catch (e) {
-      debugPrint('오류!! createMessageData: ${e.toString()}');
-      rethrow;
-    }
-  }
+  
 
 }

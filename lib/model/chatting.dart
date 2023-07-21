@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class Chatting {
   final String? id;
@@ -32,5 +34,27 @@ class Chatting {
       "people": people,
       "firstChattingTime": FieldValue.serverTimestamp(),
     };
+  }
+}
+
+class ChattingRepository {
+  static final ChattingRepository instance = ChattingRepository._internal();
+
+  ChattingRepository._internal();
+
+  final firebase = FirebaseService.instance;
+
+  Future<DocumentReference<Chatting>> createChattingData(
+      {required String uid, required String otherUid}) async {
+    final chatting = Chatting(people: [uid, otherUid]);
+    final ref = firebase.chattingList.doc();
+
+    try {
+      await ref.set(chatting);
+      return ref;
+    } catch (e) {
+      debugPrint('createChattingData에러: ${e.toString()}');
+      rethrow;
+    }
   }
 }

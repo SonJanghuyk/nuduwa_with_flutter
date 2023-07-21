@@ -52,7 +52,7 @@ class ChattingRoomController extends GetxController implements ChattingControlle
     try {
       debugPrint('listenerForMessages');
       final ref = firebaseService.chattingMessageList(userChatting.chattingId);
-      messageQuery = ref.orderBy('lastReadTime');
+      messageQuery = ref.orderBy('sendTime', descending: true);
 
       final listener = messageQuery.snapshots().listen((snapshot) {
         final snapshotMessages = snapshot.docs.map((doc) => doc.data());
@@ -73,7 +73,7 @@ class ChattingRoomController extends GetxController implements ChattingControlle
     try {
       textController.clear();
       FocusScope.of(Get.context!).unfocus();
-      await firebaseService.createChattingMessageData(userChatting.chattingId, firebaseService.currentUid!, text);
+      await ChattingMessageRepository.instance.createChattingMessageData(userChatting.chattingId, firebaseService.currentUid!, text);
 
       debugPrint(messages.length.toString());
       debugPrint('sendMessage 끝');
@@ -86,7 +86,7 @@ class ChattingRoomController extends GetxController implements ChattingControlle
   Future<UserModel?> fetchOtherUserData({required String otherUid}) async {
     debugPrint('fetchOtherUserData');
     try{
-      final user = await firebaseService.readUserData(otherUid);
+      final user = await UserRepository.instance.readUserData(otherUid);
       debugPrint(user?.name);
       return user;
 
@@ -107,5 +107,13 @@ class ChattingRoomController extends GetxController implements ChattingControlle
 
   void showUserProfile(String uid) {
     Get.to(() => UserProfilePage(uid: uid));
+  }
+
+  void clickedOut() {
+    String previousRoute = Get.previousRoute;
+    String currentRoute = Get.currentRoute;
+    
+    debugPrint('Previous Route: $previousRoute');
+    debugPrint('Current Route: $currentRoute');
   }
 }

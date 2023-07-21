@@ -1,4 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
+import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class UserChatting {
   final String? id;
@@ -33,9 +36,55 @@ class UserChatting {
 
   Map<String, dynamic> toFirestore() {
     return {
-      'chattingRef' : chattingId,
-      'otherUid' : otherUid,
-      'firstChattingTime' : FieldValue.serverTimestamp(),
+      'chattingId': chattingId,
+      'otherUid': otherUid,
+      'lastReadTime': FieldValue.serverTimestamp(),
     };
+  }
+}
+
+class UserChattingRepository {
+  static final UserChattingRepository instance =
+      UserChattingRepository._internal();
+
+  UserChattingRepository._internal();
+
+  final firebase = FirebaseService.instance;
+
+  Future<DocumentReference<UserChatting>> createUserChattingData(
+      {required String chattingId,
+      required String uid,
+      required String otherUid}) async {
+    final userChatting = UserChatting(
+      chattingId: chattingId,
+      otherUid: otherUid,
+      lastReadTime: DateTime.now(),
+    );
+    final ref = firebase.userChattingList(uid).doc();
+
+    try {
+      await ref.set(userChatting);
+      return ref;
+
+    } catch (e) {
+      debugPrint('오류!! createUserChattingData: ${e.toString()}');
+      rethrow;
+    }
+  }
+
+  Future<UserChatting?> readUserChattingData(
+      {required String uid, required String otherUid}) async {
+    final ref = firebase.userChattingList(uid).where('otherUid', isEqualTo: otherUid);
+    try {
+      final snapshot = await ref.get();
+      if (snapshot.docs.isEmpty) {
+        return null;
+      }
+      return snapshot.docs.first.data();
+
+    } catch (e) {
+      debugPrint('오류!! readUserChattingData: ${e.toString()}');
+      return null;
+    }
   }
 }

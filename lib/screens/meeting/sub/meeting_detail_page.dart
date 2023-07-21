@@ -73,21 +73,19 @@ class MeetingDetailPage extends StatelessWidget {
                     iconSize: 30,
                     elevation: 1,
                     padding: EdgeInsets.zero,
-                    constraints: BoxConstraints.expand(
-                        width: 150, height: isHost ? 100 : 40),
                     offset: const Offset(0, 50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                     itemBuilder: (BuildContext context) => isHost
                         ? <PopupMenuEntry<String>>[
-                            meetingMenuItem(
+                            menuItem(
                               text: '모임 수정',
                               icon: Icons.change_circle_outlined,
                               color: Colors.black,
                               ontap: controller.onEdit,
                             ),
-                            meetingMenuItem(
+                            menuItem(
                               text: '모임 삭제',
                               icon: Icons.delete_forever_outlined,
                               color: Colors.red,
@@ -95,7 +93,7 @@ class MeetingDetailPage extends StatelessWidget {
                             ),
                           ]
                         : [
-                            meetingMenuItem(
+                            menuItem(
                               text: '모임 나가기',
                               icon: Icons.exit_to_app,
                               color: Colors.red,
@@ -444,34 +442,29 @@ class MeetingDetailPage extends StatelessWidget {
     );
   }
 
-  PopupMenuItem<String> meetingMenuItem(
+   PopupMenuItem<String> menuItem(
       {required String text,
       required IconData icon,
       required Color color,
       required VoidCallback ontap}) {
     return PopupMenuItem<String>(
       onTap: ontap,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 25),
-        child: Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                text,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: color,
-                ),
-              ),
-              const SizedBox(width: 5),
-              Icon(
-                icon,
-                color: color,
-              ),
-            ],
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 16,
+              color: color,
+            ),
           ),
-        ),
+          const SizedBox(width: 5),
+          Icon(
+            icon,
+            color: color,
+          ),
+        ],
       ),
     );
   }
