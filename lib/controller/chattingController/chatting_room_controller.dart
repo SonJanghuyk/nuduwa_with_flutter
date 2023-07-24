@@ -106,7 +106,7 @@ class ChattingRoomController extends GetxController implements ChattingControlle
   }
 
   void showUserProfile(String uid) {
-    Get.to(() => UserProfilePage(uid: uid));
+    Get.toNamed('/userProfile', arguments: uid);
   }
 
   void clickedOut() {

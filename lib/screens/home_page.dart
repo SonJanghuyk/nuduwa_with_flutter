@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:nuduwa_with_flutter/controller/chattingController/chatting_page_controller.dart';
 import 'package:nuduwa_with_flutter/controller/home_page_controller.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/map_page_controller.dart';
+import 'package:nuduwa_with_flutter/controller/profileController/user_profile_controller.dart';
 import 'package:nuduwa_with_flutter/screens/chatting/chatting_page.dart';
 import 'package:nuduwa_with_flutter/screens/map/map_page.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/screens/meeting/meeting_page.dart';
 import 'package:nuduwa_with_flutter/screens/profile/my_profile_page.dart';
+import 'package:nuduwa_with_flutter/utils/responsive.dart';
 
 class HomePage extends StatelessWidget {
   final controller = HomePageController.instance;
@@ -14,6 +17,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Responsive.init(context);
     return Scaffold(
       body: SafeArea(
         child: Obx(() {
@@ -35,11 +39,21 @@ class HomePage extends StatelessWidget {
           // 위치 권한 허가된 상태
           if (controller.permissionMessage.value == '위치 권한이 허가 되었습니다.') {
             if (controller.currentLatLng.value != null) {
+              
+              
               return Scaffold(
-                body: Navigator(
-                  key: Get.nestedKey(1),
-                  initialRoute: '/map',
-                  onGenerateRoute: controller.onGenerateRoute,
+                body: Obx(
+                  () => 
+                  IndexedStack(
+                    index: controller.tabIndex.value,
+                    children: [
+                      MapPage(),
+                      MeetingPage(),
+                      ChattingPage(),
+                      MyProfilePage(),
+                    ],
+                  ),
+                  
                 ),
 
                 // 하단 텝바

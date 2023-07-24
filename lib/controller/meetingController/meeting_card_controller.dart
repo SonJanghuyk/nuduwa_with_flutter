@@ -3,12 +3,11 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/controller/home_page_controller.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/screens/map/sub/icon_of_meeting.dart';
-import 'package:nuduwa_with_flutter/screens/meeting/sub/meeting_detail_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/utils/assets.dart';
+import 'package:nuduwa_with_flutter/utils/responsive.dart';
 
 class MeetingCardController extends GetxController {
   // tag is meetingId
@@ -19,44 +18,25 @@ class MeetingCardController extends GetxController {
 
   // Listener Ref
   final DocumentReference<Meeting> meetingDocRef;
-  // final CollectionReference<Message> messageColRef;
 
   // Meeting
-  // final UserMeeting userMeeting;
   final String meetingId;
   final meeting = Rx<Meeting?>(null);
   final hostImage = Rx<ImageProvider?>(null);
-  // final members = <String, Member>{}.obs;
-
-  // Edit
-  // final isEdit = false.obs;
-  // final isLoading = false.obs;
-  // final formKey = GlobalKey<FormState>();
-  // String? editTitle;
-  // String? editPlace;
-  // String? editDescription;
-
-  // chatting
-  // final messages = <Message>[].obs;
-  // final textController = TextEditingController();
-  // final animatedlistKey = GlobalKey<AnimatedListState>();
 
   MeetingCardController({required this.meetingId})
-      : meetingDocRef =
-            FirebaseService.instance.meetingList.doc(meetingId);
+      : meetingDocRef = FirebaseService.instance.meetingList.doc(meetingId);
 
   @override
   void onInit() {
     super.onInit();
-    listenerForMeeting(meetingId);    
+    listenerForMeeting(meetingId);
   }
 
   @override
   void onClose() {
     super.onClose();
     firebaseService.cancelListener(ref: meetingDocRef);
-    // firebaseService.cancelListener(ref: messageColRef);
-    // textController.dispose();
   }
 
   void listenerForMeeting(String meetingId) {
@@ -69,7 +49,8 @@ class MeetingCardController extends GetxController {
           data!.publishedTime = meeting.value?.publishedTime ?? DateTime.now();
         }
         meeting.value = data;
-        final temp = await MeetingRepository.instance.fetchHostData(meeting.value!);
+        final temp =
+            await MeetingRepository.instance.fetchHostData(meeting.value!);
         meeting.value = Meeting.clone(temp);
         downloadHostImage(meeting.value!.hostImageUrl);
         debugPrint('listenerForMeeting끝');
@@ -86,127 +67,25 @@ class MeetingCardController extends GetxController {
     hostImage.value = Image.memory(imageBytes).image;
   }
 
-  void onTapListTile() {
-    HomePageController.instance.overlayPage.value = MeetingDetailPage(
-      meetingId: meetingId,
-    );
-  }
-
   void onTapMeetingCard() {
-    HomePageController.instance.overlayPage.value = MeetingDetailPage(
-      meetingId: meetingId
+    debugPrint('라우팅:${Get.nestedKey(1)!.currentState!}');
+    debugPrint('무브0');
+    
+    debugPrint('무브00');
+    // Get.toNamed('/meeting/empty', id: 1);
+    debugPrint('무브1');
+    final move = Responsive.action(
+      mobile: () =>
+          Get.toNamed('/meeting/detail', arguments: meeting.value!.id, id: 1),
+      tablet: () =>
+          Get.toNamed('/meeting/detail', arguments: meeting.value!.id, id: 1),
+      desktop: () =>
+          Get.offNamed('/meeting/detail', arguments: meeting.value!.id, id: 1),
     );
+    debugPrint('무브2');
+    move();
+    debugPrint('무브3');
+    // Get.offNamedUntil('/meeting/detail', ModalRoute.withName('/meeting/detail'), id: 1, arguments: meeting.value!.id,);
+    // Get.removeRoute(ModalRoute.withName('/meeting/detail') as Route<dynamic>, id: 1);
   }
-
-  // 맴버 리스너시작
-  // void listenerForMembers(String meetingId) {
-  //   debugPrint('모임맴버리스너!!!! ${members.length}');
-  //   try {
-  //     final ref = firebaseService.memberList(meetingId);
-  //     debugPrint('모임맴버리스너!1');
-  //     final listener = ref.snapshots().listen((snapshot) async {
-  //       // final snapshotMembers2 = snapshot.docs
-  //       //     .where((doc) => members[doc.data().uid] == null)
-  //       //     .map((doc) {
-  //       //       return MapEntry(doc.data().uid, doc.data(),);
-  //       //     });
-  //       // members.value = snapshotMembers2;
-  //       debugPrint('모임맴버리스너!2 : ${snapshot.docs.length}');
-  //       final snapshotMembers = <String, Member>{};
-  //       for (final doc in snapshot.docs) {
-  //         debugPrint('모임맴버리스너!3 :${doc.data().uid}');
-  //         var member = doc.data();
-  //         if (members[member.uid] != null) continue;
-  //         snapshotMembers[member.uid] = member;
-  //         debugPrint('모임맴버리스너!4');
-
-  //         // 맴버 이름, 이미지 가져오기
-  //         member = await firebaseService.fetchMemberData(member);
-  //         debugPrint('모임맴버리스너!5');
-  //         snapshotMembers[member.uid] = member;
-  //         members[member.uid] = member;
-  //       }
-  //       debugPrint(snapshotMembers.values.toString());
-  //       members.value = Map.from(snapshotMembers);
-  //       debugPrint('모임맴버리스너!진행중');
-  //     });
-  //     firebaseService.addListener(ref: ref, listener: listener);
-  //   } catch (e) {
-  //     debugPrint('오류!!! listenerForMembers: ${e.toString()}');
-  //   }
-  // }
-
-  // void onEdit() {
-  //   isEdit.value = true;
-  // }
-
-  // void cancelEdit() {
-  //   isEdit.value = false;
-  // }
-
-  // Future<void> updateEdit() async {
-  //   if (formKey.currentState == null) return;
-  //   if (formKey.currentState!.validate()) {
-  //     isLoading.value = true;
-  //     formKey.currentState!.save();
-  //     try {
-  //       await firebaseService.updateMeetingData(
-  //         meetingId: meetingId,
-  //         title: editTitle,
-  //         description: editDescription,
-  //         place: editPlace,
-  //       );
-  //       Get.snackbar(
-  //         '수정완료!',
-  //         '모임 수정이 완료되었습니다!',
-  //         backgroundColor: Colors.white,
-  //       );
-  //     } catch (e) {
-  //       debugPrint('에러!!!updateEdit: ${e.toString()}');
-  //     } finally {
-  //       isEdit.value = false;
-  //       isLoading.value = false;
-  //     }
-  //   }
-  // }
-
-  // Future<void> leaveMeeting() async {
-  //   await Future.wait([
-  //     firebaseService.deleteMemberData(
-  //         meetingId: meetingId, uid: firebaseService.currentUid!),
-  //     firebaseService.deleteUserMeetingData(
-  //         meetingId: meetingId, uid: firebaseService.currentUid!)
-  //   ]);
-  //   MainPageController.instance.overlayPage.value = null;
-  //   Get.snackbar('모임 나가기!', '"${meeting.value!.title}" 모임에서 나갔습니다',
-  //       backgroundColor: Colors.white, snackPosition: SnackPosition.BOTTOM);
-  // }
-
-  // void listenerForMessages() {
-  //   debugPrint('listenerForMessages');
-  //   try {
-  //     final listener = messageColRef.snapshots().listen((snapshot) {
-  //       messages.value =
-  //           snapshot.docs.map((doc) => doc.data() as Message).toList();
-  //     });
-  //     firebaseService.addListener(ref: messageColRef, listener: listener);
-  //   } catch (e) {
-  //     debugPrint('오류!! listenerForMessages: ${e.toString()}');
-  //   }
-  // }
-
-  // Future<void> sendMessage() async {
-  //   debugPrint('sendMessage');
-  //   try {
-  //     final text = textController.text;
-  //     textController.clear();      
-  //     debugPrint('sendMessage4');
-  //     await firebaseService.createMessageData(
-  //         meetingId, firebaseService.currentUid!, text);
-  //     debugPrint(messages.length.toString());
-  //     debugPrint('sendMessage 끝');
-  //   } catch (e) {
-  //     debugPrint('오류!! sendMessage: ${e.toString()}');
-  //   }
-  // }
 }

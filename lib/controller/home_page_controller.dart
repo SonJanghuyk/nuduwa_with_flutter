@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -14,7 +13,6 @@ import 'package:nuduwa_with_flutter/screens/map/map_page.dart';
 import 'package:nuduwa_with_flutter/screens/meeting/meeting_page.dart';
 import 'package:nuduwa_with_flutter/screens/profile/my_profile_page.dart';
 import 'package:nuduwa_with_flutter/service/auth_service.dart';
-import 'package:nuduwa_with_flutter/service/data_service.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 import '../model/user_meeting.dart';
@@ -33,7 +31,6 @@ class HomePageController extends GetxController {
 
   // 텝인덱스
   final tabIndex = RxInt(0);
-  final overlayPage = Rx<Widget?>(null);
 
   // UserMeeting
   final userMeetings = <UserMeeting>[].obs;
@@ -41,18 +38,14 @@ class HomePageController extends GetxController {
 
   final firebaseService = FirebaseService.instance;
 
-  late final String mapStyle;
-
   @override
   void onInit() async {
     super.onInit();
 
     // 위치 권한 체크
-    final(message, latLng) = await _checkPermission();
+    final (message, latLng) = await _checkPermission();
     permissionMessage.value = message;
     currentLatLng.value = latLng;
-
-    mapStyle = await  rootBundle.loadString('assets/map_style.txt');
   }
 
   @override
@@ -101,35 +94,42 @@ class HomePageController extends GetxController {
 
   void changePage(int index) {
     tabIndex.value = index;
-    Get.toNamed(pages[index], id: 1);
-    overlayPage.value = null;
+    // Get.toNamed(pages[index], id: 1);
+    // switch (index) {
+    //   case 0:
+    //     Get.toNamed('/map');
+    //   case 1:
+    //     Get.toNamed('/meeting');
+    //   case 2:
+    //     Get.toNamed('/chatting');
+    //   case 3:
+    //     Get.toNamed('/myProfile');
+    // }
   }
 
-  Route onGenerateRoute(RouteSettings settings) {
+  Route? onGenerateRoute(RouteSettings settings) {
     debugPrint('라우트: ${settings.name}');
-    late Route pageRoute;
+    // late Route pageRoute;
     switch (settings.name) {
       case '/map' || '/':
-        pageRoute = GetPageRoute(
+        return GetPageRoute(
           settings: settings,
           page: () => MapPage(),
           binding: BindingsBuilder(() {
-            Get.put(MapPageController(location: currentLatLng.value, mapStyle: mapStyle));
+            // Get.put(MapPageController(location: currentLatLng.value));
           }),
           transition: Transition.noTransition,
         );
-        break;
 
       case '/meeting':
-        pageRoute = GetPageRoute(
+        return GetPageRoute(
           settings: settings,
           page: () => MeetingPage(),
           transition: Transition.noTransition,
         );
-        break;
 
       case '/chatting':
-        pageRoute = GetPageRoute(
+        return GetPageRoute(
           settings: settings,
           page: () => ChattingPage(),
           binding: BindingsBuilder(() {
@@ -137,20 +137,17 @@ class HomePageController extends GetxController {
           }),
           transition: Transition.noTransition,
         );
-        break;
 
       case '/profile':
-        pageRoute = GetPageRoute(
+        return GetPageRoute(
           settings: settings,
           page: () => MyProfilePage(),
-          binding: BindingsBuilder(() {
-            Get.put(UserProfileController());
-          }),
           transition: Transition.noTransition,
         );
-        break;
+
+      default:
+        return null;
     }
-    return pageRoute;
   }
 
   listenerForUserMeetings(bool isLogin) {

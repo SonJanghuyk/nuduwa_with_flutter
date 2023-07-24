@@ -15,13 +15,14 @@ class UserProfileController extends GetxController {
   final firebaseService = FirebaseService.instance;
 
   // User
-  final String uid = FirebaseService.instance.currentUid!;
+  final String uid;
   final Rx<UserModel?> user = Rx<UserModel?>(null);
 
   // Listener Ref
-  final DocumentReference<UserModel> userDocRef = FirebaseService.instance.userList.doc(FirebaseService.instance.currentUid!);
+  final DocumentReference<UserModel> userDocRef;// = FirebaseService.instance.userList.doc(FirebaseService.instance.currentUid!);
 
-  UserProfileController();
+  UserProfileController({required this.uid})
+    : userDocRef = FirebaseService.instance.userList.doc(uid);
 
   @override
   void onInit() {
@@ -42,12 +43,11 @@ class UserProfileController extends GetxController {
         if (!snapshot.exists || snapshot.data() == null) return;
         final data = snapshot.data();
         user.value = data;
-        // downloadHostImage(meeting.value!.hostImageUrl);
-        debugPrint('listenerForMeeting끝');
+        debugPrint('listenerForUser끝');
       });
       firebaseService.addListener(ref: userDocRef, listener: listener);
     } catch (e) {
-      debugPrint('에러!! listenerForMeeting: $e');
+      debugPrint('에러!! listenerForUser: $e');
     }
   }
 

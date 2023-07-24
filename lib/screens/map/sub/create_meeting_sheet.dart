@@ -8,6 +8,7 @@ import 'package:numberpicker/numberpicker.dart';
 Future<dynamic> createMeetingSheet() {
   return showModalBottomSheet(
     context: Get.context!,
+    constraints: const BoxConstraints(maxWidth: 800),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
         top: Radius.circular(20.0),
@@ -30,7 +31,7 @@ class CreateMeetingScreen extends StatelessWidget {
     return Container(
       height: MediaQuery.of(context).size.height * 0.95,
       padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(color: Colors.transparent.withOpacity(0.0)),
+      decoration: const BoxDecoration(color: Colors.transparent),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

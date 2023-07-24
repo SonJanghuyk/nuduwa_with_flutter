@@ -100,6 +100,7 @@ class MeetingChatController extends GetxController
   }
 
   void showUserProfile(String uid) {
-    Get.to(() => UserProfilePage(uid: uid));
+    // Get.to(() => UserProfilePage(uid: uid));
+    Get.toNamed('/userProfile', arguments: uid);
   }
 }

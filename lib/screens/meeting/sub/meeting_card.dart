@@ -15,7 +15,7 @@ class MeetingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      onTap: () => controller.onTapListTile(),
+      onTap: controller.onTapMeetingCard,
       title: SizedBox(
         height: 100,
         child: Obx(() => controller.meeting.value == null
@@ -68,7 +68,7 @@ class MeetingCard extends StatelessWidget {
                         
                               // ------- MeetingTime -------
                               Text(
-                                '${DateFormat("y년 M월 d일 a h:mm").format(controller.meeting.value!.meetingTime)}에 만나요',
+                                '${DateFormat("y년 M월 d일 a hh:mm").format(controller.meeting.value!.meetingTime)}에 만나요',
                                 style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey.shade600),

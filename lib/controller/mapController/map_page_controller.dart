@@ -30,7 +30,7 @@ class MapPageController extends GetxController {
   var _mapController = Completer<GoogleMapController>();
   final meetings = <String, ({Meeting meeting, Marker marker})>{}.obs;
   // 구글 지도에서 POI아이콘 삭제
-  final String mapStyle;
+  late final String mapStyle;
 
   // Location
   var currentLocation = const LatLng(0, 0);
@@ -63,15 +63,15 @@ class MapPageController extends GetxController {
   // MeetingInfoSheet
   final hostImage = Rx<ImageProvider?>(null);
 
-  MapPageController({required LatLng? location, required this.mapStyle}) {
-    currentLocation = location ?? const LatLng(0, 0);
-  }
+  MapPageController();
 
   @override
   void onInit() async {
     super.onInit();
-    center = currentLocation;
+    debugPrint('맵맵맵');
+    
 
+    mapStyle = await  rootBundle.loadString('assets/map_style.txt');
     await _drawIconImages();
 
     _listenerForMeetingsOfMap();
@@ -81,6 +81,12 @@ class MapPageController extends GetxController {
   void onReady() {
     ever(homepageController.userMeetings, _updateMeetingIcon);
     ever(homepageController.leavedMeeting, _updateMeetingIcon);
+    once(homepageController.currentLatLng, fetchcurrentLocation);
+  }
+
+  void fetchcurrentLocation(LatLng? currentLocation){
+    this.currentLocation = currentLocation!;
+    center = currentLocation;
   }
 
   /// 모임 참여하거나 나가면 아이콘 색 바꾸기

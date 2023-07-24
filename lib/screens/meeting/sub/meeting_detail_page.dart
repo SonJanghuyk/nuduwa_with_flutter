@@ -1,30 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:nuduwa_with_flutter/controller/meetingController/meeting_card_controller.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_detail_controller.dart';
 import 'package:nuduwa_with_flutter/screens/map/sub/meeting_info_sheet.dart';
 import 'package:nuduwa_with_flutter/screens/meeting/sub/meeting_chat_page.dart';
+import 'package:nuduwa_with_flutter/screens/scaffold_of_nuduwa.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class MeetingDetailPage extends StatelessWidget {
-  final String meetingId;
-  final MeetingDetailController controller;
-  final MeetingCardController meetingCardController;
-
   MeetingDetailPage({
     super.key,
     required this.meetingId,
-  })  : controller = Get.put(MeetingDetailController(meetingId: meetingId),
-            tag: meetingId),
-        meetingCardController = MeetingCardController.instance(tag: meetingId);
+  }) : controller = MeetingDetailController.instance(tag: meetingId);
+
+  final String meetingId;
+  late final MeetingDetailController controller;
 
   @override
   Widget build(BuildContext context) {
-    final isHost = meetingCardController.meeting.value!.hostUid ==
-        FirebaseService.instance.currentUid!;
-
-    return Scaffold(
+    return ScaffoldOfNuduwa(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -32,7 +26,7 @@ class MeetingDetailPage extends StatelessWidget {
         leading: Obx(
           () => !controller.isEdit.value
               ? IconButton(
-                  onPressed: controller.close,
+                  onPressed: () => controller.close(context),
                   icon: const Row(children: [
                     Icon(
                       Icons.arrow_back_ios_new,
@@ -77,37 +71,38 @@ class MeetingDetailPage extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    itemBuilder: (BuildContext context) => isHost
-                        ? <PopupMenuEntry<String>>[
-                            menuItem(
-                              text: '모임 수정',
-                              icon: Icons.change_circle_outlined,
-                              color: Colors.black,
-                              ontap: controller.onEdit,
-                            ),
-                            menuItem(
-                              text: '모임 삭제',
-                              icon: Icons.delete_forever_outlined,
-                              color: Colors.red,
-                              ontap: controller.close,
-                            ),
-                          ]
-                        : [
-                            menuItem(
-                              text: '모임 나가기',
-                              icon: Icons.exit_to_app,
-                              color: Colors.red,
-                              ontap: controller.leaveMeeting,
-                            )
-                          ],
+                    itemBuilder: (BuildContext context) =>
+                        controller.meeting.value?.hostUid ==
+                                FirebaseService.instance.currentUid!
+                            ? <PopupMenuEntry<String>>[
+                                menuItem(
+                                  text: '모임 수정',
+                                  icon: Icons.change_circle_outlined,
+                                  color: Colors.black,
+                                  ontap: controller.onEdit,
+                                ),
+                                menuItem(
+                                  text: '모임 삭제',
+                                  icon: Icons.delete_forever_outlined,
+                                  color: Colors.red,
+                                  ontap: () => controller.close(context),
+                                ),
+                              ]
+                            : [
+                                menuItem(
+                                  text: '모임 나가기',
+                                  icon: Icons.exit_to_app,
+                                  color: Colors.red,
+                                  ontap: controller.leaveMeeting,
+                                )
+                              ],
                   )
                 : Obx(() => !controller.isLoading.value
                     ? IconButton(
                         onPressed: controller.updateEdit,
                         icon: const Text(
                           '수정 완료',
-                          style:
-                              TextStyle(fontSize: 20, color: Colors.blue),
+                          style: TextStyle(fontSize: 20, color: Colors.blue),
                         ),
                         color: Colors.blue,
                         iconSize: 80,
@@ -118,99 +113,8 @@ class MeetingDetailPage extends StatelessWidget {
           ),
         ],
       ),
-/*
-        iconButtons: [
-          Obx(() => !controller.isEdit.value
-              ? IconButton(
-                  onPressed: controller.close,
-                  icon: const Row(children: [
-                    Icon(
-                      Icons.arrow_back_ios_new,
-                      size: 28,
-                    ),
-                    Text(
-                      '내 모임',
-                      style: TextStyle(fontSize: 20, color: Colors.blue),
-                    ),
-                  ]),
-                  color: Colors.blue,
-                )
-              : IconButton(
-                  onPressed: controller.cancelEdit,
-                  icon: const Row(children: [
-                    Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Colors.red,
-                      size: 28,
-                    ),
-                    Text(
-                      '수정 취소',
-                      style: TextStyle(fontSize: 20, color: Colors.red),
-                    ),
-                  ]),
-                  color: Colors.blue,
-                )),
-          const Spacer(),
-          Obx(
-            () => !controller.isEdit.value
-                ? PopupMenuButton(
-                    icon: const Icon(
-                      Icons.menu,
-                      color: Colors.blue,
-                    ),
-                    iconSize: 30,
-                    elevation: 1,
-                    padding: EdgeInsets.zero,
-                    constraints: BoxConstraints.expand(
-                        width: 150, height: isHost ? 100 : 40),
-                    offset: const Offset(0, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    itemBuilder: (BuildContext context) => isHost
-                        ? <PopupMenuEntry<String>>[
-                            meetingMenuItem(
-                              text: '모임 수정',
-                              icon: Icons.change_circle_outlined,
-                              color: Colors.black,
-                              ontap: controller.onEdit,
-                            ),
-                            meetingMenuItem(
-                              text: '모임 삭제',
-                              icon: Icons.delete_forever_outlined,
-                              color: Colors.red,
-                              ontap: controller.close,
-                            ),
-                          ]
-                        : [
-                            meetingMenuItem(
-                              text: '모임 나가기',
-                              icon: Icons.exit_to_app,
-                              color: Colors.red,
-                              ontap: controller.leaveMeeting,
-                            )
-                          ],
-                  )
-                : Expanded(
-                    child: Obx(() => !controller.isLoading.value
-                        ? IconButton(
-                            onPressed: controller.updateEdit,
-                            icon: const Text(
-                              '수정 완료',
-                              style:
-                                  TextStyle(fontSize: 20, color: Colors.blue),
-                            ),
-                            color: Colors.blue,
-                          )
-                        : const Center(
-                            child: CircularProgressIndicator(),
-                          )),
-                  ),
-          )
-        ],
-      ),*/
       body: Obx(() {
-        final meeting = meetingCardController.meeting.value;
+        final meeting = controller.meeting.value;
         if (meeting == null) {
           // 서버에서 데이터 가져오는 중일때
           return const Center(child: CircularProgressIndicator());
@@ -233,13 +137,13 @@ class MeetingDetailPage extends StatelessWidget {
                                 width: 60,
                                 height: 60,
                                 child: Obx(() =>
-                                    meetingCardController.hostImage.value == null
+                                    controller.hostImage.value == null
                                         ? const Center(
                                             child: CircularProgressIndicator())
                                         : CircleAvatar(
                                             radius: 20,
-                                            backgroundImage: meetingCardController
-                                                .hostImage.value,
+                                            backgroundImage:
+                                                controller.hostImage.value,
                                             backgroundColor:
                                                 Colors.white, // 로딩 중일 때 보여줄 배경색
                                           )),
@@ -256,10 +160,11 @@ class MeetingDetailPage extends StatelessWidget {
                                             width: 20,
                                             child: CircularProgressIndicator())
                                         : Text(meeting.hostName!,
-                                            style: const TextStyle(fontSize: 17)),
+                                            style:
+                                                const TextStyle(fontSize: 17)),
                                   ),
                                   const SizedBox(height: 5),
-          
+
                                   // ------- PublishedTime -------
                                   Text(
                                     '${DateFormat("y년 M월 d일 a h:mm").format(meeting.publishedTime)}에 생성됨',
@@ -270,7 +175,7 @@ class MeetingDetailPage extends StatelessWidget {
                               ),
                             ],
                           ),
-          
+
                           Form(
                             key: controller.formKey,
                             child: Column(
@@ -299,8 +204,8 @@ class MeetingDetailPage extends StatelessWidget {
                                         return null;
                                       },
                                     )),
-                                const SizedBox(height: 40),   
-          
+                                const SizedBox(height: 40),
+
                                 // ------- Description -------
                                 EditTextFormField(
                                   text: meeting.description,
@@ -344,7 +249,7 @@ class MeetingDetailPage extends StatelessWidget {
                                   },
                                 ),
                                 const SizedBox(height: 40),
-          
+
                                 // MeetingTime
                                 RowMeetingInfo(
                                   text:
@@ -356,7 +261,7 @@ class MeetingDetailPage extends StatelessWidget {
                               ],
                             ),
                           ),
-          
+
                           // Members
                           Container(
                             width: double.infinity,
@@ -364,7 +269,8 @@ class MeetingDetailPage extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 vertical: 15, horizontal: 10),
                             decoration: const BoxDecoration(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.grey,
@@ -391,8 +297,9 @@ class MeetingDetailPage extends StatelessWidget {
                                                         CircularProgressIndicator())
                                                 : CircleAvatar(
                                                     radius: 18,
-                                                    backgroundImage: NetworkImage(
-                                                        member.imageUrl!),
+                                                    backgroundImage:
+                                                        NetworkImage(
+                                                            member.imageUrl!),
                                                     backgroundColor: Colors
                                                         .white, // 로딩 중일 때 보여줄 배경색
                                                   ),
@@ -406,33 +313,36 @@ class MeetingDetailPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  !controller.isEdit.value ?
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: TextButton(
-                        onPressed: () => Get.to(() => MeetingChatPage(
-                              meetingId: meetingId,
-                            )),
-                        style: ButtonStyle(
-                            backgroundColor:
-                                MaterialStateProperty.all(Colors.blue),
-                            fixedSize:
-                                MaterialStateProperty.all(const Size(200, 45))),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.chat_outlined, color: Colors.white),
-                            SizedBox(width: 5, height: 50),
-                            Text(
-                              '채팅 참가',
-                              style: TextStyle(fontSize: 20, color: Colors.white),
+                  !controller.isEdit.value
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: TextButton(
+                              onPressed: () => Get.to(() => MeetingChatPage(
+                                    meetingId: meetingId,
+                                  )),
+                              style: ButtonStyle(
+                                  backgroundColor:
+                                      MaterialStateProperty.all(Colors.blue),
+                                  fixedSize: MaterialStateProperty.all(
+                                      const Size(200, 45))),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.chat_outlined,
+                                      color: Colors.white),
+                                  SizedBox(width: 5, height: 50),
+                                  Text(
+                                    '채팅 참가',
+                                    style: TextStyle(
+                                        fontSize: 20, color: Colors.white),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ): const Center()
+                          ),
+                        )
+                      : const Center()
                 ],
               ),
             ),
@@ -442,7 +352,7 @@ class MeetingDetailPage extends StatelessWidget {
     );
   }
 
-   PopupMenuItem<String> menuItem(
+  PopupMenuItem<String> menuItem(
       {required String text,
       required IconData icon,
       required Color color,

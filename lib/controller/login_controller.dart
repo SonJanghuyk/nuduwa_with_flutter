@@ -6,8 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
-import 'package:nuduwa_with_flutter/service/auth_service.dart';
-import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class LoginController extends GetxController {
   static LoginController instance = Get.find();
@@ -17,13 +15,6 @@ class LoginController extends GetxController {
 
   final isGoogleLoginLoading = false.obs; // 서버 로그인중
   final isAppleLoginLoading = false.obs; // 서버 로그인중
-
-  @override
-  void onReady() {
-    super.onReady();
-
-    // Get.put(AuthService());
-  }
 
   void signInWithGoogle() async {
     if (isGoogleLoginLoading.value) return;

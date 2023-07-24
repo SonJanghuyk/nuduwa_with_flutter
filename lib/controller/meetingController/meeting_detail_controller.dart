@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/controller/home_page_controller.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_card_controller.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
 import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
+import 'package:nuduwa_with_flutter/utils/responsive.dart';
 
 class MeetingDetailController extends GetxController {
   static MeetingDetailController instance({required String tag}) =>
@@ -18,6 +18,8 @@ class MeetingDetailController extends GetxController {
   final CollectionReference<Member> memberColRef;
 
   // Meeting
+  late final Rx<Meeting?> meeting;
+  late final Rx<ImageProvider?> hostImage;
   final String meetingId;
   final members = <String, Member>{}.obs;
 
@@ -30,12 +32,12 @@ class MeetingDetailController extends GetxController {
   String? editDescription;
 
   MeetingDetailController({required this.meetingId})
-      : memberColRef =
-            FirebaseService.instance.memberList(meetingId);
+      : memberColRef = FirebaseService.instance.memberList(meetingId);
 
   @override
   void onInit() {
     super.onInit();
+    fetchMeetingData();
     listenerForMembers();
   }
 
@@ -45,8 +47,19 @@ class MeetingDetailController extends GetxController {
     firebaseService.cancelListener(ref: memberColRef);
   }
 
-  void close() {
-    HomePageController.instance.overlayPage.value = null;
+  void close(BuildContext context) {
+    final move = Responsive.action(
+      mobile: () => Navigator.of(context).pop(), // Get.back()이 안됨
+      tablet: () => Get.offNamed('/meeting/empty', id: 1),
+      desktop: () => Get.offNamed('/meeting/empty', id: 1),
+    );
+    move();
+    // Navigator.of(context).pop();
+  }
+
+  void fetchMeetingData() {
+    meeting = MeetingCardController.instance(tag: meetingId).meeting;
+    hostImage = MeetingCardController.instance(tag: meetingId).hostImage;
   }
 
   // 맴버 리스너시작
@@ -123,8 +136,9 @@ class MeetingDetailController extends GetxController {
       UserMeetingRepository.instance.deleteUserMeetingData(
           meetingId: meetingId, uid: firebaseService.currentUid!)
     ]);
-    HomePageController.instance.overlayPage.value = null;
-    Get.snackbar('모임 나가기!', '"${MeetingCardController.instance(tag: meetingId).meeting.value!.title}" 모임에서 나갔습니다',
+    Get.back();
+    Get.snackbar('모임 나가기!',
+        '"${MeetingCardController.instance(tag: meetingId).meeting.value!.title}" 모임에서 나갔습니다',
         backgroundColor: Colors.white, snackPosition: SnackPosition.BOTTOM);
   }
 }

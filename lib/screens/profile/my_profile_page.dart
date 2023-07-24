@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/controller/login_controller.dart';
-import 'package:nuduwa_with_flutter/main.dart';
+import 'package:nuduwa_with_flutter/screens/scaffold_of_nuduwa.dart';
 import 'package:nuduwa_with_flutter/service/auth_service.dart';
 
 class MyProfilePage extends StatelessWidget {
@@ -10,6 +11,7 @@ class MyProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('ㅇㅇ${Get.arguments}');
     return Scaffold(
       appBar: AppbarOfNuduwa(
         title: '내 정보',
