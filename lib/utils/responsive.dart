@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 
 class Responsive {
-  static DeviceSize _deviceSize = DeviceSize.mobile;
+  static DeviceSize _deviceSize = DeviceSize.portrait;
   static DeviceSize get deviceSize => _deviceSize;
 
   // 화면 가로 길이 설정
   static void init(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     debugPrint('가로길이:${screenWidth.toString()}');
-    if (screenWidth >= 1024) {
-      _deviceSize = DeviceSize.desktop;
-    } else if (screenWidth >= 600) {
-      _deviceSize = DeviceSize.tablet;
+    if (screenWidth >= 840) {
+      _deviceSize = DeviceSize.landscape;
     } else {
-      _deviceSize = DeviceSize.mobile;
+      _deviceSize = DeviceSize.portrait;
     }
   }
 
@@ -41,40 +39,31 @@ class Responsive {
 
   // 가로 길이에 따라 다른 레이아웃 반환
   static Widget layout({
-    required Widget mobile,
-    required Widget tablet,
-    required Widget desktop,
+    required Widget portrait,
+    required Widget landscape,
   }) {
     switch (_deviceSize) {
-      case DeviceSize.desktop:
-        return desktop;
-      case DeviceSize.tablet:
-        return tablet;
-      case DeviceSize.mobile:
-      default:
-        return mobile;
+      case DeviceSize.portrait:
+        return portrait;
+      case DeviceSize.landscape:
+        return landscape;
     }
   }
 
   static void Function() action({
-    required void Function() mobile,
-    required void Function() tablet,
-    required void Function() desktop,
+    required void Function() portrait,
+    required void Function() landscape,
   }) {
     switch (_deviceSize) {
-      case DeviceSize.desktop:
-        return desktop;
-      case DeviceSize.tablet:
-        return tablet;
-      case DeviceSize.mobile: 
-      default:
-        return mobile;
+      case DeviceSize.portrait:
+        return portrait;
+      case DeviceSize.landscape:
+        return landscape;
     }
   }
 }
 
 enum DeviceSize {
-  mobile,
-  tablet,
-  desktop;
+  portrait,
+  landscape,
 }

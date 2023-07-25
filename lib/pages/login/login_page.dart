@@ -3,10 +3,8 @@ import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/controller/login_controller.dart';
 import 'package:nuduwa_with_flutter/utils/assets.dart';
 
-class LoginPage extends StatelessWidget {
-  final controller = LoginController.instance;
-
-  LoginPage({super.key});
+class LoginPage extends GetView<LoginController> {
+  const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {

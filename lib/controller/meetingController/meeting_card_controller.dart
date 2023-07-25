@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
-import 'package:nuduwa_with_flutter/screens/map/sub/icon_of_meeting.dart';
+import 'package:nuduwa_with_flutter/pages/map/sub/icon_of_meeting.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/utils/assets.dart';
 import 'package:nuduwa_with_flutter/utils/responsive.dart';
@@ -75,11 +75,9 @@ class MeetingCardController extends GetxController {
     // Get.toNamed('/meeting/empty', id: 1);
     debugPrint('무브1');
     final move = Responsive.action(
-      mobile: () =>
+      portrait: () =>
           Get.toNamed('/meeting/detail', arguments: meeting.value!.id, id: 1),
-      tablet: () =>
-          Get.toNamed('/meeting/detail', arguments: meeting.value!.id, id: 1),
-      desktop: () =>
+      landscape: () =>
           Get.offNamed('/meeting/detail', arguments: meeting.value!.id, id: 1),
     );
     debugPrint('무브2');

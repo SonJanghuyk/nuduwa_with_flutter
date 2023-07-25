@@ -4,12 +4,10 @@ import 'package:intl/intl.dart';
 import 'package:nuduwa_with_flutter/controller/chattingController/chatting_card_controller.dart';
 import 'package:nuduwa_with_flutter/controller/chattingController/chatting_page_controller.dart';
 import 'package:nuduwa_with_flutter/model/user_chatting.dart';
-import 'package:nuduwa_with_flutter/screens/scaffold_of_nuduwa.dart';
+import 'package:nuduwa_with_flutter/pages/scaffold_of_nuduwa.dart';
 
-class ChattingPage extends StatelessWidget {
-  ChattingPage({super.key});
-
-  final controller = ChattingPageController.instance;
+class ChattingPage extends GetView<ChattingPageController> {
+  const ChattingPage({super.key});
 
   @override
   Widget build(BuildContext context) {

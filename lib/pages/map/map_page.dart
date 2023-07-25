@@ -6,10 +6,8 @@ import 'package:nuduwa_with_flutter/model/meeting.dart';
 
 import 'sub/create_meeting_sheet.dart';
 
-class MapPage extends StatelessWidget {
-  final controller = MapPageController.instance;
-
-  MapPage({
+class MapPage extends GetView<MapPageController> {
+  const MapPage({
     super.key,
   });
 

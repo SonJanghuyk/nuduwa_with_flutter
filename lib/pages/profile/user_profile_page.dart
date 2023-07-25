@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/controller/profileController/user_profile_controller.dart';
-import 'package:nuduwa_with_flutter/screens/scaffold_of_nuduwa.dart';
+import 'package:nuduwa_with_flutter/pages/scaffold_of_nuduwa.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/utils/assets.dart';
 

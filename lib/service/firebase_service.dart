@@ -144,32 +144,4 @@ class FirebaseService extends GetxService {
     }
   }
 
-  // UserMeeting
-  
-
-  // UserChatting
-  
-
-  // Meeting
-  
-
-  // Member
-  
-
-  //
-  // Meeting.Message
-  //
-  // Message
-  
-
-  //
-  // Chatting
-  //
-  
-
-  //
-  // Chatting.Message
-  //
-  
-
 }

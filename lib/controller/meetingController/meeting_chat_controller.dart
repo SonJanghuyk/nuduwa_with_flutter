@@ -2,8 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/controller/chattingController/chatting_interface.dart';
+import 'package:nuduwa_with_flutter/model/member.dart';
 import 'package:nuduwa_with_flutter/model/message.dart';
-import 'package:nuduwa_with_flutter/screens/profile/user_profile_page.dart';
+import 'package:nuduwa_with_flutter/pages/profile/user_profile_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class MeetingChatController extends GetxController
@@ -15,6 +16,8 @@ class MeetingChatController extends GetxController
   final firebaseService = FirebaseService.instance;
 
   final String meetingId;
+  final String meetingTitle;
+  final RxMap<String, Member> members;
 
   // Listener Ref
   final CollectionReference<Message> messageColRef;
@@ -29,8 +32,11 @@ class MeetingChatController extends GetxController
   @override
   var isNotLast = false.obs;
 
-  MeetingChatController({required this.meetingId})
-      : messageColRef = FirebaseService.instance.meetingMessageList(meetingId);
+  MeetingChatController({
+    required this.meetingId,
+    required this.meetingTitle,
+    required this.members,
+  }) : messageColRef = FirebaseService.instance.meetingMessageList(meetingId);
 
   @override
   void onInit() {
@@ -49,9 +55,11 @@ class MeetingChatController extends GetxController
   void listenerForMessages() {
     try {
       debugPrint('listenerForMessages');
-      final listener =
-          messageColRef.orderBy('sendTime', descending: true).snapshots().listen((snapshot) {
-            debugPrint('listenerForMessages2');
+      final listener = messageColRef
+          .orderBy('sendTime', descending: true)
+          .snapshots()
+          .listen((snapshot) {
+        debugPrint('listenerForMessages2');
         final snapshotMessages = snapshot.docs.map((doc) => doc.data());
         messages.value = List.from(snapshotMessages);
         debugPrint('listenerForMessages ${messages.length}');
@@ -82,10 +90,10 @@ class MeetingChatController extends GetxController
   @override
   void scrollLast() {
     scrollController.animateTo(
-          scrollController.position.minScrollExtent,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
+      scrollController.position.minScrollExtent,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
   }
 
   void scrollListener() {

@@ -6,16 +6,20 @@ import 'dart:math' as math;
 
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
-class MeetingCard extends StatelessWidget {
-  final MeetingCardController controller;
+class MeetingCard extends GetView<MeetingCardController> {
+  const MeetingCard({super.key, required this.meetingId, required this.onTap});
 
-  const MeetingCard({super.key, required this.controller});
+  final String meetingId;
+  final void Function() onTap;
+
+  @override
+  String? get tag => meetingId;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      onTap: controller.onTapMeetingCard,
+      onTap: onTap,
       title: SizedBox(
         height: 100,
         child: Obx(() => controller.meeting.value == null

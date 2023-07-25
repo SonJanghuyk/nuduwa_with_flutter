@@ -7,7 +7,7 @@ import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/message.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/model/user_chatting.dart';
-import 'package:nuduwa_with_flutter/screens/map/sub/icon_of_meeting.dart';
+import 'package:nuduwa_with_flutter/pages/map/sub/icon_of_meeting.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/utils/assets.dart';
 import 'package:nuduwa_with_flutter/utils/responsive.dart';

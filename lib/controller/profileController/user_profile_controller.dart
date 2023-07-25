@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/model/chatting.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/model/user_chatting.dart';
-import 'package:nuduwa_with_flutter/screens/chatting/sub/chatting_room_page.dart';
+import 'package:nuduwa_with_flutter/pages/chatting/sub/chatting_room_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class UserProfileController extends GetxController {

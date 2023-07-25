@@ -3,28 +3,37 @@ import 'package:flutter/material.dart';
 class ScaffoldOfNuduwa extends StatelessWidget {
   const ScaffoldOfNuduwa({
     super.key,
+    this.scaffoldKey,
     this.appBar,
     this.body,
+    this.endDrawer,
   });
 
+  final Key? scaffoldKey;
   final PreferredSizeWidget? appBar;
   final Widget? body;
+  final Widget? endDrawer;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 500),
-        decoration: const BoxDecoration(boxShadow: [
-          BoxShadow(
-            color: Colors.grey,
-            blurRadius: 5.0,
-            spreadRadius: 0.0,
-          )
-        ]),
-        child: Scaffold(
-          appBar: appBar,
-          body: body,
+    return Container(
+      color: Colors.white,
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 650),
+          decoration: const BoxDecoration(boxShadow: [
+            BoxShadow(
+              color: Colors.grey,
+              blurRadius: 5.0,
+              spreadRadius: 0.0,
+            )
+          ]),
+          child: Scaffold(
+            key: scaffoldKey,
+            appBar: appBar,
+            body: body,
+            endDrawer: endDrawer,
+          ),
         ),
       ),
     );

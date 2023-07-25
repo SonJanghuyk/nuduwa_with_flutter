@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/controller/login_controller.dart';
-import 'package:nuduwa_with_flutter/screens/scaffold_of_nuduwa.dart';
+import 'package:nuduwa_with_flutter/pages/scaffold_of_nuduwa.dart';
 import 'package:nuduwa_with_flutter/service/auth_service.dart';
 
 class MyProfilePage extends StatelessWidget {
-  final controller = LoginController.instance;
 
-  MyProfilePage({super.key});
+  const MyProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {

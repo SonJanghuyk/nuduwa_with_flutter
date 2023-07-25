@@ -2,22 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_detail_controller.dart';
-import 'package:nuduwa_with_flutter/screens/map/sub/meeting_info_sheet.dart';
-import 'package:nuduwa_with_flutter/screens/meeting/sub/meeting_chat_page.dart';
-import 'package:nuduwa_with_flutter/screens/scaffold_of_nuduwa.dart';
+import 'package:nuduwa_with_flutter/pages/map/sub/meeting_info_sheet.dart';
+import 'package:nuduwa_with_flutter/pages/meeting/sub/meeting_chat_page.dart';
+import 'package:nuduwa_with_flutter/pages/scaffold_of_nuduwa.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
-class MeetingDetailPage extends StatelessWidget {
-  MeetingDetailPage({
+class MeetingDetailPage extends GetView<MeetingDetailController> {
+  const MeetingDetailPage({
     super.key,
     required this.meetingId,
-  }) : controller = MeetingDetailController.instance(tag: meetingId);
+    required this.onClose,
+  });
 
   final String meetingId;
-  late final MeetingDetailController controller;
+  final void Function() onClose;
+
+  @override
+  String? get tag => meetingId;
 
   @override
   Widget build(BuildContext context) {
+    
     return ScaffoldOfNuduwa(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -26,7 +31,7 @@ class MeetingDetailPage extends StatelessWidget {
         leading: Obx(
           () => !controller.isEdit.value
               ? IconButton(
-                  onPressed: () => controller.close(context),
+                  onPressed: () => onClose(),
                   icon: const Row(children: [
                     Icon(
                       Icons.arrow_back_ios_new,
@@ -85,7 +90,7 @@ class MeetingDetailPage extends StatelessWidget {
                                   text: '모임 삭제',
                                   icon: Icons.delete_forever_outlined,
                                   color: Colors.red,
-                                  ontap: () => controller.close(context),
+                                  ontap: () => {},
                                 ),
                               ]
                             : [
@@ -93,7 +98,10 @@ class MeetingDetailPage extends StatelessWidget {
                                   text: '모임 나가기',
                                   icon: Icons.exit_to_app,
                                   color: Colors.red,
-                                  ontap: controller.leaveMeeting,
+                                  ontap: () {
+                                    controller.leaveMeeting();
+                                    onClose();
+                                  }
                                 )
                               ],
                   )
@@ -289,20 +297,23 @@ class MeetingDetailPage extends StatelessWidget {
                                         Padding(
                                           padding: const EdgeInsets.all(5.0),
                                           child: SizedBox(
-                                            width: 35,
-                                            height: 35,
+                                            width: 50,
+                                            height: 50,
                                             child: member.imageUrl == null
                                                 ? const Center(
                                                     child:
                                                         CircularProgressIndicator())
-                                                : CircleAvatar(
-                                                    radius: 18,
-                                                    backgroundImage:
-                                                        NetworkImage(
-                                                            member.imageUrl!),
-                                                    backgroundColor: Colors
-                                                        .white, // 로딩 중일 때 보여줄 배경색
-                                                  ),
+                                                : IconButton(
+                                                  onPressed: () => Get.toNamed('/userProfile', arguments: member.uid),
+                                                  icon: CircleAvatar(
+                                                      radius: 18,
+                                                      backgroundImage:
+                                                          NetworkImage(
+                                                              member.imageUrl!),
+                                                      backgroundColor: Colors
+                                                          .white, // 로딩 중일 때 보여줄 배경색
+                                                    ),
+                                                ),
                                           ),
                                         ),
                                     ],
@@ -318,9 +329,7 @@ class MeetingDetailPage extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.only(top: 8.0),
                             child: TextButton(
-                              onPressed: () => Get.to(() => MeetingChatPage(
-                                    meetingId: meetingId,
-                                  )),
+                              onPressed: controller.enterMeetingChat,
                               style: ButtonStyle(
                                   backgroundColor:
                                       MaterialStateProperty.all(Colors.blue),

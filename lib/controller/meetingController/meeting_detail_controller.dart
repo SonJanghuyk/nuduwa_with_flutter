@@ -2,9 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_card_controller.dart';
+import 'package:nuduwa_with_flutter/controller/meetingController/meeting_chat_controller.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
 import 'package:nuduwa_with_flutter/model/user_meeting.dart';
+import 'package:nuduwa_with_flutter/pages/meeting/sub/meeting_chat_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/utils/responsive.dart';
 
@@ -47,16 +49,6 @@ class MeetingDetailController extends GetxController {
     firebaseService.cancelListener(ref: memberColRef);
   }
 
-  void close(BuildContext context) {
-    final move = Responsive.action(
-      mobile: () => Navigator.of(context).pop(), // Get.back()이 안됨
-      tablet: () => Get.offNamed('/meeting/empty', id: 1),
-      desktop: () => Get.offNamed('/meeting/empty', id: 1),
-    );
-    move();
-    // Navigator.of(context).pop();
-  }
-
   void fetchMeetingData() {
     meeting = MeetingCardController.instance(tag: meetingId).meeting;
     hostImage = MeetingCardController.instance(tag: meetingId).hostImage;
@@ -67,13 +59,8 @@ class MeetingDetailController extends GetxController {
     debugPrint('모임맴버리스너!!!! ${members.length}');
     try {
       final ref = firebaseService.memberList(meetingId);
+
       final listener = ref.snapshots().listen((snapshot) async {
-        // final snapshotMembers2 = snapshot.docs
-        //     .where((doc) => members[doc.data().uid] == null)
-        //     .map((doc) {
-        //       return MapEntry(doc.data().uid, doc.data(),);
-        //     });
-        // members.value = snapshotMembers2;
         final snapshotMembers = <String, Member>{};
         for (final doc in snapshot.docs) {
           var member = doc.data();
@@ -127,6 +114,16 @@ class MeetingDetailController extends GetxController {
         isLoading.value = false;
       }
     }
+  }
+
+  void enterMeetingChat() {
+    Get.put(
+        MeetingChatController(
+            meetingId: meetingId,
+            meetingTitle: meeting.value!.title,
+            members: members),
+        tag: meetingId);
+    Get.to(MeetingChatPage(meetingId: meetingId));
   }
 
   Future<void> leaveMeeting() async {

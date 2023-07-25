@@ -7,12 +7,12 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:nuduwa_with_flutter/controller/home_page_controller.dart';
+import 'package:nuduwa_with_flutter/controller/main_page_controller.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
 import 'package:nuduwa_with_flutter/model/user_meeting.dart';
-import 'package:nuduwa_with_flutter/screens/map/sub/icon_of_meeting.dart';
-import 'package:nuduwa_with_flutter/screens/map/sub/meeting_info_sheet.dart';
+import 'package:nuduwa_with_flutter/pages/map/sub/icon_of_meeting.dart';
+import 'package:nuduwa_with_flutter/pages/map/sub/meeting_info_sheet.dart';
 import 'dart:ui' as ui;
 
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
@@ -21,7 +21,7 @@ import 'package:nuduwa_with_flutter/utils/assets.dart';
 class MapPageController extends GetxController {
   static MapPageController get instance => Get.find();
 
-  final homepageController = HomePageController.instance;
+  final homepageController = MainPageController.instance;
 
   // Model Manager
   final firebaseService = FirebaseService.instance;

@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:nuduwa_with_flutter/controller/chattingController/chatting_page_controller.dart';
-import 'package:nuduwa_with_flutter/controller/home_page_controller.dart';
+import 'package:nuduwa_with_flutter/controller/main_page_controller.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/map_page_controller.dart';
 import 'package:nuduwa_with_flutter/controller/profileController/user_profile_controller.dart';
-import 'package:nuduwa_with_flutter/screens/chatting/chatting_page.dart';
-import 'package:nuduwa_with_flutter/screens/map/map_page.dart';
+import 'package:nuduwa_with_flutter/pages/chatting/chatting_page.dart';
+import 'package:nuduwa_with_flutter/pages/map/map_page.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/screens/meeting/meeting_page.dart';
-import 'package:nuduwa_with_flutter/screens/profile/my_profile_page.dart';
+import 'package:nuduwa_with_flutter/pages/meeting/meeting_page.dart';
+import 'package:nuduwa_with_flutter/pages/profile/my_profile_page.dart';
 import 'package:nuduwa_with_flutter/utils/responsive.dart';
 
-class HomePage extends StatelessWidget {
-  final controller = HomePageController.instance;
-
-  HomePage({super.key});
+class MainPage extends GetView<MainPageController> {
+  const MainPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +44,7 @@ class HomePage extends StatelessWidget {
                   () => 
                   IndexedStack(
                     index: controller.tabIndex.value,
-                    children: [
+                    children: const [
                       MapPage(),
                       MeetingPage(),
                       ChattingPage(),

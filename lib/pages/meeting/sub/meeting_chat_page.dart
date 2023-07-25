@@ -3,33 +3,31 @@ import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_card_controller.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_chat_controller.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_detail_controller.dart';
-import 'package:nuduwa_with_flutter/screens/chatting/sub/chatting_widget.dart';
+import 'package:nuduwa_with_flutter/pages/chatting/sub/chatting_widget.dart';
+import 'package:nuduwa_with_flutter/pages/scaffold_of_nuduwa.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/utils/assets.dart';
 
-class MeetingChatPage extends StatelessWidget {
+class MeetingChatPage extends GetView<MeetingChatController> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final String meetingId;
-  final MeetingChatController controller;
-  final MeetingDetailController meetingDetailController;
+  // final MeetingDetailController meetingDetailController;
 
-  MeetingChatPage({super.key, required this.meetingId})
-      : controller = Get.put(MeetingChatController(meetingId: meetingId),
-            tag: meetingId),
-        meetingDetailController =
-            MeetingDetailController.instance(tag: meetingId);
+  MeetingChatPage({super.key, required this.meetingId});
+
+  @override
+  String? get tag => meetingId;
 
   @override
   Widget build(BuildContext context) {
-    return 
-    Scaffold(
-      key: _scaffoldKey,
+    return ScaffoldOfNuduwa(
+      scaffoldKey: _scaffoldKey,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
         centerTitle: true,
         title: Obx(() => Text(
-              '${MeetingCardController.instance(tag: meetingId).meeting.value!.title} (${meetingDetailController.members.length})',
+              '${controller.meetingTitle} (${controller.members.length})',
               style: const TextStyle(color: Colors.black),
             )),
         leading: IconButton(
@@ -49,8 +47,7 @@ class MeetingChatPage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.menu, color: Colors.blue),
-            onPressed: () => _scaffoldKey.currentState
-                ?.openEndDrawer(), // Drawer를 여는 동작을 호출합니다.
+            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(), // Drawer를 여는 동작을 호출합니다.
             tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
           ),
         ],
@@ -75,7 +72,7 @@ class MeetingChatPage extends StatelessWidget {
                 const SizedBox(height: 16),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: meetingDetailController.members.length,
+                    itemCount: controller.members.length,
                     itemBuilder: memberCard,
                   ),
                 ),
@@ -88,7 +85,7 @@ class MeetingChatPage extends StatelessWidget {
   }
 
   ListTile memberCard(BuildContext context, int index) {
-    final member = meetingDetailController.members.values.toList()[index];
+    final member = controller.members.values.toList()[index];
     return ListTile(
       leading: CircleAvatar(
         radius: 20,
@@ -112,7 +109,7 @@ class MeetingChatPage extends StatelessWidget {
 
   Widget chatItem(BuildContext context, int index) {
     final message = controller.messages[index];
-    final member = meetingDetailController.members[message.senderUid];
+    final member = controller.members[message.senderUid];
     if (member == null) {
       debugPrint('ChatMember없음!!!');
     }

@@ -5,7 +5,7 @@ import 'package:nuduwa_with_flutter/controller/chattingController/chatting_inter
 import 'package:nuduwa_with_flutter/model/message.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/model/user_chatting.dart';
-import 'package:nuduwa_with_flutter/screens/profile/user_profile_page.dart';
+import 'package:nuduwa_with_flutter/pages/profile/user_profile_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class ChattingRoomController extends GetxController implements ChattingController {

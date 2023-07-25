@@ -8,17 +8,17 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nuduwa_with_flutter/controller/chattingController/chatting_interface.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/map_page_controller.dart';
 import 'package:nuduwa_with_flutter/controller/profileController/user_profile_controller.dart';
-import 'package:nuduwa_with_flutter/screens/chatting/chatting_page.dart';
-import 'package:nuduwa_with_flutter/screens/map/map_page.dart';
-import 'package:nuduwa_with_flutter/screens/meeting/meeting_page.dart';
-import 'package:nuduwa_with_flutter/screens/profile/my_profile_page.dart';
+import 'package:nuduwa_with_flutter/pages/chatting/chatting_page.dart';
+import 'package:nuduwa_with_flutter/pages/map/map_page.dart';
+import 'package:nuduwa_with_flutter/pages/meeting/meeting_page.dart';
+import 'package:nuduwa_with_flutter/pages/profile/my_profile_page.dart';
 import 'package:nuduwa_with_flutter/service/auth_service.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 import '../model/user_meeting.dart';
 
-class HomePageController extends GetxController {
-  static HomePageController instance = Get.find();
+class MainPageController extends GetxController {
+  static MainPageController instance = Get.find();
 
   // TabPageList
   final pages = <String>['/map', '/meeting', '/chatting', '/profile'];
@@ -33,7 +33,7 @@ class HomePageController extends GetxController {
   final tabIndex = RxInt(0);
 
   // UserMeeting
-  final userMeetings = <UserMeeting>[].obs;
+  var userMeetings = <UserMeeting>[].obs;
   final leavedMeeting = <UserMeeting?>[].obs;
 
   final firebaseService = FirebaseService.instance;
@@ -165,5 +165,6 @@ class HomePageController extends GetxController {
           .map((change) => change.doc.data())
           .toList();
     });
+    // userMeetings = UserMeetingRepository.instance.listenerForUserMeetingsData(firebaseService.currentUid!);
   }
 }

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class UserMeeting {
@@ -102,5 +103,17 @@ class UserMeetingRepository {
       debugPrint('readUserMeetingData에러: ${e.toString()}');
       rethrow;
     }
+  }
+
+  RxList<UserMeeting> listenerForUserMeetingsData(String uid) {
+    debugPrint('listenerForUserMeetingsData');
+    final userMeetings = RxList<UserMeeting>();
+    final ref = firebase.userMeetingList(uid);
+    final stream = ref.snapshots();
+
+    userMeetings.bindStream(stream
+        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList()));
+
+    return userMeetings;
   }
 }

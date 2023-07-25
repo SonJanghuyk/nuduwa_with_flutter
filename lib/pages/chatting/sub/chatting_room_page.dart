@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/controller/chattingController/chatting_room_controller.dart';
 import 'package:nuduwa_with_flutter/model/user_chatting.dart';
-import 'package:nuduwa_with_flutter/screens/chatting/sub/chatting_widget.dart';
+import 'package:nuduwa_with_flutter/pages/chatting/sub/chatting_widget.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class ChattingRoomPage extends StatelessWidget {
