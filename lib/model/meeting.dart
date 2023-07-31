@@ -123,23 +123,15 @@ enum MeetingCategory {
 }
 
 class MeetingRepository{
-  static final MeetingRepository instance = MeetingRepository._internal();
 
-  MeetingRepository._internal();
+  /// Create Meeting Data
+  static Future<DocumentReference<Meeting>?> create({required Meeting meeting, required String uid}) async {
 
-  final firebase = FirebaseService.instance;
-
-  Future<DocumentReference<Meeting>?> createMeetingData(Meeting meeting) async {
-    if(firebase.currentUid==null){
-      debugPrint('createMeetingData에러: no CurrentUid');
-      return null;
-    }
-
-    final ref = firebase.meetingList;
+    final ref = FirebaseReference.meetingList;
     try {
       final newMeetingRef = await ref.add(meeting);
       final meetingId = newMeetingRef.id;
-      await MemberRepository.instance.createMemberData(memberUid: firebase.currentUid!, meetingId: meetingId, hostUid: firebase.currentUid!);
+      await MemberRepository.create(memberUid: uid, meetingId: meetingId, hostUid: uid);
       return newMeetingRef;
 
     } catch (e) {
@@ -148,39 +140,26 @@ class MeetingRepository{
     }
   }
 
-  Future<Meeting?> readMeetingData(String meetingId) async {
-    final ref = firebase.meetingList.doc(meetingId);
+  /// Read Meeting Data
+  static Future<Meeting?> read(String meetingId) async {
+    final ref = FirebaseReference.meetingList.doc(meetingId);
     try{
-      final snapshot = await ref.get();
-      return snapshot.data();
+      final data = ref.getDocument<Meeting?>();
+      return data;
 
     }catch(e){
       debugPrint('readMeetingData에러: ${e.toString()}');
       rethrow;
     } 
+  }  
 
-    
-  }
-
-  Future<Meeting> fetchHostData(Meeting meeting) async {
-    try{
-      final host = await UserRepository.instance.readUserData(meeting.hostUid);
-      meeting.hostName = host?.name ?? '이름없음';
-      meeting.hostImageUrl = host?.imageUrl;
-      return meeting;
-
-    }catch(e){
-      debugPrint('fetchHostData에러: ${e.toString()}');
-      rethrow;
-    }       
-  }
-
-  Future<void> updateMeetingData(
+  /// Update Meeting Data
+  static Future<void> update(
       {required String meetingId,
       String? title,
       String? description,
       String? place}) async {
-    final ref = firebase.meetingList.doc(meetingId);
+    final ref = FirebaseReference.meetingList.doc(meetingId);
     try {
       await ref.update({
         if (title != null) "title": title,
@@ -194,7 +173,33 @@ class MeetingRepository{
     }
   }
 
-  Meeting tempMeetingData() {
+  /// Listen Meetings Data
+  static Stream<Meeting?> listen({required String meetingId}) {
+    final ref = FirebaseReference.meetingList.doc(meetingId);
+    final stream = ref.listenDocument<Meeting>();
+
+    return stream;
+  }
+
+  /// Listen Meetings Data
+  static Stream<List<Meeting>> listenAllDocuments() {
+    final ref = FirebaseReference.meetingList;
+    final stream = ref.listenAllDocuments<Meeting>();
+
+    return stream;
+  }
+
+  static Future<Meeting> fetchHostNameAndImage(Meeting meeting) async {
+    final (name, image) = await UserRepository.readOnlyNameAndImage(meeting.hostUid);
+    final fetchMeeting = meeting;
+    fetchMeeting.hostName = name;
+    fetchMeeting.hostImageUrl = image;
+    return fetchMeeting;
+  }
+
+  
+
+  static Meeting tempMeetingData() {
     return Meeting(
       title: '',
       description: '',

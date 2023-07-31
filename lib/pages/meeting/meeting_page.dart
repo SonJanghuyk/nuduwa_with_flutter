@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:nuduwa_with_flutter/components/nuduwa_widgets.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_controller.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_detail_controller.dart';
 import 'package:nuduwa_with_flutter/pages/meeting/sub/meeting_detail_page.dart';
@@ -27,25 +28,30 @@ class MeetingPage extends GetView<MeetingController> {
     );
   }
 
-  Row landscapeWidget() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Expanded(
-          child: MeetingListPage(
-            onTap: controller.onTapMeetingCard,
-          ),
+  Widget landscapeWidget() {
+    return Center(
+      child: Container(
+          // constraints: const BoxConstraints(maxWidth: 1300),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: MeetingListPage(
+                onTap: controller.onTapMeetingCard,
+              ),
+            ),
+            Expanded(
+              child: Obx(() {
+                if (!controller.isOnTap.value) {
+                  return const MeetingDetailNullPage();
+                } else {
+                  return meetingDetailBuilder();
+                }
+              }),
+            ),
+          ],
         ),
-        Expanded(
-          child: Obx(() {
-            if (!controller.isOnTap.value) {
-              return const MeetingDetailNullPage();
-            } else {
-              return meetingDetailBuilder();
-            }
-          }),
-        ),
-      ],
+      ),
     );
   }
 
@@ -67,8 +73,10 @@ class MeetingDetailNullPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('왼쪽에서 모임을 클릭해주세요'),
+    return const ScaffoldOfNuduwa(
+      body: Center(
+        child: Text('왼쪽에서 모임을 클릭해주세요'),
+      ),
     );
   }
 }

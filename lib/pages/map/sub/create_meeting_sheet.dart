@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/create_meeting_controller.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:numberpicker/numberpicker.dart';
 
-Future<dynamic> createMeetingSheet() {
+Future<dynamic> createMeetingSheet(BuildContext context, LatLng location) {
   return showModalBottomSheet(
-    context: Get.context!,
+    context: context,
     constraints: const BoxConstraints(maxWidth: 800),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
@@ -17,14 +18,15 @@ Future<dynamic> createMeetingSheet() {
     barrierColor: Colors.white.withOpacity(0),
     backgroundColor: Colors.white,
     isScrollControlled: true,
-    builder: (_) => CreateMeetingScreen(),
+    builder: (_) {
+      Get.put(CreateMeetingController(location: location));
+      return const CreateMeetingScreen();
+    },
   );
 }
 
-class CreateMeetingScreen extends StatelessWidget {
-  final controller = Get.put(CreateMeetingController());
-
-  CreateMeetingScreen({super.key});
+class CreateMeetingScreen extends GetView<CreateMeetingController> {
+  const CreateMeetingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +76,8 @@ class CreateMeetingScreen extends StatelessWidget {
                       content: [
                         Row(
                           children: [
-                            Obx(() => Text(controller.address.value, overflow: TextOverflow.ellipsis, maxLines: 1)),
+                            Obx(() => Text(controller.address.value,
+                                overflow: TextOverflow.ellipsis, maxLines: 1)),
                             const Spacer(),
                           ],
                         ),

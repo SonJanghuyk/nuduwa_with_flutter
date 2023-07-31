@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nuduwa_with_flutter/controller/chattingController/chatting_page_controller.dart';
 import 'package:nuduwa_with_flutter/controller/main_page_controller.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/map_page_controller.dart';
 import 'package:nuduwa_with_flutter/controller/profileController/user_profile_controller.dart';
@@ -18,91 +17,48 @@ class MainPage extends GetView<MainPageController> {
     Responsive.init(context);
     return Scaffold(
       body: SafeArea(
-        child: Obx(() {
-          // 로딩 상태
-          if (controller.permissionMessage.value == '') {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 50),
-                  Text('내 위치 가져오는 중'),
-                ],
-              ),
-            );
-          }
+        child: Obx(
+          () => const [
+            MapPage(),
+            MeetingPage(),
+            ChattingPage(),
+            MyProfilePage(),
+          ][controller.tabIndex.value],
+        ),
+      ),
 
-          // 위치 권한 허가된 상태
-          if (controller.permissionMessage.value == '위치 권한이 허가 되었습니다.') {
-            if (controller.currentLatLng.value != null) {
-              
-              
-              return Scaffold(
-                body: Obx(
-                  () => 
-                  IndexedStack(
-                    index: controller.tabIndex.value,
-                    children: const [
-                      MapPage(),
-                      MeetingPage(),
-                      ChattingPage(),
-                      MyProfilePage(),
-                    ],
-                  ),
-                  
-                ),
-
-                // 하단 텝바
-                bottomNavigationBar: Obx(
-                  () => BottomNavigationBar(
-                    items: const [
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.map),
-                        label: '찾기',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.people),
-                        label: '모임',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.chat_bubble),
-                        label: '채팅',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.person),
-                        label: '내 정보',
-                      ),
-                    ],
-
-                    currentIndex: controller.tabIndex.value,
-                    onTap: controller.changePage,
-
-                    selectedItemColor: Colors.blue,
-                    unselectedItemColor: Colors.grey,
-                    unselectedLabelStyle: const TextStyle(fontSize: 10),
-                    selectedLabelStyle: const TextStyle(fontSize: 10),
-
-                    type: BottomNavigationBarType.fixed,
-                    // backgroundColor: Colors.white,
-                  ),
-                ),
-              );
-            } else {
-              return const Center(
-                child: Text('사용자 위치를 불러올 수 없습니다'),
-              );
-            }
-          }
-
-          // 위치 권한 없는 상태
-          return Center(
-            child: Text(
-              controller.permissionMessage.value,
+      // 하단 텝바
+      bottomNavigationBar: Obx(
+        () => NavigationBar(
+          height: 60,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.map),
+              label: '찾기',
+              selectedIcon: Icon(Icons.map, color: Colors.white),
             ),
-          );
-        }),
+            NavigationDestination(
+              icon: Icon(Icons.people),
+              label: '모임',
+              selectedIcon: Icon(Icons.people, color: Colors.white),
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.chat_bubble),
+              label: '채팅',
+              selectedIcon: Icon(Icons.chat_bubble, color: Colors.white),
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person),
+              label: '내 정보',
+              selectedIcon: Icon(Icons.person, color: Colors.white),
+            ),
+          ],
+          selectedIndex: controller.tabIndex.value,
+          onDestinationSelected: controller.changePage,
+          indicatorColor: Colors.blue,
+          surfaceTintColor: Colors.white,
+          labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+        ),
       ),
     );
   }

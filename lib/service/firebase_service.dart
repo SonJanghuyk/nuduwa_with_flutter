@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/model/chatting.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
@@ -11,14 +10,9 @@ import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/model/user_chatting.dart';
 import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 
-class FirebaseService extends GetxService {
-  static FirebaseService get instance => Get.find();
-
+class FirebaseReference {
   // 사용자ID
-  String? get currentUid => FirebaseAuth.instance.currentUser?.uid;
-
-  // listener
-  final _listeners = <dynamic, StreamSubscription>{};
+  static String? get currentUid => FirebaseAuth.instance.currentUser?.uid;
 
   // Firebase CRUD
   /*
@@ -27,26 +21,23 @@ class FirebaseService extends GetxService {
             └ Meeting   - Member
                         └ Message
             └ Chatting  - Message
-
-
-
   */
 
   // Firestore 경로
-  FirebaseFirestore get db => FirebaseFirestore.instance;
+  static FirebaseFirestore get db => FirebaseFirestore.instance;
 
   //
   //  User
   //
   /// User Collection
-  CollectionReference<UserModel> get userList =>
+  static CollectionReference<UserModel> get userList =>
       db.collection('User').withConverter<UserModel>(
             fromFirestore: UserModel.fromFirestore,
             toFirestore: (UserModel user, options) => user.toFirestore(),
           );
 
   /// User/UserMeeting Collection
-  CollectionReference<UserMeeting> userMeetingList(String uid) {
+  static CollectionReference<UserMeeting> userMeetingList(String uid) {
     return db
         .collection('User')
         .doc(uid)
@@ -59,7 +50,7 @@ class FirebaseService extends GetxService {
   }
 
   /// User/UserChatting Collection
-  CollectionReference<UserChatting> userChattingList(String uid) {
+  static CollectionReference<UserChatting> userChattingList(String uid) {
     return db
         .collection('User')
         .doc(uid)
@@ -71,20 +62,18 @@ class FirebaseService extends GetxService {
         );
   }
 
-
-
   //
   //  Meeting
   //
   /// Meeting Collection
-  CollectionReference<Meeting> get meetingList =>
+  static CollectionReference<Meeting> get meetingList =>
       db.collection('Meeting').withConverter<Meeting>(
             fromFirestore: Meeting.fromFirestore,
             toFirestore: (Meeting meeting, options) => meeting.toFirestore(),
           );
 
   /// Meeting/Member Collection
-  CollectionReference<Member> memberList(String meetingId) {
+  static CollectionReference<Member> memberList(String meetingId) {
     return db
         .collection('Meeting')
         .doc(meetingId)
@@ -96,7 +85,7 @@ class FirebaseService extends GetxService {
   }
 
   /// Meeting/Message Collection
-  CollectionReference<Message> meetingMessageList(String meetingId) {
+  static CollectionReference<Message> meetingMessageList(String meetingId) {
     return db
         .collection('Meeting')
         .doc(meetingId)
@@ -105,20 +94,20 @@ class FirebaseService extends GetxService {
           fromFirestore: Message.fromFirestore,
           toFirestore: (Message message, options) => message.toFirestore(),
         );
-  }  
+  }
 
   //
   //  Chatting
   //
   /// Chatting Collection
-  CollectionReference<Chatting> get chattingList =>
+  static CollectionReference<Chatting> get chattingList =>
       db.collection('Chatting').withConverter<Chatting>(
             fromFirestore: Chatting.fromFirestore,
             toFirestore: (Chatting chatting, options) => chatting.toFirestore(),
           );
 
   /// Chatting/Message Collection
-  CollectionReference<Message> chattingMessageList(String chatttingId) {
+  static CollectionReference<Message> chattingMessageList(String chatttingId) {
     return db
         .collection('Chatting')
         .doc(chatttingId)
@@ -128,20 +117,64 @@ class FirebaseService extends GetxService {
           toFirestore: (Message message, options) => message.toFirestore(),
         );
   }
+}
 
-  // Listener
-  void addListener(
-      {required dynamic ref, required StreamSubscription listener}) {
-    if (_listeners[ref] == null) {
-      _listeners[ref] = listener;
-    }
+extension FirestoreQueryExtension on Query {
+  /// Get All Items in Query
+  Future<List<T>> getAllDocuments<T>() async {
+    final snapshots = await get();
+    final list = snapshots.docs
+        .map((doc) => doc.data())
+        .where((data) => data != null)
+        .map((data) => data as T)
+        .toList();
+
+    //.map((doc) => doc.data() as T).toList();
+    return list;
   }
 
-  void cancelListener({required dynamic ref}) {
-    if (_listeners[ref] != null) {
-      _listeners[ref]?.cancel();
-      _listeners.remove(ref);
-    }
+  /// Get First Item in Query
+  Future<T?> getDocument<T>() async {
+    final snapshots = await get();
+    final data = snapshots.docs
+        .map((doc) => doc.data())
+        .where((data) => data != null)
+        .first as T?;
+    //.first.data() as T;
+    return data;
   }
 
+  /// Listen First Items in Query
+  Stream<T?> listenDocument<T>() {
+    final stream = snapshots().map((snapshot) => snapshot.docs
+        .map((doc) => doc.data())
+        .where((data) => data != null)
+        .first as T?);
+    return stream;
+  }
+
+  /// Listen All Items in Query
+  Stream<List<T>> listenAllDocuments<T>() {
+    final stream = snapshots().map((snapshot) => snapshot.docs
+        .map((doc) => doc.data())
+        .where((data) => data != null)
+        .map((data) => data as T)
+        .toList());
+    return stream;
+  }
+}
+
+extension FirestoreDocumentReferenceExtension on DocumentReference {
+  /// Get Item in DocumentReference
+  Future<T?> getDocument<T>() async {
+    final snapshots = await get();
+    final data = snapshots.data() as T?;
+    return data;
+  }
+
+  /// Listen Item in DocumentReference
+  Stream<T?> listenDocument<T>() {
+    final stream = snapshots().map((snapshot) => snapshot.data() as T?);
+    return stream;
+  }
 }

@@ -49,24 +49,14 @@ class UserMeeting {
 }
 
 class UserMeetingRepository {
-  static final UserMeetingRepository instance =
-      UserMeetingRepository._internal();
 
-  UserMeetingRepository._internal();
-
-  final firebase = FirebaseService.instance;
-
-  Future<DocumentReference<UserMeeting>?> createUserMeetingData(
-      String meetingId, String hostUid) async {
-    if (firebase.currentUid == null) {
-      debugPrint('createUserMeetingData에러: no CurrentUid');
-      return null;
-    }
+  /// Create UserMeeting Data
+  static Future<DocumentReference<UserMeeting>?> create(
+      {required String uid, required String meetingId, required String hostUid}) async {
 
     final userMeeting =
         UserMeeting(meetingId: meetingId, hostUid: hostUid, isEnd: false);
-
-    final ref = firebase.userMeetingList(firebase.currentUid!).doc();
+    final ref = FirebaseReference.userMeetingList(uid).doc();
 
     try {
       await ref.set(userMeeting);
@@ -77,10 +67,25 @@ class UserMeetingRepository {
     }
   }
 
-  Future<void> deleteUserMeetingData(
-      {required String meetingId, required String uid}) async {
+  /// Read UserMeeting Data
+  static Future<UserMeeting?> read({required String uid, required String meetingId}) async {
+    final ref =
+        FirebaseReference.userMeetingList(uid).where('meetingId', isEqualTo: meetingId);
+
+    try {
+      final data = await ref.getDocument<UserMeeting?>();
+      return data;
+    } catch (e) {
+      debugPrint('readUserMeetingData에러: ${e.toString()}');
+      rethrow;
+    }
+  }
+
+  /// Delete UserMeeting Data
+  static Future<void> delete(
+      { required String uid, required String meetingId}) async {
     final query =
-        firebase.userMeetingList(uid).where('meetingId', isEqualTo: meetingId);
+        FirebaseReference.userMeetingList(uid).where('meetingId', isEqualTo: meetingId);
 
     try {
       final snapshot = await query.get();
@@ -92,28 +97,11 @@ class UserMeetingRepository {
     }
   }
 
-  Future<UserMeeting?> readUserMeetingData(String meetingId, String uid) async {
-    final ref =
-        firebase.userMeetingList(uid).where('meetingId', isEqualTo: meetingId);
+  /// Listen UserMeetings Data
+  static Stream<List<UserMeeting>> listen(String uid) {
+    final ref = FirebaseReference.userMeetingList(uid);
+    final stream = ref.listenAllDocuments<UserMeeting>();
 
-    try {
-      final snapshot = await ref.get();
-      return snapshot.docs.first.data();
-    } catch (e) {
-      debugPrint('readUserMeetingData에러: ${e.toString()}');
-      rethrow;
-    }
-  }
-
-  RxList<UserMeeting> listenerForUserMeetingsData(String uid) {
-    debugPrint('listenerForUserMeetingsData');
-    final userMeetings = RxList<UserMeeting>();
-    final ref = firebase.userMeetingList(uid);
-    final stream = ref.snapshots();
-
-    userMeetings.bindStream(stream
-        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList()));
-
-    return userMeetings;
+    return stream;
   }
 }

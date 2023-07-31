@@ -9,86 +9,90 @@ class LoginPage extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 50),
-
-                  // 로고
-                  Image.asset(
-                    Assets.imageNuduwaLogo,
-                    width: 70,
-                    height: 70,
-                    fit: BoxFit.cover,
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(40.0),
+                  width: 350,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                
+                      // 로고
+                      Image.asset(
+                        Assets.imageNuduwaLogo,
+                        width: 70,
+                        height: 70,
+                        fit: BoxFit.cover,
+                      ),
+                
+                      const SizedBox(height: 30),
+                
+                      // 인삿말1
+                      const Text(
+                        '너두와에 어서와!',
+                        style: TextStyle(
+                          letterSpacing: 1.0,
+                          fontSize: 30,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                
+                      // 인삿말2
+                      const Text(
+                        '계속하려면 로그인',
+                        style: TextStyle(
+                          letterSpacing: 1.0,
+                          fontSize: 30,
+                          color: Colors.grey,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
-
-                  const SizedBox(height: 30),
-
-                  // 인삿말1
-                  const Text(
-                    '너두와에 어서와!',
-                    style: TextStyle(
-                      letterSpacing: 1.0,
-                      fontSize: 30,
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  // 인삿말2
-                  const Text(
-                    '계속하려면 로그인',
-                    style: TextStyle(
-                      letterSpacing: 1.0,
-                      fontSize: 30,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(width: 300),
-                ],
+                ),
               ),
-            ),
-
-            // 버튼들
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // 애플로그인 버튼
-                  SnsLoginButton(
-                    sns: 'Apple',
-                    onPressed: () {},
-                    isLoading: controller.isAppleLoginLoading,
-                  ),
-
-                  const SizedBox(height: 10),
-                  const Text(
-                    '또는',
-                    style: TextStyle(
-                      letterSpacing: 1.0,
-                      fontSize: 15,
-                      color: Colors.grey,
+      
+              // 버튼들
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // 애플로그인 버튼
+                    SnsLoginButton(
+                      sns: 'Apple',
+                      assetImage: Assets.imageAppleLogo,
+                      onPressed: () {},
+                      isLoading: controller.isAppleLoginLoading,
                     ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // 구글로그인 버튼
-                  SnsLoginButton(
-                    sns: 'Google',
-                    onPressed: controller.signInWithGoogle,
-                    isLoading: controller.isGoogleLoginLoading,
-                  ),
-                ],
+      
+                    const SizedBox(height: 10),
+                    const Text(
+                      '또는',
+                      style: TextStyle(
+                        letterSpacing: 1.0,
+                        fontSize: 15,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+      
+                    // 구글로그인 버튼
+                    SnsLoginButton(
+                      sns: 'Google',
+                      assetImage: Assets.imageGoogleLogo,
+                      onPressed: controller.signInWithGoogle,
+                      isLoading: controller.isGoogleLoginLoading,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -99,12 +103,14 @@ class SnsLoginButton extends StatelessWidget {
   final controller = LoginController.instance;
 
   final String sns;
+  final String assetImage;
   final VoidCallback? onPressed;
-  final RxBool isLoading;
+  final RxBool isLoading;  
 
   SnsLoginButton({
     super.key,
     required this.sns,
+    required this.assetImage,
     required this.onPressed,
     required this.isLoading,
   });
@@ -114,9 +120,10 @@ class SnsLoginButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: isLoading.value ? null : onPressed,
       style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
-        fixedSize: MaterialStateProperty.all<Size>(const Size(200, 80)),
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+        padding: const MaterialStatePropertyAll(EdgeInsets.zero),
+        fixedSize: const MaterialStatePropertyAll(Size(210, 80)),
+        backgroundColor: const MaterialStatePropertyAll(Colors.black),        
+        shape: MaterialStatePropertyAll(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.0),
           ),
@@ -126,19 +133,23 @@ class SnsLoginButton extends StatelessWidget {
         () => isLoading.value
             ? const CircularProgressIndicator()
             : Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Image.asset(
-                    sns == 'Google'
-                        ? Assets.imageGoogleLogo
-                        : Assets.imageAppleLogo,
+                    assetImage,
                     color: Colors.white,
-                    width: 45,
-                    height: 45,
+                    width: 40,
+                    height: 40,
                     fit: BoxFit.cover,
                   ),
                   const SizedBox(width: 8),
-                  Text('$sns 간편로그인'),
+                  Text(
+                    '$sns 간편로그인',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                    ),
+                  ),
                 ],
               ),
       ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:nuduwa_with_flutter/components/nuduwa_widgets.dart';
 import 'package:nuduwa_with_flutter/controller/profileController/user_profile_controller.dart';
-import 'package:nuduwa_with_flutter/pages/scaffold_of_nuduwa.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/utils/assets.dart';
 
@@ -58,7 +58,7 @@ class UserProfilePage extends StatelessWidget {
                 const Spacer(),
                 Row(
                   children: [
-                    if (controller.uid != FirebaseService.instance.currentUid)
+                    if (controller.uid != FirebaseReference.currentUid)
                     IconButton(
                       onPressed: controller.clickedChattingButton,
                       icon: const Column(

@@ -38,16 +38,12 @@ class Chatting {
 }
 
 class ChattingRepository {
-  static final ChattingRepository instance = ChattingRepository._internal();
 
-  ChattingRepository._internal();
-
-  final firebase = FirebaseService.instance;
-
-  Future<DocumentReference<Chatting>> createChattingData(
+  /// Create Chatting Data
+  static Future<DocumentReference<Chatting>> create(
       {required String uid, required String otherUid}) async {
     final chatting = Chatting(people: [uid, otherUid]);
-    final ref = firebase.chattingList.doc();
+    final ref = FirebaseReference.chattingList.doc();
 
     try {
       await ref.set(chatting);

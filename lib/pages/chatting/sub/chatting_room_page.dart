@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:nuduwa_with_flutter/components/nuduwa_widgets.dart';
 import 'package:nuduwa_with_flutter/controller/chattingController/chatting_room_controller.dart';
-import 'package:nuduwa_with_flutter/model/user_chatting.dart';
 import 'package:nuduwa_with_flutter/pages/chatting/sub/chatting_widget.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
-class ChattingRoomPage extends StatelessWidget {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final UserChatting userChatting;
-  final ChattingRoomController controller;
+class ChattingRoomPage extends GetView<ChattingRoomController> {
+  const ChattingRoomPage({
+    super.key,
+    required this.chattingId,
+    required this.onClose,
+  });
 
-  ChattingRoomPage({super.key, required this.userChatting})
-      : controller =
-            Get.put(ChattingRoomController(userChatting: userChatting));
+  final String chattingId;
+  final void Function() onClose;
+
+  @override
+  String? get tag => chattingId;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
+    return ScaffoldOfNuduwa(
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -37,7 +40,7 @@ class ChattingRoomPage extends StatelessWidget {
               ),
             ],
           ),
-          onPressed: Get.back,
+          onPressed: onClose,
         ),
         leadingWidth: 100,
         actions: [
@@ -55,11 +58,10 @@ class ChattingRoomPage extends StatelessWidget {
             ),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               menuItem(
-                text: '상대방 프로필',
-                icon: Icons.person_pin_rounded,
-                color: Colors.black,
-                ontap: () => controller.showUserProfile(userChatting.otherUid),
-              ),
+                  text: '상대방 프로필',
+                  icon: Icons.person_pin_rounded,
+                  color: Colors.black,
+                  ontap: () => {}),
               menuItem(
                 text: '나가기',
                 icon: Icons.output,
@@ -76,15 +78,17 @@ class ChattingRoomPage extends StatelessWidget {
 
   Widget chatItem(BuildContext context, int index) {
     final message = controller.messages[index];
-    if (message.senderUid == FirebaseService.instance.currentUid) {
+    if (message.senderUid == FirebaseReference.currentUid) {
       return RightChatItem(text: message.text, sendTime: message.sendTime);
     }
 
-    return LeftChatItem(
-      imageUrl: controller.otherUser.value?.imageUrl,
-      name: controller.otherUser.value?.name,
-      text: message.text,
-      sendTime: message.sendTime,
+    return Obx(
+      () => LeftChatItem(
+        imageUrl: controller.otherUser.value?.imageUrl,
+        name: controller.otherUser.value?.name,
+        text: message.text,
+        sendTime: message.sendTime,
+      ),
     );
   }
 

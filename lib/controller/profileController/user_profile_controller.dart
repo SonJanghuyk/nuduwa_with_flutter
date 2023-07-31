@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/model/chatting.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/model/user_chatting.dart';
-import 'package:nuduwa_with_flutter/pages/chatting/sub/chatting_room_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class UserProfileController extends GetxController {
@@ -12,71 +11,47 @@ class UserProfileController extends GetxController {
   static UserProfileController instance({required String tag}) =>
       Get.find(tag: tag);
 
-  final firebaseService = FirebaseService.instance;
-
   // User
   final String uid;
   final Rx<UserModel?> user = Rx<UserModel?>(null);
 
-  // Listener Ref
-  final DocumentReference<UserModel> userDocRef;// = FirebaseService.instance.userList.doc(FirebaseService.instance.currentUid!);
-
-  UserProfileController({required this.uid})
-    : userDocRef = FirebaseService.instance.userList.doc(uid);
+  UserProfileController({required this.uid});
 
   @override
   void onInit() {
     super.onInit();
-    listenerForUser(uid);
+    user.bindStream(listenerForUser(uid));
   }
 
-  @override
-  void onClose() {
-    super.onClose();
-    firebaseService.cancelListener(ref: userDocRef);
-  }
-
-  void listenerForUser(String uid) {
-    debugPrint('listenerForUser: $uid');
-    try {
-      final listener = userDocRef.snapshots().listen((snapshot) async {
-        if (!snapshot.exists || snapshot.data() == null) return;
-        final data = snapshot.data();
-        user.value = data;
-        debugPrint('listenerForUser끝');
-      });
-      firebaseService.addListener(ref: userDocRef, listener: listener);
-    } catch (e) {
-      debugPrint('에러!! listenerForUser: $e');
-    }
+  Stream<UserModel?> listenerForUser(String uid) {
+    return UserRepository.listen(uid);
   }
 
   Future<void> clickedChattingButton() async {
-    final currentUid = firebaseService.currentUid;
+    final currentUid = FirebaseReference.currentUid;
     if (currentUid == null) return;
-    final userChattingRepository = UserChattingRepository.instance;
 
     try {
-      final userChatting = await userChattingRepository.readUserChattingData(
+      final userChatting = await UserChattingRepository.read(
           uid: currentUid, otherUid: uid);
       if (userChatting != null) {
-        Get.to(() => ChattingRoomPage(userChatting: userChatting));
+        // Get.to(() => ChattingRoomPage(userChatting: userChatting));
         return;
       }
 
-      final ref = await ChattingRepository.instance
-          .createChattingData(uid: currentUid, otherUid: uid);
+      final ref = await ChattingRepository
+          .create(uid: currentUid, otherUid: uid);
       await Future.wait([
-        userChattingRepository.createUserChattingData(
+        UserChattingRepository.create(
             chattingId: ref.id, uid: currentUid, otherUid: uid),
-        userChattingRepository.createUserChattingData(
+        UserChattingRepository.create(
             chattingId: ref.id, uid: uid, otherUid: currentUid),
       ]);
 
       final newUserChatting = UserChatting(
           chattingId: ref.id, otherUid: uid, lastReadTime: DateTime.now());
 
-      Get.to(() => ChattingRoomPage(userChatting: newUserChatting));
+      // Get.to(() => ChattingRoomPage(userChatting: newUserChatting));
       return;
     } catch (e) {
       debugPrint('clickedChattingButton에러: ${e.toString()}');

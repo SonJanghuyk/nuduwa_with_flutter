@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/model/message.dart';
 
-interface class ChattingController extends GetxController {
-  final messages = <Message>[].obs;
+abstract interface class ChattingController extends GetxController {
+  final messages = RxList<Message>();
   final textController = TextEditingController();
   final scrollController = ScrollController();
-  var isNotLast = false.obs;
 
-   Future<void> sendMessage() async {
-    ///
-  }
+  var isNotLast = RxBool(false);
 
-  void scrollLast() {
-    ///
-  }
+  Stream<List<Message>> listenerForMessages();
+
+  Future<void> sendMessage();
+
+  void scrollLast();
 }

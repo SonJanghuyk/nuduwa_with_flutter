@@ -12,8 +12,6 @@ class ChattingRoomController extends GetxController implements ChattingControlle
   // tag is meetingId
   static ChattingRoomController instance({required String tag}) =>
       Get.find(tag: tag);
-
-  final firebaseService = FirebaseService.instance;
   
   final UserChatting userChatting;
 
@@ -37,31 +35,44 @@ class ChattingRoomController extends GetxController implements ChattingControlle
   void onInit() async {
     super.onInit();
     listenerForMessages();
-    otherUser.value = await fetchOtherUserData(otherUid: userChatting.otherUid);    
+    updateLastReadTime();
+    otherUser.value = await fetchOtherUserData(otherUid: userChatting.otherUid);
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    messages.bindStream(listenerForMessages());
+    ever(messages, (_) => updateLastReadTime());
   }
 
   @override
   void onClose() {
     super.onClose();
-    firebaseService.cancelListener(ref: messageQuery);
+    // firebaseService.cancelListener(ref: messageQuery);
     textController.dispose();
   }
 
   
-  void listenerForMessages() {
+  @override
+  Stream<List<Message>> listenerForMessages() {
     try {
-      debugPrint('listenerForMessages');
-      final ref = firebaseService.chattingMessageList(userChatting.chattingId);
-      messageQuery = ref.orderBy('sendTime', descending: true);
+      // debugPrint('listenerForMessages');
+      // final ref = FirebaseRoute.chattingMessageList(userChatting.chattingId);
+      // messageQuery = ref.orderBy('sendTime', descending: true);
 
-      final listener = messageQuery.snapshots().listen((snapshot) {
-        final snapshotMessages = snapshot.docs.map((doc) => doc.data());
-        messages.value = List.from(snapshotMessages);
-        debugPrint('listenerForMessages ${messages.length}');
-      });
-      firebaseService.addListener(ref: messageQuery, listener: listener);
+      // final listener = messageQuery.snapshots().listen((snapshot) {
+      //   final snapshotMessages = snapshot.docs.map((doc) => doc.data());
+      //   messages.value = List.from(snapshotMessages);
+      //   debugPrint('listenerForMessages ${messages.length}');
+      // });
+      final ref = FirebaseReference.chattingMessageList(userChatting.chattingId);
+      final query = ref.orderBy('sendTime', descending: true);
+      final stream = query.listenAllDocuments<Message>();
+      return stream;
     } catch (e) {
       debugPrint('오류!! listenerForMessages: ${e.toString()}');
+      rethrow;
     }
   }
 
@@ -73,7 +84,7 @@ class ChattingRoomController extends GetxController implements ChattingControlle
     try {
       textController.clear();
       FocusScope.of(Get.context!).unfocus();
-      await ChattingMessageRepository.instance.createChattingMessageData(userChatting.chattingId, firebaseService.currentUid!, text);
+      await ChattingMessageRepository.create(chattingId: userChatting.chattingId, uid: FirebaseReference.currentUid!, text: text);
 
       debugPrint(messages.length.toString());
       debugPrint('sendMessage 끝');
@@ -83,10 +94,14 @@ class ChattingRoomController extends GetxController implements ChattingControlle
     }
   }
 
+  void updateLastReadTime() {
+    UserChattingRepository.updateLastReadTime(uid: FirebaseReference.currentUid!, userChattingId: userChatting.id!);
+  }
+
   Future<UserModel?> fetchOtherUserData({required String otherUid}) async {
     debugPrint('fetchOtherUserData');
     try{
-      final user = await UserRepository.instance.readUserData(otherUid);
+      final user = await UserRepository.read(otherUid);
       debugPrint(user?.name);
       return user;
 

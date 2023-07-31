@@ -14,7 +14,6 @@ class MeetingCardController extends GetxController {
   static MeetingCardController instance({required String tag}) =>
       Get.find(tag: tag);
 
-  final firebaseService = FirebaseService.instance;
 
   // Listener Ref
   final DocumentReference<Meeting> meetingDocRef;
@@ -25,7 +24,7 @@ class MeetingCardController extends GetxController {
   final hostImage = Rx<ImageProvider?>(null);
 
   MeetingCardController({required this.meetingId})
-      : meetingDocRef = FirebaseService.instance.meetingList.doc(meetingId);
+      : meetingDocRef = FirebaseReference.meetingList.doc(meetingId);
 
   @override
   void onInit() {
@@ -36,7 +35,7 @@ class MeetingCardController extends GetxController {
   @override
   void onClose() {
     super.onClose();
-    firebaseService.cancelListener(ref: meetingDocRef);
+    // firebaseService.cancelListener(ref: meetingDocRef);
   }
 
   void listenerForMeeting(String meetingId) {
@@ -49,13 +48,13 @@ class MeetingCardController extends GetxController {
           data!.publishedTime = meeting.value?.publishedTime ?? DateTime.now();
         }
         meeting.value = data;
-        final temp =
-            await MeetingRepository.instance.fetchHostData(meeting.value!);
-        meeting.value = Meeting.clone(temp);
+        // final temp =
+        //     await MeetingRepository.fetchHostData(meeting.value!);
+        // meeting.value = Meeting.clone(temp);
         downloadHostImage(meeting.value!.hostImageUrl);
         debugPrint('listenerForMeeting끝');
       });
-      firebaseService.addListener(ref: meetingDocRef, listener: listener);
+      // firebaseService.addListener(ref: meetingDocRef, listener: listener);
     } catch (e) {
       debugPrint('에러!! listenerForMeeting: $e');
     }

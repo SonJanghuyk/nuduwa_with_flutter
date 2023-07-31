@@ -24,10 +24,7 @@ class Message {
     SnapshotOptions? options,
   ]) {
     final data = snapshot.data();
-    final sendTime = data?['sendTime'] as Timestamp?;
-    if (sendTime == null) {
-      return throw '에러! joinTime is null';
-    }
+    final sendTime = data?['sendTime'] as Timestamp? ?? Timestamp.fromDate(DateTime.now());
     return Message(
       id: snapshot.id,
       senderUid: data?['senderUid'] as String,  
@@ -48,16 +45,12 @@ class Message {
 }
 
 class MeetingMessageRepository{
-  static final MeetingMessageRepository instance = MeetingMessageRepository._internal();
 
-  MeetingMessageRepository._internal();
-
-  final firebase = FirebaseService.instance;
-
-  Future<DocumentReference<Message>> createMeetingMessageData(
-      String meetingId, String uid, String text) async {
+  /// Create MeetingMessage Data
+  static Future<DocumentReference<Message>> create(
+      {required String meetingId, required String uid, required String text}) async {
     final message = Message(senderUid: uid, text: text);
-    final ref = firebase.meetingMessageList(meetingId).doc();
+    final ref = FirebaseReference.meetingMessageList(meetingId).doc();
     try {
       await ref.set(message);
       return ref;
@@ -67,19 +60,23 @@ class MeetingMessageRepository{
       rethrow;
     }
   }
+
+  /// Listen MeetingMessages Data
+  static Stream<List<Message>> listen(String meetingId) {
+    final ref = FirebaseReference.meetingMessageList(meetingId);
+    final stream = ref.listenAllDocuments<Message>();
+
+    return stream;
+  }
 }
 
 class ChattingMessageRepository{
-  static final ChattingMessageRepository instance = ChattingMessageRepository._internal();
 
-  ChattingMessageRepository._internal();
-
-  final firebase = FirebaseService.instance;
-
-  Future<DocumentReference<Message>> createChattingMessageData(
-      String chattingId, String uid, String text) async {
+  /// Create ChattingMessage Data
+  static Future<DocumentReference<Message>> create(
+      {required String chattingId, required String uid, required String text}) async {
     final message = Message(senderUid: uid, text: text);
-    final ref = firebase.chattingMessageList(chattingId).doc();
+    final ref = FirebaseReference.chattingMessageList(chattingId).doc();
     try {
       await ref.set(message);
       return ref;
@@ -88,5 +85,13 @@ class ChattingMessageRepository{
       debugPrint('오류!! createMessageData: ${e.toString()}');
       rethrow;
     }
+  }
+
+  /// Listen MeetingMessages Data
+  static Stream<List<Message>> listen(String chattingId) {
+    final ref = FirebaseReference.chattingMessageList(chattingId);
+    final stream = ref.listenAllDocuments<Message>();
+
+    return stream;
   }
 }

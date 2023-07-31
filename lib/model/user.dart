@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
@@ -7,14 +8,14 @@ class UserModel {
   final String? name;
   final String? email;
   final String? imageUrl;
-  
+
   final String? introdution;
   final List<String>? interests;
   final DateTime? signUpTime;
 
-  final SnsData? googleData;
+  final List<ProviderUserInfo>? providerData;
 
-  UserModel( {
+  UserModel({
     this.id,
     this.name,
     this.email,
@@ -22,7 +23,7 @@ class UserModel {
     this.introdution,
     this.interests,
     this.signUpTime,
-    this.googleData,
+    this.providerData,
   });
 
   factory UserModel.fromFirestore(
@@ -30,11 +31,9 @@ class UserModel {
     SnapshotOptions? options,
   ]) {
     final data = snapshot.data();
-    final interests = data?['interests'] is Iterable
-        ? List.from(data?['interests']) as List<String>?
-        : null;
-    final signUpTime = data?['signUpTime'] as Timestamp?;
-    if(signUpTime == null) {return throw '에러! signUpTime is null';}
+    final signUpTime = data?['signUpTime'] as Timestamp? ?? Timestamp.now();
+    final providerDataMap = data?['providerData'] as Iterable?;
+    final providerData = providerDataMap?.map((e) => ProviderUserInfo.fromFirestore(e));
 
     return UserModel(
       id: snapshot.id,
@@ -42,12 +41,12 @@ class UserModel {
       email: data?['email'] as String?,
       imageUrl: data?['image'] as String?,
       introdution: data?['introdution'] as String?,
-      interests: interests,
+      interests:
+          data?['interests'] is Iterable ? List.from(data?['interests']) : null,
       signUpTime: signUpTime.toDate(),
-      googleData: SnsData.fromJson(data?['googleData']),
+      providerData: providerData?.toList(),          
     );
   }
-  
 
   Map<String, dynamic> toFirestore() {
     return {
@@ -57,84 +56,109 @@ class UserModel {
       if (introdution != null) "introdution": introdution,
       if (interests != null) "interests": interests,
       "signUpTime": FieldValue.serverTimestamp(),
-      if (googleData != null) "googleData": googleData!.toJson(),
+      if (providerData != null) "providerData": providerData?.map((info) => info.toFirestore),
     };
   }
 }
 
-class SnsData {
-  final String? snsUID;
-  final String? snsName;
-  final String? snsEmail;
-  final String? snsImage;
+class ProviderUserInfo {
+  final String? uid;
+  final String? email;
+  final String? displayName;
+  final String? photoURL;
+  final String? phoneNumber;
+  final String? providerId;
 
-  SnsData({
-    this.snsUID,
-    this.snsName,
-    this.snsEmail,
-    this.snsImage,
+  ProviderUserInfo({
+    this.uid,
+    this.email,
+    this.displayName,
+    this.photoURL,
+    this.phoneNumber,
+    this.providerId,
   });
 
-  factory SnsData.fromJson(Map<String, dynamic>? data) {
-    return SnsData(
-      snsUID: data?['snsUID'] as String?,
-      snsName: data?['snsName'] as String?,
-      snsEmail: data?['snsEmail'] as String?,
-      snsImage: data?['snsImage'] as String?,
+  factory ProviderUserInfo.fromUserInfo(
+    UserInfo userinfo) {
+
+    return ProviderUserInfo(
+      uid: userinfo.uid,
+      email: userinfo.email,
+      displayName: userinfo.displayName,
+      photoURL: userinfo.photoURL,
+      phoneNumber: userinfo.phoneNumber,
+      providerId: userinfo.providerId,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      if (snsUID != null) "snsUID": snsUID,
-      if (snsName != null) "snsName": snsName,
-      if (snsEmail != null) "snsEmail": snsEmail,
-      if (snsImage != null) "snsImage": snsImage,
-    };
+  factory ProviderUserInfo.fromFirestore(
+    Map<String, dynamic> data) {
+
+    return ProviderUserInfo(
+      uid: data['uid'] as String?,
+      email: data['email'] as String?,
+      displayName: data['displayName'] as String?,
+      photoURL: data['photoURL'] as String?,
+      phoneNumber: data['phoneNumber'] as String?,
+      providerId: data['providerId'] as String?,
+    );
   }
+
+  Map<String, dynamic> get toFirestore => {
+    'uid': uid,
+    'email': email,
+    'displayName': displayName,
+    'photoURL': photoURL,
+    'phoneNumber': phoneNumber,
+    'providerId': providerId,
+  };
 }
 
-class UserRepository{
-  static final UserRepository instance = UserRepository._internal();
-
-  UserRepository._internal();
-
-  final firebase = FirebaseService.instance;
-
-  Future<DocumentReference<UserModel>> createUserData(UserModel user) async {
-    final ref = firebase.userList.doc(user.id);
-    try{
+class UserRepository {
+  /// Create User Data
+  static Future<DocumentReference<UserModel>> create(UserModel user) async {
+    final ref = FirebaseReference.userList.doc(user.id);
+    try {
       await ref.set(user);
       return ref;
-
-    }catch(e){
+    } catch (e) {
       debugPrint('createUserData에러: ${e.toString()}');
       rethrow;
-    }    
-    
+    }
   }
 
-  Future<UserModel?> readUserData(String uid) async {
-    final ref = firebase.userList.doc(uid);    
-    try{
-      final snapshot = await ref.get();
-      return snapshot.data();
-      
-    }catch(e){
+  /// Read User Data
+  static Future<UserModel?> read(String uid) async {
+    final ref = FirebaseReference.userList.doc(uid);
+    try {
+      final data = await ref.getDocument<UserModel?>();
+      return data;
+    } catch (e) {
       debugPrint('readUserData에러: ${e.toString()}');
       rethrow;
-    }    
-  }  
+    }
+  }
 
-    // Future<Uint8List> downloadUserImageData(String? url) async {
-  //   if (url != null) {
-  //     final response = await http.get(Uri.parse(url));
-  //     return response.bodyBytes;
-  //   } else {
-  //     final ByteData assetData =
-  //         await rootBundle.load('assets/images/nuduwa_logo.png');
-  //     return assetData.buffer.asUint8List();
-  //   }
-  // }
+  /// Listen User Data
+  static Stream<UserModel?> listen(String uid) {
+    final ref = FirebaseReference.userList.doc(uid);
+    try {
+      final stream = ref.listenDocument<UserModel?>();
+      return stream;
+    } catch (e) {
+      debugPrint('readUserData에러: ${e.toString()}');
+      rethrow;
+    }
+  }
 
+  /// Fetch User name&image Data
+  static Future<(String?, String?)> readOnlyNameAndImage(String uid) async {
+    try {
+      final user = await UserRepository.read(uid);
+      return (user?.name, user?.imageUrl);
+    } catch (e) {
+      debugPrint('readOnlyNameAndImage에러: ${e.toString()}');
+      rethrow;
+    }
+  }
 }

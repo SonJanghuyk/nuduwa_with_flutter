@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:nuduwa_with_flutter/components/nuduwa_widgets.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_detail_controller.dart';
 import 'package:nuduwa_with_flutter/pages/map/sub/meeting_info_sheet.dart';
-import 'package:nuduwa_with_flutter/pages/meeting/sub/meeting_chat_page.dart';
-import 'package:nuduwa_with_flutter/pages/scaffold_of_nuduwa.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class MeetingDetailPage extends GetView<MeetingDetailController> {
@@ -78,7 +77,7 @@ class MeetingDetailPage extends GetView<MeetingDetailController> {
                     ),
                     itemBuilder: (BuildContext context) =>
                         controller.meeting.value?.hostUid ==
-                                FirebaseService.instance.currentUid!
+                                FirebaseReference.currentUid!
                             ? <PopupMenuEntry<String>>[
                                 menuItem(
                                   text: '모임 수정',

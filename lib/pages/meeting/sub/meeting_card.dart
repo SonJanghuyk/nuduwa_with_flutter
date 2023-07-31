@@ -94,7 +94,7 @@ class MeetingCard extends GetView<MeetingCardController> {
                   ),
                   // 사용자가 Host 일때
                   if (controller.meeting.value!.hostUid ==
-                      FirebaseService.instance.currentUid)
+                      FirebaseReference.currentUid)
                     Stack(
                       children: [
                         Align(

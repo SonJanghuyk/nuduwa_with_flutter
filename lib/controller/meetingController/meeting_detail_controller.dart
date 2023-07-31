@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:nuduwa_with_flutter/components/nuduwa_page_route.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_card_controller.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_chat_controller.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
+import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 import 'package:nuduwa_with_flutter/pages/meeting/sub/meeting_chat_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
@@ -14,8 +16,6 @@ class MeetingDetailController extends GetxController {
   static MeetingDetailController instance({required String tag}) =>
       Get.find(tag: tag);
 
-  final firebaseService = FirebaseService.instance;
-
   // Listener Ref
   final CollectionReference<Member> memberColRef;
 
@@ -23,7 +23,8 @@ class MeetingDetailController extends GetxController {
   late final Rx<Meeting?> meeting;
   late final Rx<ImageProvider?> hostImage;
   final String meetingId;
-  final members = <String, Member>{}.obs;
+  final members = RxMap<String, Member>();
+  final _snapshotMembers = RxList<Member>();
 
   // Edit
   final isEdit = false.obs;
@@ -34,19 +35,14 @@ class MeetingDetailController extends GetxController {
   String? editDescription;
 
   MeetingDetailController({required this.meetingId})
-      : memberColRef = FirebaseService.instance.memberList(meetingId);
+      : memberColRef = FirebaseReference.memberList(meetingId);
 
   @override
   void onInit() {
     super.onInit();
     fetchMeetingData();
-    listenerForMembers();
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
-    firebaseService.cancelListener(ref: memberColRef);
+    _snapshotMembers.bindStream(listenerForMembers());
+    ever(_snapshotMembers, _fetchMembers);
   }
 
   void fetchMeetingData() {
@@ -55,32 +51,58 @@ class MeetingDetailController extends GetxController {
   }
 
   // 맴버 리스너시작
-  void listenerForMembers() {
+  Stream<List<Member>> listenerForMembers() {
     debugPrint('모임맴버리스너!!!! ${members.length}');
     try {
-      final ref = firebaseService.memberList(meetingId);
+      // final ref = FirebaseRoute.memberList(meetingId);
 
-      final listener = ref.snapshots().listen((snapshot) async {
-        final snapshotMembers = <String, Member>{};
-        for (final doc in snapshot.docs) {
-          var member = doc.data();
-          if (members[member.uid] != null) continue;
-          snapshotMembers[member.uid] = member;
+      // final listener = ref.snapshots().listen((snapshot) async {
+      //   final snapshotMembers = <String, Member>{};
+      //   for (final doc in snapshot.docs) {
+      //     var member = doc.data();
+      //     if (members[member.uid] != null) continue;
+      //     snapshotMembers[member.uid] = member;
 
-          // 맴버 이름, 이미지 가져오기
-          member = await MemberRepository.instance.fetchMemberData(member);
-          snapshotMembers[member.uid] = member;
-          members[member.uid] = member;
-        }
-        debugPrint(snapshotMembers.values.toString());
-        members.value = Map.from(snapshotMembers);
-        debugPrint('모임맴버리스너!진행중');
-      });
-      firebaseService.addListener(ref: ref, listener: listener);
+      //     // 맴버 이름, 이미지 가져오기
+      //     member = await MemberRepository.read(member);
+      //     snapshotMembers[member.uid] = member;
+      //     members[member.uid] = member;
+      //   }
+      //   debugPrint(snapshotMembers.values.toString());
+      //   members.value = Map.from(snapshotMembers);
+      //   debugPrint('모임맴버리스너!진행중');
+      // });
+      final ref = FirebaseReference.memberList(meetingId);
+      final stream = ref.listenAllDocuments<Member>();
+      return stream;
     } catch (e) {
       debugPrint('오류!!! listenerForMembers: ${e.toString()}');
+      rethrow;
     }
   }
+
+  void _fetchMembers(List<Member> snapshotMembers) async {
+    final membersMap = {
+      for (final member in snapshotMembers) member.uid: member
+    };
+
+    final fetchList = <Future>[];
+
+    membersMap.forEach((key, value) {
+      if (members.containsKey(key)) {
+        membersMap[key] = members[key]!;
+      } else {
+        fetchList.add(MemberRepository.fetchMemberNameAndImage(value).then((result) {
+          membersMap[key] = result;
+        }));
+      }
+    });
+    await Future.wait(fetchList);
+
+    members.value = membersMap;
+  }
+
+  
 
   void onEdit() {
     isEdit.value = true;
@@ -96,7 +118,7 @@ class MeetingDetailController extends GetxController {
       isLoading.value = true;
       formKey.currentState!.save();
       try {
-        await MeetingRepository.instance.updateMeetingData(
+        await MeetingRepository.update(
           meetingId: meetingId,
           title: editTitle,
           description: editDescription,
@@ -117,21 +139,22 @@ class MeetingDetailController extends GetxController {
   }
 
   void enterMeetingChat() {
-    Get.put(
-        MeetingChatController(
-            meetingId: meetingId,
-            meetingTitle: meeting.value!.title,
-            members: members),
-        tag: meetingId);
-    Get.to(MeetingChatPage(meetingId: meetingId));
+    // Get.put(
+    //     MeetingChatController(
+    //         meetingId: meetingId,
+    //         meetingTitle: meeting.value!.title,
+    //         members: members),
+    //     tag: meetingId);
+    // Get.to(MeetingChatPage(meetingId: meetingId));
+    Get.toNamed(RoutePages.meetingchat(meetingId: meetingId));
   }
 
   Future<void> leaveMeeting() async {
     await Future.wait([
-      MemberRepository.instance.deleteMemberData(
-          meetingId: meetingId, uid: firebaseService.currentUid!),
-      UserMeetingRepository.instance.deleteUserMeetingData(
-          meetingId: meetingId, uid: firebaseService.currentUid!)
+      MemberRepository.delete(
+          meetingId: meetingId, uid: FirebaseReference.currentUid!),
+      UserMeetingRepository.delete(
+          meetingId: meetingId, uid: FirebaseReference.currentUid!)
     ]);
     Get.back();
     Get.snackbar('모임 나가기!',

@@ -7,10 +7,12 @@ class ChattingPageController extends GetxController {
   static ChattingPageController get instance => Get.find();
 
   // Model Manager
-  final firebaseService = FirebaseService.instance;
   late Query<UserChatting> query;
 
   final userChatting = <UserChatting>[].obs;
+
+  final isOnTap = RxBool(false);
+  UserChatting? tapUserChatting;
 
   @override
   void onInit() {
@@ -21,19 +23,32 @@ class ChattingPageController extends GetxController {
   @override
   void onClose() {
     super.onClose();
-    firebaseService.cancelListener(ref: query);
+    // firebaseService.cancelListener(ref: query);
   }
 
   void listenerForUserChattingList() {
-    if (firebaseService.currentUid == null) return;
+    if (FirebaseReference.currentUid == null) return;
 
-    final ref = firebaseService.userChattingList(firebaseService.currentUid!);
+    final ref = FirebaseReference.userChattingList(FirebaseReference.currentUid!);
     query = ref.orderBy('lastReadTime');
     final listener = query.snapshots().listen((snapshot) {
       final snapshotUserChatting = snapshot.docs.map((doc) => doc.data()).toList();
       userChatting.value = snapshotUserChatting;
     });
     
-    firebaseService.addListener(ref: query, listener: listener);
+    // firebaseService.addListener(ref: query, listener: listener);
+  }
+
+
+
+  void onTapChattingCard(UserChatting userChatting){
+    if (tapUserChatting==userChatting) return;
+    isOnTap.value = false;
+    tapUserChatting = userChatting;
+    isOnTap.value = true;
+  }
+
+  void onCloseChattingRoom() {
+    isOnTap.value = false;
   }
 }

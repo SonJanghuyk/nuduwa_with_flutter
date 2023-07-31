@@ -20,9 +20,9 @@ class UserChatting {
     SnapshotOptions? options,
   ]) {
     final data = snapshot.data();
-    final lastReadTime = data?['lastReadTime'] as Timestamp?;
-    if (lastReadTime == null) {
-      return throw '에러! lastReadTime is null';
+    var lastReadTime = data?['lastReadTime'];
+    if (lastReadTime is FieldValue) {
+      lastReadTime = Timestamp.now();
     }
 
     return UserChatting(
@@ -43,14 +43,9 @@ class UserChatting {
 }
 
 class UserChattingRepository {
-  static final UserChattingRepository instance =
-      UserChattingRepository._internal();
 
-  UserChattingRepository._internal();
-
-  final firebase = FirebaseService.instance;
-
-  Future<DocumentReference<UserChatting>> createUserChattingData(
+  /// Create UserChatting Data
+  static Future<DocumentReference<UserChatting>> create(
       {required String chattingId,
       required String uid,
       required String otherUid}) async {
@@ -59,31 +54,54 @@ class UserChattingRepository {
       otherUid: otherUid,
       lastReadTime: DateTime.now(),
     );
-    final ref = firebase.userChattingList(uid).doc();
+    final ref = FirebaseReference.userChattingList(uid).doc();
 
     try {
       await ref.set(userChatting);
       return ref;
-
     } catch (e) {
       debugPrint('오류!! createUserChattingData: ${e.toString()}');
       rethrow;
     }
   }
 
-  Future<UserChatting?> readUserChattingData(
+  /// Read UserChatting Data
+  static Future<UserChatting?> read(
       {required String uid, required String otherUid}) async {
-    final ref = firebase.userChattingList(uid).where('otherUid', isEqualTo: otherUid);
+    final query =
+        FirebaseReference.userChattingList(uid).where('otherUid', isEqualTo: otherUid);
     try {
-      final snapshot = await ref.get();
-      if (snapshot.docs.isEmpty) {
-        return null;
-      }
-      return snapshot.docs.first.data();
-
+      final data = await query.getDocument<UserChatting?>();
+      return data;
     } catch (e) {
       debugPrint('오류!! readUserChattingData: ${e.toString()}');
-      return null;
+      rethrow;
     }
+  }
+
+  /// Update UserChatting Data
+  static Future<void> updateLastReadTime(
+      {required String uid, required String userChattingId}) async {
+    final ref =
+        FirebaseReference.userChattingList(uid).doc(userChattingId);
+    try {
+      await ref.update({'lastReadTime': DateTime.now()});
+    } catch (e) {
+      debugPrint('오류!! updateLastReadTimeData: ${e.toString()}');
+      rethrow;
+    }
+  }
+
+  /// Listen User Data
+  static Stream<List<UserChatting>> listen(String uid) {
+    final ref = FirebaseReference.userChattingList(uid);
+    try{
+      final stream = ref.listenAllDocuments<UserChatting>();
+      return stream;
+
+    }catch(e){
+      debugPrint('readUserData에러: ${e.toString()}');
+      rethrow;
+    }    
   }
 }
