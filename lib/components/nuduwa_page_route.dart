@@ -46,7 +46,7 @@ class RoutePages {
   static const main = '/main';
   static const _meetingchat = '/meetingchat';
   static String meetingchat({required String meetingId}) =>
-      '$main$_meetingchat/$meetingId';
+      '$_meetingchat/$meetingId';
 
   static const _chattingRoom = '/chattingRoom';
   static String chattingRoom({required String otherUid}) =>

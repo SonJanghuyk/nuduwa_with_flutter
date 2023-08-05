@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:nuduwa_with_flutter/components/nuduwa_widgets.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_controller.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_detail_controller.dart';
@@ -55,11 +56,10 @@ class MeetingPage extends GetView<MeetingController> {
     );
   }
 
-  GetBuilder<MeetingDetailController> meetingDetailBuilder() {
-    return GetBuilder(
+  Builder meetingDetailBuilder() {
+    Get.put(MeetingDetailController(meetingId: controller.tapMeetingId), tag: controller.tapMeetingId);
+    return Builder(
       key: GlobalKey(),
-      init: MeetingDetailController(meetingId: controller.tapMeetingId),
-      tag: controller.tapMeetingId,
       builder: (_) => MeetingDetailPage(
         meetingId: controller.tapMeetingId,
         onClose: controller.onCloseMeetingDetail,

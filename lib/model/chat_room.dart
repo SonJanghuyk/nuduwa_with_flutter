@@ -2,37 +2,36 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
-class Chatting {
+class ChatRoom {
   final String? id;
   final List<String> people;
-  final DateTime? firstChattingTime;
+  final DateTime? firstChatTime;
 
-  Chatting({
+  ChatRoom({
     this.id,
     required this.people,
-    this.firstChattingTime,
+    this.firstChatTime,
   });
 
-  factory Chatting.fromFirestore(
+  factory ChatRoom.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> snapshot, [
     SnapshotOptions? options,
   ]) {
     final data = snapshot.data();
-    final firstChattingTime = data?['firstChattingTime'] as Timestamp?;
-    if (firstChattingTime == null) {
-      return throw '에러! firstChattingTime is null';
-    }
-    return Chatting(
+    final people = data?['people'] as Iterable<String>?;
+    if(people==null) throw 'null';
+    
+    return ChatRoom(
       id: snapshot.id,
-      people: data?['people'] is Iterable ? List.from(data?['people']) : [],
-      firstChattingTime: firstChattingTime.toDate(),
+      people: List.from(people),
+      firstChatTime: (data?['firstChatTime'] as Timestamp? ?? Timestamp.now()).toDate(),
     );
   }
 
   Map<String, dynamic> toFirestore() {
     return {
       "people": people,
-      "firstChattingTime": FieldValue.serverTimestamp(),
+      "firstChatTime": FieldValue.serverTimestamp(),
     };
   }
 }
@@ -40,9 +39,9 @@ class Chatting {
 class ChattingRepository {
 
   /// Create Chatting Data
-  static Future<DocumentReference<Chatting>> create(
+  static Future<DocumentReference<ChatRoom>> create(
       {required String uid, required String otherUid}) async {
-    final chatting = Chatting(people: [uid, otherUid]);
+    final chatting = ChatRoom(people: [uid, otherUid]);
     final ref = FirebaseReference.chattingList.doc();
 
     try {

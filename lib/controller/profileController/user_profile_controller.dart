@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/model/chatting.dart';
+import 'package:nuduwa_with_flutter/model/chat_room.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/model/user_chatting.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
@@ -13,7 +13,7 @@ class UserProfileController extends GetxController {
 
   // User
   final String uid;
-  final Rx<UserModel?> user = Rx<UserModel?>(null);
+  final Rx<User?> user = Rx<User?>(null);
 
   UserProfileController({required this.uid});
 
@@ -23,8 +23,8 @@ class UserProfileController extends GetxController {
     user.bindStream(listenerForUser(uid));
   }
 
-  Stream<UserModel?> listenerForUser(String uid) {
-    return UserRepository.listen(uid);
+  Stream<User?> listenerForUser(String uid) {
+    return UserRepository.stream(uid);
   }
 
   Future<void> clickedChattingButton() async {

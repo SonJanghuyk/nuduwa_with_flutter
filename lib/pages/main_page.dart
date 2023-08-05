@@ -29,7 +29,9 @@ class MainPage extends GetView<MainPageController> {
 
       // 하단 텝바
       bottomNavigationBar: Obx(
-        () => NavigationBar(
+        () {
+          final tabIndex = controller.tabIndex.value;
+          return NavigationBar(
           height: 60,
           destinations: const [
             NavigationDestination(
@@ -53,12 +55,13 @@ class MainPage extends GetView<MainPageController> {
               selectedIcon: Icon(Icons.person, color: Colors.white),
             ),
           ],
-          selectedIndex: controller.tabIndex.value,
+          selectedIndex: tabIndex,
           onDestinationSelected: controller.changePage,
           indicatorColor: Colors.blue,
           surfaceTintColor: Colors.white,
           labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-        ),
+        );
+        }
       ),
     );
   }

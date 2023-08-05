@@ -100,7 +100,7 @@ class UserMeetingRepository {
   /// Listen UserMeetings Data
   static Stream<List<UserMeeting>> listen(String uid) {
     final ref = FirebaseReference.userMeetingList(uid);
-    final stream = ref.listenAllDocuments<UserMeeting>();
+    final stream = ref.streamAllDocuments<UserMeeting>();
 
     return stream;
   }

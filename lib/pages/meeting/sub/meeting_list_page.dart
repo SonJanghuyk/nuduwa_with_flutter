@@ -20,7 +20,8 @@ class MeetingListPage extends StatelessWidget {
           itemCount: userMeetings.length,
           itemBuilder: (context, index) {
             final meetingId = userMeetings[index].meetingId;
-            Get.lazyPut(() => MeetingCardController(meetingId: meetingId),
+            final hostUid = userMeetings[index].hostUid;
+            Get.lazyPut(() => MeetingCardController(meetingId: meetingId, hostUid: hostUid),
                 tag: meetingId);
             return MeetingCard(
               meetingId: userMeetings[index].meetingId,

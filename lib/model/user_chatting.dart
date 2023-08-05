@@ -96,7 +96,7 @@ class UserChattingRepository {
   static Stream<List<UserChatting>> listen(String uid) {
     final ref = FirebaseReference.userChattingList(uid);
     try{
-      final stream = ref.listenAllDocuments<UserChatting>();
+      final stream = ref.streamAllDocuments<UserChatting>();
       return stream;
 
     }catch(e){

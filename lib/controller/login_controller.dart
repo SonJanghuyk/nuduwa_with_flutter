@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nuduwa_with_flutter/components/nuduwa_widgets.dart';
-import 'package:nuduwa_with_flutter/model/user.dart';
+import 'package:nuduwa_with_flutter/model/user.dart' as usermodel;
 
 class LoginController extends GetxController {
   static LoginController instance = Get.find();
@@ -44,7 +44,7 @@ class LoginController extends GetxController {
         userCredential =
             await FirebaseAuth.instance.signInWithCredential(credential);
       } else {
-        SnackbarOfNuduwa.error('에러!!!', '지원하지 않는 플랫폼입니다');
+        SnackBarOfNuduwa.error('에러!!!', '지원하지 않는 플랫폼입니다');
         return;
       }
 
@@ -52,12 +52,12 @@ class LoginController extends GetxController {
 
       if (user == null) return;
 
-      final currentUser = await UserRepository.read(user.uid);
+      final currentUser = await usermodel.UserRepository.read(user.uid);
       if (currentUser == null) {
         await _registerUser(user);
       }
     } catch (e) {
-      SnackbarOfNuduwa.error('에러!!!', '구글로그인 오류');
+      SnackBarOfNuduwa.error('에러!!!', '구글로그인 오류');
       debugPrint("에러!! 로그인에러: ${e.toString()}");
     } finally {
       isGoogleLoginLoading.value = false;
@@ -65,15 +65,16 @@ class LoginController extends GetxController {
   }
 
   Future<void> _registerUser(User user) async {
-    final providerData = user.providerData.map((e) => ProviderUserInfo.fromUserInfo(e)).toList();
-    final userModel = UserModel(
+    final providerData = user.providerData
+        .map((e) => usermodel.ProviderUserInfo.fromUserInfo(e))
+        .toList();
+
+    await usermodel.UserRepository.create(
       id: user.uid,
       name: user.displayName,
       email: user.email,
       imageUrl: user.photoURL,
       providerData: providerData,
     );
-
-    await UserRepository.create(userModel);
   }
 }

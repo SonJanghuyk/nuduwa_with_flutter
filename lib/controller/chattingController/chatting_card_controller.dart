@@ -19,7 +19,7 @@ class ChattingCardController extends GetxController {
   // Chatting
   final UserChatting userChatting;
   final messages = RxList<Message>();
-  final otherUser = Rx<UserModel?>(null);
+  final otherUser = Rx<User?>(null);
   final unreadCount = RxInt(0);
 
   ChattingCardController({required this.userChatting})
@@ -62,7 +62,7 @@ class ChattingCardController extends GetxController {
     }
   }
 
-  Future<UserModel?> fetchOtherUser(String uid) async {
+  Future<User?> fetchOtherUser(String uid) async {
     try{
       final user = await UserRepository.read(uid);
       return user;

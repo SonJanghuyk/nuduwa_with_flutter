@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
@@ -113,7 +112,7 @@ class MemberRepository {
   /// Listen Members Data
   static Stream<List<Member>> listenAllDocuments({required String meetingId}) {
     final ref = FirebaseReference.memberList(meetingId);
-    final stream = ref.listenAllDocuments<Member>();
+    final stream = ref.streamAllDocuments<Member>();
 
     return stream;
   }

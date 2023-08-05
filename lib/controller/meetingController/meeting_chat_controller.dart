@@ -54,7 +54,7 @@ class MeetingChatController extends GetxController
     try {
       final ref = FirebaseReference.meetingMessageList(meetingId);
       final query = ref.orderBy('sendTime', descending: true);
-      final stream = query.listenAllDocuments<Message>();
+      final stream = query.streamAllDocuments<Message>();
       return stream;
 
     } catch (e) {

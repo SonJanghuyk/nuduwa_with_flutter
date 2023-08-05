@@ -32,14 +32,14 @@ class PermissionService extends GetxService {
   Future<void> _checkNetworkConnect() async {
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
-      SnackbarOfNuduwa.error('네트워크 오류', '인터넷 연결 상태를 확인하세요');
+      SnackBarOfNuduwa.error('네트워크 오류', '인터넷 연결 상태를 확인하세요');
     }
   }
 
   void _listenConnectNetwork() {
     Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
       if (result == ConnectivityResult.none) {
-        SnackbarOfNuduwa.error('네트워크 오류', '인터넷 연결 상태를 확인하세요');
+        SnackBarOfNuduwa.error('네트워크 오류', '인터넷 연결 상태를 확인하세요');
       }
     });
   }
@@ -52,7 +52,7 @@ class PermissionService extends GetxService {
     if (!isLocationEnabled) {
       // 위치 서비스 활성화 안됨
       debugPrint('위치 서비스를 활성화해주세요');
-      SnackbarOfNuduwa.error('위치 권한 오류', '위치 서비스를 활성화해주세요');
+      SnackBarOfNuduwa.error('위치 권한 오류', '위치 서비스를 활성화해주세요');
       return null;
     }
 
@@ -66,7 +66,7 @@ class PermissionService extends GetxService {
 
       if (checkedPermission == LocationPermission.denied) {
         debugPrint('위치 권한을 허가해주세요.');
-        SnackbarOfNuduwa.error('위치 권한 오류', '현재 위치를 가져오려면 위치 권한이 필요합니다');
+        SnackBarOfNuduwa.error('위치 권한 오류', '현재 위치를 가져오려면 위치 권한이 필요합니다');
         return null;
       }
     }
@@ -74,7 +74,7 @@ class PermissionService extends GetxService {
     if (checkedPermission == LocationPermission.deniedForever) {
       // 위치 권한 거절됨 (앱에서 재요청 불가)
       debugPrint('앱의 위치 권한을 설정에서 허가해주세요');
-      SnackbarOfNuduwa.error(
+      SnackBarOfNuduwa.error(
           '위치 권한 오류', '위치 권한을 더 이상 요청할 수 없습니다. 설정에서 앱의 위치 권한을 허가해주세요');
       return null;
     }

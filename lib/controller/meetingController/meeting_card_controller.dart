@@ -1,12 +1,9 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
-import 'package:nuduwa_with_flutter/pages/map/sub/icon_of_meeting.dart';
-import 'package:nuduwa_with_flutter/service/firebase_service.dart';
-import 'package:nuduwa_with_flutter/utils/assets.dart';
+import 'package:nuduwa_with_flutter/model/user.dart';
 import 'package:nuduwa_with_flutter/utils/responsive.dart';
 
 class MeetingCardController extends GetxController {
@@ -14,57 +11,46 @@ class MeetingCardController extends GetxController {
   static MeetingCardController instance({required String tag}) =>
       Get.find(tag: tag);
 
-
-  // Listener Ref
-  final DocumentReference<Meeting> meetingDocRef;
-
   // Meeting
   final String meetingId;
   final meeting = Rx<Meeting?>(null);
-  final hostImage = Rx<ImageProvider?>(null);
+  final _snapshotMeeting = Rx<Meeting?>(null);
 
-  MeetingCardController({required this.meetingId})
-      : meetingDocRef = FirebaseReference.meetingList.doc(meetingId);
+  final String hostUid;
+  late final ({String? name, String? image}) _hostNameAndImage;
+
+  MeetingCardController({required this.meetingId, required this.hostUid});
 
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
-    listenerForMeeting(meetingId);
+
+    _hostNameAndImage = await fetchHostData(hostUid);
+    _snapshotMeeting.bindStream(_streamMeeting());
+    ever(_snapshotMeeting, convertMeeting);
   }
 
-  @override
-  void onClose() {
-    super.onClose();
-    // firebaseService.cancelListener(ref: meetingDocRef);
+  void convertMeeting(Meeting? snapshotMeeting) {
+    final tempMeeting = snapshotMeeting!;
+    tempMeeting.hostName = _hostNameAndImage.name;
+    tempMeeting.hostImageUrl = _hostNameAndImage.image;
+    meeting.value = tempMeeting;
   }
 
-  void listenerForMeeting(String meetingId) {
-    debugPrint('listenerForMeeting: $meetingId');
-    try {
-      final listener = meetingDocRef.snapshots().listen((snapshot) async {
-        if (!snapshot.exists || snapshot.data() == null) return;
-        final data = snapshot.data();
-        if (data?.publishedTime is! DateTime) {
-          data!.publishedTime = meeting.value?.publishedTime ?? DateTime.now();
-        }
-        meeting.value = data;
-        // final temp =
-        //     await MeetingRepository.fetchHostData(meeting.value!);
-        // meeting.value = Meeting.clone(temp);
-        downloadHostImage(meeting.value!.hostImageUrl);
-        debugPrint('listenerForMeeting끝');
-      });
-      // firebaseService.addListener(ref: meetingDocRef, listener: listener);
-    } catch (e) {
-      debugPrint('에러!! listenerForMeeting: $e');
-    }
+  Stream<Meeting?> _streamMeeting() {
+    return MeetingRepository.stream(meetingId: meetingId);
   }
 
-  Future<void> downloadHostImage(String? url) async {
-    if (url == null) hostImage.value = const AssetImage(Assets.imageNoImage);
-    final imageBytes = await DrawIconOfMeeting.downloadImage(url);
-    hostImage.value = Image.memory(imageBytes).image;
+  Future<({String? name, String? image})> fetchHostData(String hostUid) async {
+    final host = await UserRepository.readOnlyNameAndImage(hostUid);
+    return (name: host.$1, image: host.$2);
   }
+
+  // Future<void> downloadHostImage(String? url) async {
+  //   if (url == null) hostImage.value = const AssetImage(Assets.imageNoImage);
+  //   final imageBytes = await DrawIconOfMeeting.downloadImage(url);
+  //   hostImage.value = Image.memory(imageBytes).image;
+  // }
 
   void onTapMeetingCard() {
     debugPrint('라우팅:${Get.nestedKey(1)!.currentState!}');

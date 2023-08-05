@@ -42,8 +42,10 @@ dependencies:
   firebase_auth: ^4.7.1
   cloud_firestore: ^4.8.3
 
-  # Google
+  # Sns Login
   google_sign_in: ^6.1.4
+
+  # Google Map  
   google_maps_flutter: ^2.3.1
   geolocator: ^9.0.2
 
@@ -65,6 +67,9 @@ dependencies:
 
   # Check Network Connectivity
   connectivity_plus: ^4.0.1
+
+  # Image Picker
+  image_picker: ^1.0.2
 
 flutter_native_splash:
   color: "#1b1c1a"

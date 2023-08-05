@@ -29,7 +29,7 @@ class LoginBindings extends Bindings {
 class MainBindings extends Bindings {
   @override
   void dependencies() {
-    Get.put(MainPageController(), permanent: true);
+    Get.put(MainPageController());
     Get.put(MapPageController());
     Get.put(MeetingController());
     Get.put(ChattingPageController());

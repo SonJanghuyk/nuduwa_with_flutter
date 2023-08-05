@@ -62,9 +62,9 @@ class MeetingMessageRepository{
   }
 
   /// Listen MeetingMessages Data
-  static Stream<List<Message>> listen(String meetingId) {
+  static Stream<List<Message>> streamAllDocuments(String meetingId) {
     final ref = FirebaseReference.meetingMessageList(meetingId);
-    final stream = ref.listenAllDocuments<Message>();
+    final stream = ref.streamAllDocuments<Message>();
 
     return stream;
   }
@@ -88,9 +88,9 @@ class ChattingMessageRepository{
   }
 
   /// Listen MeetingMessages Data
-  static Stream<List<Message>> listen(String chattingId) {
+  static Stream<List<Message>> streamAllDocuments(String chattingId) {
     final ref = FirebaseReference.chattingMessageList(chattingId);
-    final stream = ref.listenAllDocuments<Message>();
+    final stream = ref.streamAllDocuments<Message>();
 
     return stream;
   }

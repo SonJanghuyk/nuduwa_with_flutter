@@ -15,7 +15,7 @@ class ChattingRoomController extends GetxController implements ChattingControlle
   
   final UserChatting userChatting;
 
-  final otherUser = Rx<UserModel?>(null);
+  final otherUser = Rx<User?>(null);
 
   late Query messageQuery;
 
@@ -68,7 +68,7 @@ class ChattingRoomController extends GetxController implements ChattingControlle
       // });
       final ref = FirebaseReference.chattingMessageList(userChatting.chattingId);
       final query = ref.orderBy('sendTime', descending: true);
-      final stream = query.listenAllDocuments<Message>();
+      final stream = query.streamAllDocuments<Message>();
       return stream;
     } catch (e) {
       debugPrint('오류!! listenerForMessages: ${e.toString()}');
@@ -98,7 +98,7 @@ class ChattingRoomController extends GetxController implements ChattingControlle
     UserChattingRepository.updateLastReadTime(uid: FirebaseReference.currentUid!, userChattingId: userChatting.id!);
   }
 
-  Future<UserModel?> fetchOtherUserData({required String otherUid}) async {
+  Future<User?> fetchOtherUserData({required String otherUid}) async {
     debugPrint('fetchOtherUserData');
     try{
       final user = await UserRepository.read(otherUid);

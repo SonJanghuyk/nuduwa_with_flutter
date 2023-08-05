@@ -174,17 +174,17 @@ class MeetingRepository{
   }
 
   /// Listen Meetings Data
-  static Stream<Meeting?> listen({required String meetingId}) {
+  static Stream<Meeting?> stream({required String meetingId}) {
     final ref = FirebaseReference.meetingList.doc(meetingId);
-    final stream = ref.listenDocument<Meeting>();
+    final stream = ref.streamDocument<Meeting>();
 
     return stream;
   }
 
   /// Listen Meetings Data
-  static Stream<List<Meeting>> listenAllDocuments() {
+  static Stream<List<Meeting>> streamAllDocuments() {
     final ref = FirebaseReference.meetingList;
-    final stream = ref.listenAllDocuments<Meeting>();
+    final stream = ref.streamAllDocuments<Meeting>();
 
     return stream;
   }

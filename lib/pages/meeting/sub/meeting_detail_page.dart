@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -21,102 +22,118 @@ class MeetingDetailPage extends GetView<MeetingDetailController> {
 
   @override
   Widget build(BuildContext context) {
-    
     return ScaffoldOfNuduwa(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        // backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(''),
-        leading: Obx(
-          () => !controller.isEdit.value
-              ? IconButton(
-                  onPressed: () => onClose(),
-                  icon: const Row(children: [
-                    Icon(
-                      Icons.arrow_back_ios_new,
-                      size: 28,
-                      color: Colors.blue,
-                    ),
-                    Text(
-                      '내 모임',
-                      style: TextStyle(fontSize: 20, color: Colors.blue),
-                    ),
-                  ]),
-                )
-              : IconButton(
-                  onPressed: controller.cancelEdit,
-                  icon: const Row(children: [
-                    Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Colors.red,
-                      size: 28,
-                    ),
-                    Text(
-                      '수정 취소',
-                      style: TextStyle(fontSize: 20, color: Colors.red),
-                    ),
-                  ]),
+        leading: Obx(() {
+          final isEdit = controller.isEdit.value;
+          if (isEdit) {
+            // 수정 중일때 - 수정취소 버튼
+            return IconButton(
+              onPressed: controller.cancelEdit,
+              icon: const Row(children: [
+                Icon(
+                  Icons.arrow_back_ios_new,
+                  color: Colors.red,
+                  size: 28,
+                ),
+                Text(
+                  '수정 취소',
+                  style: TextStyle(fontSize: 20, color: Colors.red),
+                ),
+              ]),
+              color: Colors.blue,
+            );
+          } else {
+            // 뒤로가기 버튼
+            return IconButton(
+              onPressed: onClose,
+              icon: const Row(children: [
+                Icon(
+                  Icons.arrow_back_ios_new,
+                  size: 28,
                   color: Colors.blue,
                 ),
-        ),
+                Text(
+                  '내 모임',
+                  style: TextStyle(fontSize: 20, color: Colors.blue),
+                ),
+              ]),
+            );
+          }
+        }),
         leadingWidth: 130,
         actions: [
           Obx(
-            () => !controller.isEdit.value
-                ? PopupMenuButton(
-                    icon: const Icon(
-                      Icons.menu,
-                      color: Colors.blue,
-                    ),
-                    iconSize: 30,
-                    elevation: 1,
-                    padding: EdgeInsets.zero,
-                    offset: const Offset(0, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    itemBuilder: (BuildContext context) =>
-                        controller.meeting.value?.hostUid ==
-                                FirebaseReference.currentUid!
-                            ? <PopupMenuEntry<String>>[
-                                menuItem(
-                                  text: '모임 수정',
-                                  icon: Icons.change_circle_outlined,
-                                  color: Colors.black,
-                                  ontap: controller.onEdit,
-                                ),
-                                menuItem(
-                                  text: '모임 삭제',
-                                  icon: Icons.delete_forever_outlined,
-                                  color: Colors.red,
-                                  ontap: () => {},
-                                ),
-                              ]
-                            : [
-                                menuItem(
-                                  text: '모임 나가기',
-                                  icon: Icons.exit_to_app,
-                                  color: Colors.red,
-                                  ontap: () {
-                                    controller.leaveMeeting();
-                                    onClose();
-                                  }
-                                )
-                              ],
-                  )
-                : Obx(() => !controller.isLoading.value
-                    ? IconButton(
-                        onPressed: controller.updateEdit,
-                        icon: const Text(
-                          '수정 완료',
-                          style: TextStyle(fontSize: 20, color: Colors.blue),
-                        ),
-                        color: Colors.blue,
-                        iconSize: 80,
-                      )
-                    : const Center(
-                        child: CircularProgressIndicator(),
-                      )),
+            () {
+              final isLoading = controller.isLoading.value;
+              final isEdit = controller.isEdit.value;
+              final isHost = controller.meeting.value?.hostUid ==
+                  FirebaseAuth.instance.currentUser?.uid;
+              if (isLoading) {
+                // 수정 로딩중일때
+                return const Center(child: CircularProgressIndicator());
+              } else if (isEdit) {
+                // 수정 중일때 - 수정완료 버튼
+                return IconButton(
+                  onPressed: controller.updateEdit,
+                  icon: const Text(
+                    '수정 완료',
+                    style: TextStyle(fontSize: 20, color: Colors.blue),
+                  ),
+                  color: Colors.blue,
+                  iconSize: 80,
+                );
+              } else {
+                // 메뉴 버튼
+                return PopupMenuButton(
+                  icon: const Icon(
+                    Icons.menu,
+                    color: Colors.blue,
+                  ),
+                  iconSize: 30,
+                  elevation: 1,
+                  padding: EdgeInsets.zero,
+                  offset: const Offset(0, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  itemBuilder: (BuildContext context) => isHost
+                      ? <PopupMenuEntry<String>>[
+                        //
+                        // 모임 Host일때
+                        //
+                          menuItem(
+                            text: '모임 수정',
+                            icon: Icons.change_circle_outlined,
+                            color: Colors.black,
+                            ontap: controller.onEdit,
+                          ),
+                          menuItem(
+                            text: '모임 삭제',
+                            icon: Icons.delete_forever_outlined,
+                            color: Colors.red,
+                            ontap: () => {},
+                          ),
+                        ]
+                      : [
+                        //
+                        // 모임 Host 아닐때
+                        //
+                          menuItem(
+                              text: '모임 나가기',
+                              icon: Icons.exit_to_app,
+                              color: Colors.red,
+                              ontap: () {
+                                controller.leaveMeeting();
+                                onClose();
+                              })
+                        ],
+                );
+              }
+            },
           ),
         ],
       ),
@@ -139,22 +156,6 @@ class MeetingDetailPage extends GetView<MeetingDetailController> {
                         children: [
                           Row(
                             children: [
-                              // ------- HostImage -------
-                              SizedBox(
-                                width: 60,
-                                height: 60,
-                                child: Obx(() =>
-                                    controller.hostImage.value == null
-                                        ? const Center(
-                                            child: CircularProgressIndicator())
-                                        : CircleAvatar(
-                                            radius: 20,
-                                            backgroundImage:
-                                                controller.hostImage.value,
-                                            backgroundColor:
-                                                Colors.white, // 로딩 중일 때 보여줄 배경색
-                                          )),
-                              ),
                               const SizedBox(width: 10),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -303,8 +304,12 @@ class MeetingDetailPage extends GetView<MeetingDetailController> {
                                                     child:
                                                         CircularProgressIndicator())
                                                 : IconButton(
-                                                  onPressed: () => Get.toNamed('/userProfile', arguments: member.uid),
-                                                  icon: CircleAvatar(
+                                                    onPressed: () =>
+                                                        Get.toNamed(
+                                                            '/userProfile',
+                                                            arguments:
+                                                                member.uid),
+                                                    icon: CircleAvatar(
                                                       radius: 18,
                                                       backgroundImage:
                                                           NetworkImage(
@@ -312,7 +317,7 @@ class MeetingDetailPage extends GetView<MeetingDetailController> {
                                                       backgroundColor: Colors
                                                           .white, // 로딩 중일 때 보여줄 배경색
                                                     ),
-                                                ),
+                                                  ),
                                           ),
                                         ),
                                     ],

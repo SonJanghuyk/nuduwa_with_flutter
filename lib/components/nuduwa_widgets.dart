@@ -79,12 +79,12 @@ class ScaffoldOfNuduwa extends StatelessWidget {
 
 class AppbarOfNuduwa extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  final List<Widget>? iconButtons;
+  final List<Widget>? actions;
 
   const AppbarOfNuduwa({
     super.key,
     required this.title,
-    this.iconButtons,
+    this.actions,
   });
 
   @override
@@ -101,7 +101,7 @@ class AppbarOfNuduwa extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.transparent, // 투명한 배경
       // backgroundColor: Colors.red,
       elevation: 0, // 그림자 제거
-      actions: iconButtons,
+      actions: actions,
     );
   }
 
@@ -110,7 +110,7 @@ class AppbarOfNuduwa extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
-class SnackbarOfNuduwa {
+class SnackBarOfNuduwa {
 
   static void warning(String title, String message) {
     Get.snackbar(

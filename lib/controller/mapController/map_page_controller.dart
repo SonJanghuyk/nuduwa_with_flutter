@@ -1,19 +1,21 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:geolocator/geolocator.dart';
+
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:nuduwa_with_flutter/controller/main_page_controller.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
 import 'package:nuduwa_with_flutter/model/user_meeting.dart';
-import 'package:nuduwa_with_flutter/pages/map/sub/icon_of_meeting.dart';
 import 'package:nuduwa_with_flutter/pages/map/sub/meeting_info_sheet.dart';
-import 'dart:ui' as ui;
-
+import 'package:nuduwa_with_flutter/utils/assets.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/service/permission_service.dart';
 
@@ -21,9 +23,13 @@ class MapPageController extends GetxController {
   // static MapPageController get instance => Get.find();
 
   // Helper
-  final utils = MapPageControllerUtils(
-      drawIconOfMeeting: DrawIconOfMeeting(!kIsWeb ? 80.0 : 26.666,
-          !kIsWeb ? 10.0 : 3.333, !kIsWeb ? 30.0 : 10.0));
+  final _utils = MapPageControllerUtils(
+    drawIconOfMeeting: DrawIconOfMeeting(
+      imageSize: !kIsWeb ? 80.0 : 26.666,
+      borderWidth: !kIsWeb ? 10.0 : 3.333,
+      triangleSize: !kIsWeb ? 30.0 : 10.0,
+    ),
+  );
 
   // GoogleMap
   final _mapController = Completer<GoogleMapController>();
@@ -46,7 +52,7 @@ class MapPageController extends GetxController {
   // CreateMeeting
   final isCreate = RxBool(false);
   Marker? newMarker;
-  final newMarkerId = 'newMeeting';
+  final _newMarkerId = 'newMeeting';
 
   // JoinMeeting
   final isLoading = RxBool(false);
@@ -67,12 +73,14 @@ class MapPageController extends GetxController {
     once(PermissionService.instance.currentLatLng, fetchCurrentLocation);
 
     _snapshotMeetings.bindStream(_streamMeetings());
+    debugPrint('000');
     ever(_snapshotMeetings, _createMarkers);
   }
 
   Future<void> _initializeVariables() async {
     // GoogleMap Style - Remove POI Icons
     _mapStyle = await rootBundle.loadString('assets/map_style.txt');
+    await _utils.initializeVariables();
 
     currentLatLng.value = PermissionService.instance.currentLatLng.value;
   }
@@ -98,7 +106,7 @@ class MapPageController extends GetxController {
       if (_snapshotMeetingsAndMarkers.keys.contains(userMeeting.meetingId)) {
         final meeting =
             _snapshotMeetingsAndMarkers[userMeeting.meetingId]!.meeting;
-        final marker = await utils.fetchMeetingMarker(meeting);
+        final marker = await _utils.fetchMeetingMarker(meeting);
         _snapshotMeetingsAndMarkers[userMeeting.meetingId] =
             (meeting: meeting, marker: marker);
       }
@@ -111,7 +119,7 @@ class MapPageController extends GetxController {
     meetingsAndMarkers.value = Map.from(_snapshotMeetingsAndMarkers);
     if (newMarker != null) {
       final tempMeeting = MeetingRepository.tempMeetingData();
-      meetingsAndMarkers[newMarkerId] =
+      meetingsAndMarkers[_newMarkerId] =
           (meeting: tempMeeting, marker: newMarker!);
     }
   }
@@ -119,20 +127,20 @@ class MapPageController extends GetxController {
   void clusteringMarkers() {}
 
   Stream<List<Meeting>> _streamMeetings() {
-    return MeetingRepository.listenAllDocuments();
+    return MeetingRepository.streamAllDocuments();
   }
 
   void _createMarkers(List<Meeting> meetings) {
     _snapshotMeetingsAndMarkers.clear();
     for (final meeting in meetings) {
-      final markerForLoading = utils.creatLoadingMeetingMarker(meeting);
+      final markerForLoading = _utils.creatLoadingMeetingMarker(meeting);
 
       // 우선 로딩아이콘으로 마커표시
       _snapshotMeetingsAndMarkers[meeting.id!] =
           (meeting: meeting, marker: markerForLoading);
 
       // Marker 이미지를 HostImage로 교체
-      utils.fetchMeetingMarker(meeting).then((marker) {
+      _utils.fetchMeetingMarker(meeting).then((marker) {
         _snapshotMeetingsAndMarkers[meeting.id!] =
             (meeting: meeting, marker: marker);
         _convertMeetings();
@@ -195,7 +203,7 @@ class MapPageController extends GetxController {
     if (!isCreate.value) {
       isCreate.value = true;
       Marker marker = Marker(
-        markerId: MarkerId(newMarkerId),
+        markerId: MarkerId(_newMarkerId),
         position: center,
         draggable: false,
       );
@@ -206,56 +214,6 @@ class MapPageController extends GetxController {
     }
     _convertMeetings();
   }
-
-  // 모임 맴버 리스너시작
-  // void listenerForMembers(String meetingId) {
-  //   debugPrint('모임맴버리스너!!!!');
-
-  //   listener[meetingId] =
-  //       FirebaseReference.memberList(meetingId).snapshots().listen((snapshot) {
-  //     final snapshotMembers = snapshot.docs
-  //         .where((doc) => doc.exists && !doc.metadata.hasPendingWrites)
-  //         .map((doc) => doc.data())
-  //         .toList();
-  //     members.value = snapshotMembers;
-  //   });
-  // }
-
-  // 모임 맴버 리스너종료
-  // void cancelListenerForMembers(String meetingId) {
-  //   debugPrint('모임맴버리스너종료!!');
-  //   if (listener[meetingId] == null) return;
-  //   listener[meetingId]!.cancel();
-  //   listener.remove(meetingId);
-  // }
-
-  // 모임 참여하기
-  // void joinMeeting(
-  //     String meetingId, String hostUid, DateTime meetingTime) async {
-  //   isLoading.value = true;
-  //   try {
-  //     await MemberRepository.create(
-  //         memberUid: FirebaseReference.currentUid!,
-  //         meetingId: meetingId,
-  //         hostUid: hostUid);
-  //     Get.back();
-  //     Get.snackbar(
-  //       '모임참여 성공',
-  //       '모임에 참여하였습니다',
-  //       snackPosition: SnackPosition.BOTTOM,
-  //     );
-  //     isLoading.value = false;
-  //   } catch (e) {
-  //     debugPrint('모임참여 실패 ${e.toString()}');
-  //     Get.snackbar(
-  //       '모임참여 실패',
-  //       e.toString(),
-  //       snackPosition: SnackPosition.BOTTOM,
-  //       backgroundColor: Colors.red,
-  //     );
-  //     isLoading.value = false;
-  //   }
-  // }
 
   // 카테고리 필터
   void clickedFilter(MeetingCategory? category) {
@@ -270,12 +228,6 @@ class MapPageController extends GetxController {
     }
     _convertMeetings();
   }
-
-  // Future<void> downloadHostImage(String? url) async {
-  //   if (url == null) hostImage.value = const AssetImage(Assets.imageNoImage);
-  //   final imageBytes = await DrawIconOfMeeting.downloadImage(url);
-  //   hostImage.value = Image.memory(imageBytes).image;
-  // }
 }
 
 enum IconColors {
@@ -292,11 +244,9 @@ class MapPageControllerUtils {
   late final Map<String, ui.Image> iconFrames;
   late final Map<String, BitmapDescriptor> loadingIcons;
 
-  MapPageControllerUtils({required this.drawIconOfMeeting}) {
-    _initializeVariables();
-  }
+  MapPageControllerUtils({required this.drawIconOfMeeting});
 
-  Future<void> _initializeVariables() async {
+  Future<void> initializeVariables() async {
     // 지도에서 쓸 아이콘 생성
     final (iconFrames, loadingIcons) = await drawIconImages();
     this.iconFrames = iconFrames;
@@ -341,7 +291,7 @@ class MapPageControllerUtils {
       markerId: MarkerId(meeting.id!),
       position: meeting.location,
       icon: loadingIcon!,
-      onTap: () => meetingInfoSheet(meeting.id!),
+      onTap: () => meetingInfoSheet(meeting),
     );
 
     return markerForLoading;
@@ -377,12 +327,183 @@ class MapPageControllerUtils {
         markerId: MarkerId(meeting.id!),
         position: meeting.location,
         icon: icon,
-        onTap: () => meetingInfoSheet(meeting.id!),
+        onTap: () => meetingInfoSheet(meeting),
       );
       return marker;
     } catch (e) {
       debugPrint('에러!fetchHostData: ${e.toString()}');
       rethrow;
     }
+  }
+}
+
+class DrawIconOfMeeting {
+  double imageSize; // 이미지 크기
+  double borderWidth; // 테두리 두께
+  double triangleSize; // 하단 꼭지점 크기
+
+  DrawIconOfMeeting({
+    required this.imageSize,
+    required this.borderWidth,
+    required this.triangleSize,
+  });
+
+  /// 로딩중 지도에 표시할 아이콘 만들기
+  Future<Map<String, BitmapDescriptor>> drawLoadingIcons(
+      Map<String, ui.Image> iconImages) async {
+    // 웹 이미지 가져오는동안 보여줄 이미지
+    final image = await _loadingImage();
+
+    // image와 iconImages를 합쳐서 Marker 아이콘 만들기
+    final loadingIconImages = await Future.wait([
+      for (var iconImage in iconImages.values) _drawIcon(image, iconImage),
+    ]);
+
+    // loadingIconImages로 만들걸 쓰기 쉽게 Map으로 변환
+    final loadingIcons = {
+      for (var index = 0; index < loadingIconImages.length; index++)
+        iconImages.keys.toList()[index]: loadingIconImages[index],
+    };
+
+    return loadingIcons;
+  }
+
+  /// 지도에 표시할 아이콘 만들기
+  Future<BitmapDescriptor> drawMeetingIcon(
+      String? imageUrl, ui.Image iconImage) async {
+    final imageData = await downloadImage(imageUrl);
+    return await _drawIcon(imageData, iconImage);
+  }
+
+  /// 웹에서 이미지 다운로드 없으면 NoImage 이미지 넣기
+  static Future<Uint8List> downloadImage(String? imageUrl) async {
+    if (imageUrl == null) {
+      final ByteData assetData = await rootBundle.load(Assets.imageNoImage);
+      return assetData.buffer.asUint8List();
+    } else {
+      final imageData = await http.get(Uri.parse(imageUrl));
+      return imageData.bodyBytes;
+    }
+  }
+
+  /// imageData와 iconImages를 합쳐서 Marker 아이콘 만들기
+  Future<BitmapDescriptor> _drawIcon(
+      Uint8List imageData, ui.Image iconImage) async {
+    final codec = await ui.instantiateImageCodec(imageData);
+    final frameInfo = await codec.getNextFrame();
+    // imageData 원모양으로 그리기
+    final meetingImage = await _drawCircleImage(frameInfo, imageSize);
+    final ui.Image markerImage = await _overlayImages(meetingImage, iconImage);
+
+    // BitmapDescriptor 생성
+    final ByteData? byteData =
+        await markerImage.toByteData(format: ui.ImageByteFormat.png);
+    final Uint8List resizedImageData = byteData!.buffer.asUint8List();
+    final BitmapDescriptor bitmapDescriptor =
+        BitmapDescriptor.fromBytes(resizedImageData);
+    return bitmapDescriptor;
+  }
+
+  /// 웹이미지 가져오는 동안 표시될 이미지
+  Future<Uint8List> _loadingImage() async {
+    final ByteData assetData = await rootBundle.load(Assets.imageLoading);
+    return assetData.buffer.asUint8List();
+  }
+
+  /// 이미지 원 모양으로 만들기
+  Future<ui.Image> _drawCircleImage(
+      ui.FrameInfo frameInfo, double imageSize) async {
+    final ui.Image image = frameInfo.image;
+    final int imageLength = image.width > image.height
+        ? image.height
+        : image.width; // 이미지 가로세로 중 짧은 길이
+
+    final double scale = imageSize / imageLength;
+
+    // 이미지 중심좌표
+    final ui.Rect srcRect = ui.Rect.fromLTRB(
+        (image.width.toDouble() - imageLength) / 2,
+        (image.height.toDouble() - imageLength) / 2,
+        imageLength.toDouble(),
+        imageLength.toDouble());
+    // 이미지 크기
+    final ui.Rect destRect =
+        ui.Rect.fromLTWH(0.0, 0.0, imageLength * scale, imageLength * scale);
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvasImage = Canvas(pictureRecorder);
+    final Paint paint = Paint()..isAntiAlias = true;
+
+    final double center = imageSize / 2;
+
+    // 원그리기
+    canvasImage.drawCircle(Offset(center, center), center, paint);
+    // 이미지 그리기
+    paint.blendMode = BlendMode.srcIn;
+    canvasImage.drawImageRect(image, srcRect, destRect, paint);
+
+    final ui.Image webImage = await pictureRecorder
+        .endRecording()
+        .toImage(imageSize.toInt(), imageSize.toInt());
+
+    return webImage;
+  }
+
+  /// 이미지 2개 겹치는 함수
+  Future<ui.Image> _overlayImages(
+      ui.Image foreground, ui.Image background) async {
+    final double backgroundWidth = background.width.toDouble();
+    final double backgroundHeight = background.height.toDouble();
+    final double foregroundWidth = foreground.width.toDouble();
+    final double foregroundHeight = foreground.height.toDouble();
+
+    final double backgroundSize =
+        backgroundWidth > backgroundHeight ? backgroundHeight : backgroundWidth;
+
+    final double offsetX = (backgroundSize - foregroundWidth) / 2;
+    final double offsetY = (backgroundSize - foregroundHeight) / 2;
+
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+
+    // 큰 이미지 그리기
+    canvas.drawImage(background, Offset.zero, Paint());
+
+    // 작은 이미지 그리기
+    canvas.drawImage(foreground, Offset(offsetX, offsetY), Paint());
+
+    final ui.Picture picture = pictureRecorder.endRecording();
+
+    final ui.Image overlayedImage = await picture.toImage(
+        backgroundWidth.toInt(), backgroundHeight.toInt());
+
+    return overlayedImage;
+  }
+
+  /// 아이콘이미지 만드는 함수
+  Future<ui.Image> drawIconFrame(Color color) async {
+    final double iconSize = imageSize + (borderWidth * 2); // 아이콘 크기
+
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvasIcon = Canvas(pictureRecorder);
+    final Paint redCirclePaint = Paint()..color = color;
+
+    final double iconCenter = imageSize / 2 + borderWidth;
+    // 세모 그리기
+    final ui.Path trianglePath = ui.Path()
+      ..moveTo(iconCenter, iconCenter * 2 + triangleSize) // 세모의 하단 꼭지점 시작점
+      ..lineTo(iconCenter / 2, iconCenter + iconCenter * 2 / 3) // 좌측 꼭지점
+      ..lineTo(iconCenter + iconCenter / 2,
+          iconCenter + iconCenter * 2 / 3) // 우측 꼭지점
+      ..close(); // 세모 완성
+
+    canvasIcon.drawCircle(
+        Offset(iconCenter, iconCenter), iconCenter, redCirclePaint);
+    canvasIcon.drawPath(trianglePath, redCirclePaint);
+
+    final ui.Image iconImage = await pictureRecorder
+        .endRecording()
+        .toImage(iconSize.toInt(), iconSize.toInt() + triangleSize.toInt());
+
+    return iconImage;
   }
 }

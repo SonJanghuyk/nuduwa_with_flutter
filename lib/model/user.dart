@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
-class UserModel {
+class User {
   final String? id;
   final String? name;
   final String? email;
@@ -13,11 +13,11 @@ class UserModel {
   final List<String>? interests;
   final DateTime? signUpTime;
 
-  final List<ProviderUserInfo>? providerData;
+  List<ProviderUserInfo>? providerData;
 
-  UserModel({
-    this.id,
-    this.name,
+  User({
+    required this.id,
+    required this.name,
     this.email,
     this.imageUrl,
     this.introdution,
@@ -26,37 +26,39 @@ class UserModel {
     this.providerData,
   });
 
-  factory UserModel.fromFirestore(
+  factory User.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> snapshot, [
     SnapshotOptions? options,
   ]) {
     final data = snapshot.data();
     final signUpTime = data?['signUpTime'] as Timestamp? ?? Timestamp.now();
     final providerDataMap = data?['providerData'] as Iterable?;
-    final providerData = providerDataMap?.map((e) => ProviderUserInfo.fromFirestore(e));
+    final providerData =
+        providerDataMap?.map((e) => ProviderUserInfo.fromFirestore(e));
 
-    return UserModel(
+    return User(
       id: snapshot.id,
-      name: data?['name'] as String?,
+      name: data?['name'] as String,
       email: data?['email'] as String?,
       imageUrl: data?['image'] as String?,
       introdution: data?['introdution'] as String?,
       interests:
           data?['interests'] is Iterable ? List.from(data?['interests']) : null,
       signUpTime: signUpTime.toDate(),
-      providerData: providerData?.toList(),          
+      providerData: providerData?.toList(),
     );
   }
 
   Map<String, dynamic> toFirestore() {
     return {
-      if (name != null) "name": name,
-      if (email != null) "email": email,
-      if (imageUrl != null) "image": imageUrl,
-      if (introdution != null) "introdution": introdution,
-      if (interests != null) "interests": interests,
+      'name': name,
+      if (email != null) 'email': email,
+      if (imageUrl != null) 'image': imageUrl,
+      if (introdution != null) 'introdution': introdution,
+      if (interests != null) 'interests': interests,
       "signUpTime": FieldValue.serverTimestamp(),
-      if (providerData != null) "providerData": providerData?.map((info) => info.toFirestore),
+      if (providerData != null)
+        "providerData": providerData?.map((info) => info.toFirestore),
     };
   }
 }
@@ -78,9 +80,7 @@ class ProviderUserInfo {
     this.providerId,
   });
 
-  factory ProviderUserInfo.fromUserInfo(
-    UserInfo userinfo) {
-
+  factory ProviderUserInfo.fromUserInfo(UserInfo userinfo) {
     return ProviderUserInfo(
       uid: userinfo.uid,
       email: userinfo.email,
@@ -91,9 +91,7 @@ class ProviderUserInfo {
     );
   }
 
-  factory ProviderUserInfo.fromFirestore(
-    Map<String, dynamic> data) {
-
+  factory ProviderUserInfo.fromFirestore(Map<String, dynamic> data) {
     return ProviderUserInfo(
       uid: data['uid'] as String?,
       email: data['email'] as String?,
@@ -105,21 +103,34 @@ class ProviderUserInfo {
   }
 
   Map<String, dynamic> get toFirestore => {
-    'uid': uid,
-    'email': email,
-    'displayName': displayName,
-    'photoURL': photoURL,
-    'phoneNumber': phoneNumber,
-    'providerId': providerId,
-  };
+        'uid': uid,
+        'email': email,
+        'displayName': displayName,
+        'photoURL': photoURL,
+        'phoneNumber': phoneNumber,
+        'providerId': providerId,
+      };
 }
 
 class UserRepository {
   /// Create User Data
-  static Future<DocumentReference<UserModel>> create(UserModel user) async {
-    final ref = FirebaseReference.userList.doc(user.id);
+  static Future<DocumentReference<User>> create({
+    required String id,
+    required String? name,
+    String? email,
+    String? imageUrl,
+    List<ProviderUserInfo>? providerData,
+  }) async {
+    final ref = FirebaseReference.userList.doc(id);
+    final newUser = User(
+      id: id,
+      name: name,
+      email: email,
+      imageUrl: imageUrl,
+      providerData: providerData,
+    );
     try {
-      await ref.set(user);
+      await ref.set(newUser);
       return ref;
     } catch (e) {
       debugPrint('createUserData에러: ${e.toString()}');
@@ -127,11 +138,12 @@ class UserRepository {
     }
   }
 
-  /// Read User Data
-  static Future<UserModel?> read(String uid) async {
+  /// Read User Basic Data
+  static Future<User?> read(String uid) async {
     final ref = FirebaseReference.userList.doc(uid);
     try {
-      final data = await ref.getDocument<UserModel?>();
+      final data = await ref.getDocument<User?>();
+      data?.providerData = null;
       return data;
     } catch (e) {
       debugPrint('readUserData에러: ${e.toString()}');
@@ -139,14 +151,50 @@ class UserRepository {
     }
   }
 
-  /// Listen User Data
-  static Stream<UserModel?> listen(String uid) {
+  /// Read User All Data
+  static Future<User?> readAll(String uid) async {
     final ref = FirebaseReference.userList.doc(uid);
     try {
-      final stream = ref.listenDocument<UserModel?>();
+      final data = await ref.getDocument<User?>();
+      return data;
+    } catch (e) {
+      debugPrint('readUserAllData에러: ${e.toString()}');
+      rethrow;
+    }
+  }
+
+  /// Update User Data
+  static Future<void> update({
+    required String uid,
+    String? name,
+    String? email,
+    String? imageUrl,
+    String? introdution,
+    List<String>? interests,
+  }) async {
+    final ref = FirebaseReference.userList.doc(uid);
+    try {
+      await ref.update({
+        if (name != null) 'name': name,
+        if (email != null) 'email': email,
+        if (imageUrl != null) 'image': imageUrl,
+        if (introdution != null) 'introdution': introdution,
+        if (interests != null) 'interests': interests,
+      });
+    } catch (e) {
+      debugPrint('createUserData에러: ${e.toString()}');
+      rethrow;
+    }
+  }
+
+  /// Listen User Data
+  static Stream<User?> stream(String uid) {
+    final ref = FirebaseReference.userList.doc(uid);
+    try {
+      final stream = ref.streamDocument<User?>();
       return stream;
     } catch (e) {
-      debugPrint('readUserData에러: ${e.toString()}');
+      debugPrint('ListenUserData에러: ${e.toString()}');
       rethrow;
     }
   }

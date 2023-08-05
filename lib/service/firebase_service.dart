@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:nuduwa_with_flutter/model/chatting.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:nuduwa_with_flutter/model/chat_room.dart';
 import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
 import 'package:nuduwa_with_flutter/model/message.dart';
@@ -12,7 +12,7 @@ import 'package:nuduwa_with_flutter/model/user_meeting.dart';
 
 class FirebaseReference {
   // 사용자ID
-  static String? get currentUid => FirebaseAuth.instance.currentUser?.uid;
+  static String? get currentUid => auth.FirebaseAuth.instance.currentUser?.uid;
 
   // Firebase CRUD
   /*
@@ -30,10 +30,10 @@ class FirebaseReference {
   //  User
   //
   /// User Collection
-  static CollectionReference<UserModel> get userList =>
-      db.collection('User').withConverter<UserModel>(
-            fromFirestore: UserModel.fromFirestore,
-            toFirestore: (UserModel user, options) => user.toFirestore(),
+  static CollectionReference<User> get userList =>
+      db.collection('User').withConverter<User>(
+            fromFirestore: User.fromFirestore,
+            toFirestore: (User user, options) => user.toFirestore(),
           );
 
   /// User/UserMeeting Collection
@@ -100,10 +100,10 @@ class FirebaseReference {
   //  Chatting
   //
   /// Chatting Collection
-  static CollectionReference<Chatting> get chattingList =>
-      db.collection('Chatting').withConverter<Chatting>(
-            fromFirestore: Chatting.fromFirestore,
-            toFirestore: (Chatting chatting, options) => chatting.toFirestore(),
+  static CollectionReference<ChatRoom> get chattingList =>
+      db.collection('Chatting').withConverter<ChatRoom>(
+            fromFirestore: ChatRoom.fromFirestore,
+            toFirestore: (ChatRoom chatting, options) => chatting.toFirestore(),
           );
 
   /// Chatting/Message Collection
@@ -145,7 +145,7 @@ extension FirestoreQueryExtension on Query {
   }
 
   /// Listen First Items in Query
-  Stream<T?> listenDocument<T>() {
+  Stream<T?> streamDocument<T>() {
     final stream = snapshots().map((snapshot) => snapshot.docs
         .map((doc) => doc.data())
         .where((data) => data != null)
@@ -154,7 +154,7 @@ extension FirestoreQueryExtension on Query {
   }
 
   /// Listen All Items in Query
-  Stream<List<T>> listenAllDocuments<T>() {
+  Stream<List<T>> streamAllDocuments<T>() {
     final stream = snapshots().map((snapshot) => snapshot.docs
         .map((doc) => doc.data())
         .where((data) => data != null)
@@ -173,7 +173,7 @@ extension FirestoreDocumentReferenceExtension on DocumentReference {
   }
 
   /// Listen Item in DocumentReference
-  Stream<T?> listenDocument<T>() {
+  Stream<T?> streamDocument<T>() {
     final stream = snapshots().map((snapshot) => snapshot.data() as T?);
     return stream;
   }

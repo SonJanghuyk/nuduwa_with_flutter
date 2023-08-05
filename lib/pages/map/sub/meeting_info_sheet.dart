@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:nuduwa_with_flutter/controller/mapController/map_page_controller.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/meeting_info_sheet_controller.dart';
+import 'package:nuduwa_with_flutter/model/meeting.dart';
 import 'package:nuduwa_with_flutter/model/member.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/utils/assets.dart';
 
-void meetingInfoSheet(String meetingId) {
+void meetingInfoSheet(Meeting meeting) {
   showModalBottomSheet(
     context: Get.context!,
     shape: const RoundedRectangleBorder(
@@ -16,7 +16,10 @@ void meetingInfoSheet(String meetingId) {
       ),
     ),
     isScrollControlled: true,
-    builder: (BuildContext context) => MeetingInfoScreen(meetingId: meetingId),
+    builder: (BuildContext context) {
+      Get.put(MeetingInfoSheetController(parameterMeeting: meeting), tag: meeting.id);
+      return MeetingInfoScreen(meetingId: meeting.id!);
+    }
   );
 }
 
@@ -56,6 +59,7 @@ class MeetingInfoScreen extends GetView<MeetingInfoSheetController> {
         if (dragDetails.delta.dy > 5) Get.back();
         height.value = 600;
       },
+      onDoubleTap: () => height.value = 600,
       child: Obx(
         () {
           final meeting = controller.meeting.value!;
@@ -139,12 +143,6 @@ class MeetingInfoScreen extends GetView<MeetingInfoSheetController> {
                       child: Obx(
                         () {
                           final members = controller.members;
-                          final isHost =
-                              meeting.hostUid == FirebaseReference.currentUid;
-                          final isJoin = members.any((Member member) =>
-                              member.uid == FirebaseReference.currentUid);
-                          final isFull = members.length >= meeting.maxMembers;
-                          final isLoading = controller.isLoading.value;
 
                           return Column(
                             children: [
@@ -167,49 +165,7 @@ class MeetingInfoScreen extends GetView<MeetingInfoSheetController> {
                                       '참여인원 ${members.length}/${meeting.maxMembers}',
                                   icon: Icons.people_outline),
                               const Spacer(),
-                              if (isJoin && !isHost)
-                                const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.groups_outlined),
-                                    SizedBox(width: 5),
-                                    Text(
-                                      '참여중',
-                                      style: TextStyle(
-                                          fontSize: 18, color: Colors.black),
-                                    ),
-                                  ],
-                                ),
-                              if (!isJoin && isFull)
-                                const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.group_off_outlined),
-                                    SizedBox(width: 5),
-                                    Text(
-                                      '인원초과',
-                                      style: TextStyle(
-                                          fontSize: 18, color: Colors.red),
-                                    ),
-                                  ],
-                                ),
-                              if (!isJoin && !isFull && !isLoading)
-                                TextButton(
-                                  onPressed: controller.joinMeeting,
-                                  child: const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.group_add_outlined),
-                                      SizedBox(width: 5),
-                                      Text(
-                                        '참여하기',
-                                        style: TextStyle(fontSize: 18),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              if (!isJoin && !isFull && isLoading)
-                                const CircularProgressIndicator(),
+                              joinButton(meeting, members),
                             ],
                           );
                         },
@@ -222,6 +178,61 @@ class MeetingInfoScreen extends GetView<MeetingInfoSheetController> {
         },
       ),
     );
+  }
+
+  Builder joinButton(Meeting meeting, RxList<Member> members) {
+    return Builder(builder: (context) {
+      final isHost = meeting.hostUid == FirebaseReference.currentUid;
+      final isJoin = members
+          .any((Member member) => member.uid == FirebaseReference.currentUid);
+      final isFull = members.length >= meeting.maxMembers;
+      final isLoading = controller.isLoading.value;
+
+      if (isHost) {
+        return const Center();
+      } else if (isJoin) {
+        return const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.groups_outlined),
+            SizedBox(width: 5),
+            Text(
+              '참여중',
+              style: TextStyle(fontSize: 18, color: Colors.black),
+            ),
+          ],
+        );
+      } else if (isFull) {
+        return const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.group_off_outlined),
+            SizedBox(width: 5),
+            Text(
+              '인원초과',
+              style: TextStyle(fontSize: 18, color: Colors.red),
+            ),
+          ],
+        );
+      } else if (isLoading) {
+        return const CircularProgressIndicator();
+      } else {
+        return TextButton(
+          onPressed: controller.joinMeeting,
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.group_add_outlined),
+              SizedBox(width: 5),
+              Text(
+                '참여하기',
+                style: TextStyle(fontSize: 18),
+              ),
+            ],
+          ),
+        );
+      }
+    });
   }
 }
 

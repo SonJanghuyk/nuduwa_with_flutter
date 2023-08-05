@@ -33,31 +33,31 @@ class CreateMeetingController extends GetxController {
 
   void createMeeting() async {
     if (FirebaseReference.currentUid == null) {
-      SnackbarOfNuduwa.error('오류: 계정오류', '사용자 계정이 없습니다');
+      SnackBarOfNuduwa.error('오류: 계정오류', '사용자 계정이 없습니다');
       return;
     }
     if (title.value.isEmpty || title.value.length < 2) {
-      SnackbarOfNuduwa.error('오류: 모임제목 오류', '모임제목을 2글자이상 입력해주세요');
+      SnackBarOfNuduwa.error('오류: 모임제목 오류', '모임제목을 2글자이상 입력해주세요');
       return;
     }
     if (description.value.isEmpty) {
-      SnackbarOfNuduwa.error('오류: 모임내용 오류', '모임내용을 입력해주세요');
+      SnackBarOfNuduwa.error('오류: 모임내용 오류', '모임내용을 입력해주세요');
       return;
     }
     if (place.value.isEmpty) {
-      SnackbarOfNuduwa.error('오류: 모임장소 오류', '모임장소를 입력해주세요');
+      SnackBarOfNuduwa.error('오류: 모임장소 오류', '모임장소를 입력해주세요');
       return;
     }
     if (maxMemers < 2) {
-      SnackbarOfNuduwa.error('오류: 모임최대인원수 오류', '모임 최대인원을 2명이상 선택해주세요');
+      SnackBarOfNuduwa.error('오류: 모임최대인원수 오류', '모임 최대인원을 2명이상 선택해주세요');
       return;
     }
     if (category.isEmpty) {
-      SnackbarOfNuduwa.error('오류: 모임카테고리 오류', '모임카테고리를 선택해주세요');
+      SnackBarOfNuduwa.error('오류: 모임카테고리 오류', '모임카테고리를 선택해주세요');
       return;
     }
     if (meetingTime == DateTime(0)) {
-      SnackbarOfNuduwa.error('오류: 모임시간 오류', '알 수 없는 오류');
+      SnackBarOfNuduwa.error('오류: 모임시간 오류', '알 수 없는 오류');
       return;
     }
 
@@ -74,9 +74,9 @@ class CreateMeetingController extends GetxController {
     try {
       await MeetingRepository.create(meeting: newMeeting, uid: FirebaseReference.currentUid!);
       Get.back();
-      SnackbarOfNuduwa.accent('모임생성 완료', '모임생성이 완료되었습니다');
+      SnackBarOfNuduwa.accent('모임생성 완료', '모임생성이 완료되었습니다');
     } catch (e) {
-      SnackbarOfNuduwa.warning('모임생성 오류', e.toString());
+      SnackBarOfNuduwa.warning('모임생성 오류', e.toString());
     }
   }
 
