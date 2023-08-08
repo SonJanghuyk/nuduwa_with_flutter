@@ -20,7 +20,7 @@ class ChattingListPage extends GetView<ChattingPageController> {
           itemCount: controller.userChatting.length,
           itemBuilder: (context, index) {
             final userChatting = controller.userChatting[index];
-            Get.lazyPut(() => ChattingCardController(userChatting: userChatting),
+            Get.put(ChattingCardController(userChatting: userChatting),
                 tag: userChatting.chattingId);
             return ChattingCard(
               chattingId: userChatting.chattingId,

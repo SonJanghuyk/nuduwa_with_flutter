@@ -37,7 +37,7 @@ class NuduwaApp extends StatelessWidget {
     // Init Device Width
     Responsive.init(context);
 
-    return GetMaterialApp.router(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false, // 디버그바 삭제
       title: 'NUDUWA',
       theme: NuduwaThemes.lightTheme,
