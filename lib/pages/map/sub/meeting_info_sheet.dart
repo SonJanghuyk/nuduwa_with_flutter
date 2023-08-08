@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/meeting_info_sheet_controller.dart';
-import 'package:nuduwa_with_flutter/model/meeting.dart';
-import 'package:nuduwa_with_flutter/model/member.dart';
+import 'package:nuduwa_with_flutter/models/meeting.dart';
+import 'package:nuduwa_with_flutter/models/member.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/utils/assets.dart';
 

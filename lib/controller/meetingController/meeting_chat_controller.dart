@@ -4,8 +4,8 @@ import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/components/nuduwa_page_route.dart';
 import 'package:nuduwa_with_flutter/controller/chattingController/chatting_interface.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_detail_controller.dart';
-import 'package:nuduwa_with_flutter/model/member.dart';
-import 'package:nuduwa_with_flutter/model/message.dart';
+import 'package:nuduwa_with_flutter/models/member.dart';
+import 'package:nuduwa_with_flutter/models/message.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class MeetingChatController extends GetxController
@@ -38,7 +38,7 @@ class MeetingChatController extends GetxController
   @override
   void onInit() {
     super.onInit();
-    messages.bindStream(listenerForMessages());
+    messages.bindStream(streamForMessages());
     scrollListener();
   }
 
@@ -50,7 +50,7 @@ class MeetingChatController extends GetxController
   }
 
   @override
-  Stream<List<Message>> listenerForMessages() {
+  Stream<List<Message>> streamForMessages() {
     try {
       final ref = FirebaseReference.meetingMessageList(meetingId);
       final query = ref.orderBy('sendTime', descending: true);

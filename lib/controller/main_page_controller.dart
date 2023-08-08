@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/model/user_meeting.dart';
-import 'package:nuduwa_with_flutter/service/firebase_service.dart';
+import 'package:nuduwa_with_flutter/models/user_meeting.dart';
 
 class MainPageController extends GetxController {
   static MainPageController instance = Get.find();
@@ -25,7 +25,8 @@ class MainPageController extends GetxController {
   }
 
   Stream<List<UserMeeting>> _streamUserMeetings() {
-    final uid = FirebaseReference.currentUid!;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid==null) throw 'no Login';
     return UserMeetingRepository.listen(uid);
   }
 }

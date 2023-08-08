@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/model/user_chatting.dart';
+import 'package:nuduwa_with_flutter/models/user_chatting.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class ChattingPageController extends GetxController {
@@ -18,12 +18,6 @@ class ChattingPageController extends GetxController {
   void onInit() {
     super.onInit();
     listenerForUserChattingList();
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
-    // firebaseService.cancelListener(ref: query);
   }
 
   void listenerForUserChattingList() {

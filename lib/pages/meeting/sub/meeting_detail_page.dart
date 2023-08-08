@@ -2,10 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:nuduwa_with_flutter/components/nuduwa_page_route.dart';
 import 'package:nuduwa_with_flutter/components/nuduwa_widgets.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_detail_controller.dart';
 import 'package:nuduwa_with_flutter/pages/map/sub/meeting_info_sheet.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
+import 'package:nuduwa_with_flutter/utils/assets.dart';
 
 class MeetingDetailPage extends GetView<MeetingDetailController> {
   const MeetingDetailPage({
@@ -15,7 +17,7 @@ class MeetingDetailPage extends GetView<MeetingDetailController> {
   });
 
   final String meetingId;
-  final void Function() onClose;
+  final void Function(BuildContext) onClose;
 
   @override
   String? get tag => meetingId;
@@ -49,7 +51,7 @@ class MeetingDetailPage extends GetView<MeetingDetailController> {
           } else {
             // 뒤로가기 버튼
             return IconButton(
-              onPressed: onClose,
+              onPressed: () => onClose(context),
               icon: const Row(children: [
                 Icon(
                   Icons.arrow_back_ios_new,
@@ -102,9 +104,9 @@ class MeetingDetailPage extends GetView<MeetingDetailController> {
                   ),
                   itemBuilder: (BuildContext context) => isHost
                       ? <PopupMenuEntry<String>>[
-                        //
-                        // 모임 Host일때
-                        //
+                          //
+                          // 모임 Host일때
+                          //
                           menuItem(
                             text: '모임 수정',
                             icon: Icons.change_circle_outlined,
@@ -119,16 +121,16 @@ class MeetingDetailPage extends GetView<MeetingDetailController> {
                           ),
                         ]
                       : [
-                        //
-                        // 모임 Host 아닐때
-                        //
+                          //
+                          // 모임 Host 아닐때
+                          //
                           menuItem(
                               text: '모임 나가기',
                               icon: Icons.exit_to_app,
                               color: Colors.red,
                               ontap: () {
                                 controller.leaveMeeting();
-                                onClose();
+                                () => onClose(context);
                               })
                         ],
                 );
@@ -156,6 +158,15 @@ class MeetingDetailPage extends GetView<MeetingDetailController> {
                         children: [
                           Row(
                             children: [
+                              CircleAvatar(
+                                radius: 30,
+                                foregroundImage: meeting.hostImageUrl != null
+                                    ? NetworkImage(meeting.hostImageUrl!)
+                                        as ImageProvider
+                                    : const AssetImage(Assets.imageNoImage),
+                                backgroundImage: const AssetImage(
+                                    Assets.imageLoading), // 로딩 중일 때 보여줄 배경색
+                              ),
                               const SizedBox(width: 10),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -290,38 +301,34 @@ class MeetingDetailPage extends GetView<MeetingDetailController> {
                             ),
                             child: Column(children: [
                               const Text('참여자'),
-                              Obx(() => Wrap(
-                                    children: [
-                                      for (final member
-                                          in controller.members.values)
-                                        Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: SizedBox(
-                                            width: 50,
-                                            height: 50,
-                                            child: member.imageUrl == null
-                                                ? const Center(
-                                                    child:
-                                                        CircularProgressIndicator())
-                                                : IconButton(
-                                                    onPressed: () =>
-                                                        Get.toNamed(
-                                                            '/userProfile',
-                                                            arguments:
-                                                                member.uid),
-                                                    icon: CircleAvatar(
-                                                      radius: 18,
-                                                      backgroundImage:
-                                                          NetworkImage(
-                                                              member.imageUrl!),
-                                                      backgroundColor: Colors
-                                                          .white, // 로딩 중일 때 보여줄 배경색
-                                                    ),
-                                                  ),
+                              Obx(() {
+                                final members = controller.members.values;
+                                return Wrap(
+                                  children: [
+                                    for (final member in members)
+                                      Padding(
+                                        padding: const EdgeInsets.all(5.0),
+                                        child: IconButton(
+                                          onPressed: () => Get.toNamed(
+                                            RoutePages.userProfile(
+                                                uid: member.uid),
+                                          ),
+                                          icon: CircleAvatar(
+                                            radius: 20,
+                                            foregroundImage: member.imageUrl !=
+                                                    null
+                                                ? NetworkImage(member.imageUrl!)
+                                                    as ImageProvider
+                                                : const AssetImage(
+                                                    Assets.imageNoImage),
+                                            backgroundImage: const AssetImage(Assets
+                                                .imageLoading), // 로딩 중일 때 보여줄 배경색
                                           ),
                                         ),
-                                    ],
-                                  )),
+                                      ),
+                                  ],
+                                );
+                              }),
                             ]),
                           )
                         ],

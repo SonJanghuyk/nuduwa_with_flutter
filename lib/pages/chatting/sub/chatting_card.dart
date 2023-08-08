@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:nuduwa_with_flutter/controller/chattingController/chatting_card_controller.dart';
-import 'package:nuduwa_with_flutter/model/user_chatting.dart';
+import 'package:nuduwa_with_flutter/models/user_chatting.dart';
 
 class ChattingCard extends GetView<ChattingCardController> {
   const ChattingCard(

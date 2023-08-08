@@ -43,7 +43,7 @@ class NuduwaApp extends StatelessWidget {
       theme: NuduwaThemes.lightTheme,
       darkTheme: NuduwaThemes.dartTheme,
       initialBinding: NuduwaAppBindings(),
-      initialRoute: '/main',
+      initialRoute: RoutePages.main,
       getPages: RoutePages.pages,
     );
   }

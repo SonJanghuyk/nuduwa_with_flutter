@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:nuduwa_with_flutter/model/user.dart';
-import 'package:nuduwa_with_flutter/model/user_meeting.dart';
+import 'package:nuduwa_with_flutter/models/user.dart';
+import 'package:nuduwa_with_flutter/models/user_meeting.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class Member {

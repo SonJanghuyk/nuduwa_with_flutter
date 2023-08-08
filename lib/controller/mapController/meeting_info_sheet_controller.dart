@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/components/nuduwa_widgets.dart';
-import 'package:nuduwa_with_flutter/model/meeting.dart';
-import 'package:nuduwa_with_flutter/model/member.dart';
-import 'package:nuduwa_with_flutter/model/user.dart';
+import 'package:nuduwa_with_flutter/models/meeting.dart';
+import 'package:nuduwa_with_flutter/models/member.dart';
+import 'package:nuduwa_with_flutter/models/user.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class MeetingInfoSheetController extends GetxController {

@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/controller/chattingController/chatting_interface.dart';
-import 'package:nuduwa_with_flutter/model/message.dart';
-import 'package:nuduwa_with_flutter/model/user.dart';
-import 'package:nuduwa_with_flutter/model/user_chatting.dart';
+import 'package:nuduwa_with_flutter/models/message.dart';
+import 'package:nuduwa_with_flutter/models/user.dart';
+import 'package:nuduwa_with_flutter/models/user_chatting.dart';
 import 'package:nuduwa_with_flutter/pages/profile/user_profile_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
@@ -13,7 +13,9 @@ class ChattingRoomController extends GetxController implements ChattingControlle
   static ChattingRoomController instance({required String tag}) =>
       Get.find(tag: tag);
   
-  final UserChatting userChatting;
+  final String userChattingId;
+  final String chattingId;
+  final String otherUid;  
 
   final otherUser = Rx<User?>(null);
 
@@ -29,44 +31,34 @@ class ChattingRoomController extends GetxController implements ChattingControlle
   @override
   var isNotLast = false.obs;
 
-  ChattingRoomController({required this.userChatting});
+  ChattingRoomController({required this.userChattingId, required this.chattingId, required this.otherUid});
 
   @override
   void onInit() async {
     super.onInit();
-    listenerForMessages();
+    streamForMessages();
     updateLastReadTime();
-    otherUser.value = await fetchOtherUserData(otherUid: userChatting.otherUid);
+    otherUser.value = await fetchOtherUserData(otherUid: otherUid);
   }
 
   @override
   void onReady() {
     super.onReady();
-    messages.bindStream(listenerForMessages());
+    messages.bindStream(streamForMessages());
     ever(messages, (_) => updateLastReadTime());
   }
 
   @override
   void onClose() {
     super.onClose();
-    // firebaseService.cancelListener(ref: messageQuery);
     textController.dispose();
   }
 
   
   @override
-  Stream<List<Message>> listenerForMessages() {
+  Stream<List<Message>> streamForMessages() {
     try {
-      // debugPrint('listenerForMessages');
-      // final ref = FirebaseRoute.chattingMessageList(userChatting.chattingId);
-      // messageQuery = ref.orderBy('sendTime', descending: true);
-
-      // final listener = messageQuery.snapshots().listen((snapshot) {
-      //   final snapshotMessages = snapshot.docs.map((doc) => doc.data());
-      //   messages.value = List.from(snapshotMessages);
-      //   debugPrint('listenerForMessages ${messages.length}');
-      // });
-      final ref = FirebaseReference.chattingMessageList(userChatting.chattingId);
+      final ref = FirebaseReference.chattingMessageList(chattingId);
       final query = ref.orderBy('sendTime', descending: true);
       final stream = query.streamAllDocuments<Message>();
       return stream;
@@ -84,7 +76,7 @@ class ChattingRoomController extends GetxController implements ChattingControlle
     try {
       textController.clear();
       FocusScope.of(Get.context!).unfocus();
-      await ChattingMessageRepository.create(chattingId: userChatting.chattingId, uid: FirebaseReference.currentUid!, text: text);
+      await ChattingMessageRepository.create(chattingId: chattingId, uid: FirebaseReference.currentUid!, text: text);
 
       debugPrint(messages.length.toString());
       debugPrint('sendMessage 끝');
@@ -95,7 +87,7 @@ class ChattingRoomController extends GetxController implements ChattingControlle
   }
 
   void updateLastReadTime() {
-    UserChattingRepository.updateLastReadTime(uid: FirebaseReference.currentUid!, userChattingId: userChatting.id!);
+    UserChattingRepository.updateLastReadTime(uid: FirebaseReference.currentUid!, userChattingId: userChattingId);
   }
 
   Future<User?> fetchOtherUserData({required String otherUid}) async {

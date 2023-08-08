@@ -48,7 +48,7 @@ class ChattingPage extends GetView<ChattingPageController> {
   GetBuilder<ChattingRoomController> chattingRoomBuilder() {
     return GetBuilder(
       key: GlobalKey(),
-      init: ChattingRoomController(userChatting: controller.tapUserChatting!),
+      // init: ChattingRoomController(userChatting: controller.tapUserChatting!),
       tag: controller.tapUserChatting!.chattingId,
       builder: (_) => ChattingRoomPage(
         chattingId: controller.tapUserChatting!.chattingId,

@@ -3,7 +3,7 @@ import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nuduwa_with_flutter/controller/mapController/create_meeting_controller.dart';
-import 'package:nuduwa_with_flutter/model/meeting.dart';
+import 'package:nuduwa_with_flutter/models/meeting.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 Future<dynamic> createMeetingSheet(BuildContext context, LatLng location) {

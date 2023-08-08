@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nuduwa_with_flutter/components/nuduwa_widgets.dart';
-import 'package:nuduwa_with_flutter/model/chat_room.dart';
-import 'package:nuduwa_with_flutter/model/user.dart';
-import 'package:nuduwa_with_flutter/model/user_chatting.dart';
+import 'package:nuduwa_with_flutter/models/chat_room.dart';
+import 'package:nuduwa_with_flutter/models/user.dart';
+import 'package:nuduwa_with_flutter/models/user_chatting.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class MyProfileController extends GetxController {

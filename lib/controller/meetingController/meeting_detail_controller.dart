@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nuduwa_with_flutter/components/nuduwa_page_route.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_card_controller.dart';
-import 'package:nuduwa_with_flutter/model/meeting.dart';
-import 'package:nuduwa_with_flutter/model/member.dart';
-import 'package:nuduwa_with_flutter/model/user_meeting.dart';
+import 'package:nuduwa_with_flutter/models/meeting.dart';
+import 'package:nuduwa_with_flutter/models/member.dart';
+import 'package:nuduwa_with_flutter/models/user_meeting.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class MeetingDetailController extends GetxController {
@@ -81,7 +81,7 @@ class MeetingDetailController extends GetxController {
     // Rx변수에 적용
     members.value = fetchMembers;
   }
-  
+
   void onEdit() {
     isEdit.value = true;
   }

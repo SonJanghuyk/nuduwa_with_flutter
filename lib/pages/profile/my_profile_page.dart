@@ -72,19 +72,24 @@ class MyProfilePage extends GetView<MyProfileController> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            nameText(
-                              user?.name ?? '',
-                              isEdit: isEdit,
-                              onSaved: ((newValue) =>
-                                  // 원래 값이랑 똑같은때 null
-                                  controller.editName =
-                                      newValue != user?.name ? newValue : null),
-                              validator: (value) {
-                                if (value!.length <= 2) {
-                                  return '이름은 두 글자 이상 입력해야합니다.';
-                                }
-                                return null;
-                              },
+                            SizedBox(
+                              // 전체길이 - 이미지길이 - 여백길이 - 양쪽패딩길이 - 패딩길이
+                              width: 500 - 80 - 20 - 32 * 2 - 32,
+                              child: nameText(
+                                user?.name ?? '',
+                                isEdit: isEdit,
+                                onSaved: ((newValue) =>
+                                    // 원래 값이랑 똑같은때 null
+                                    controller.editName = newValue != user?.name
+                                        ? newValue
+                                        : null),
+                                validator: (value) {
+                                  if (value!.length <= 2) {
+                                    return '이름은 두 글자 이상 입력해야합니다.';
+                                  }
+                                  return null;
+                                },
+                              ),
                             ),
                             Text('ID: ${user?.email}',
                                 style: const TextStyle(fontSize: 16)),
@@ -150,7 +155,6 @@ class MyProfilePage extends GetView<MyProfileController> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       width: double.infinity,
-                      height: 100,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -166,12 +170,16 @@ class MyProfilePage extends GetView<MyProfileController> {
                             onSaved: ((newValue) =>
                                 // 원래 값이랑 똑같은때 null
                                 controller.editIntrodution =
-                                    newValue != user?.introdution ? newValue : null),
+                                    newValue != user?.introdution
+                                        ? newValue
+                                        : null),
                             validator: (_) => null,
                           ),
                         ],
                       ),
                     ),
+
+                    const SizedBox(height: 10),
 
                     // 흥미
                     Container(
@@ -186,23 +194,7 @@ class MyProfilePage extends GetView<MyProfileController> {
                               fontSize: 24,
                             ),
                           ),
-                          SizedBox(
-                            width: double.infinity,
-                            child: Wrap(
-                              alignment: WrapAlignment.center,
-                              runAlignment: WrapAlignment.center,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              spacing: 10,
-                              runSpacing: 10,
-                              children: [
-                                interestItem('독서'),
-                                interestItem('프로그래밍'),
-                                interestItem('프로그래밍'),
-                                interestItem('프'),
-                                interestItem('프그래밍'),
-                              ],
-                            ),
-                          ),
+                          interestsWrap(user?.interests ?? [], isEdit: isEdit),
                         ],
                       ),
                     ),
@@ -265,21 +257,36 @@ class MyProfilePage extends GetView<MyProfileController> {
     );
   }
 
-  SizedBox introdutionText(
+  Widget introdutionText(
     String introdution, {
     required bool isEdit,
     required FormFieldSetter onSaved,
     required FormFieldValidator validator,
   }) {
-    return SizedBox(
-      width: 500,
-      child: Text(
-        '안녕하세요',
-        style: TextStyle(
-          fontSize: 18,
-        ),
-      ),
-    );
+    const textStyle = TextStyle(fontSize: 18);
+    return !isEdit
+        ? Text(
+            introdution,
+            style: textStyle,
+          )
+        : TextFormField(
+            onSaved: onSaved,
+            validator: validator,
+            initialValue: introdution,
+            style: textStyle,
+            maxLines: 10,
+            autovalidateMode: AutovalidateMode.always,
+            decoration: const InputDecoration(
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 8),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(5.0),
+                ),
+              ),
+            ),
+          );
   }
 
   Widget nameText(
@@ -288,32 +295,53 @@ class MyProfilePage extends GetView<MyProfileController> {
     required FormFieldSetter onSaved,
     required FormFieldValidator validator,
   }) {
-    return SizedBox(
-      width: 200,
-      height: 50,
-      child: !isEdit
-          ? Text(name, style: const TextStyle(fontSize: 32))
-          : TextFormField(
-              onSaved: onSaved,
-              validator: validator,
-              initialValue: name,
-              style: const TextStyle(fontSize: 32),
-              autovalidateMode: AutovalidateMode.always,
-              decoration: const InputDecoration(
-                isDense: true,
-                contentPadding: EdgeInsets.all(0),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black),
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(5.0),
-                  ),
+    const textStyle = TextStyle(fontSize: 32);
+    return !isEdit
+        ? Text(
+            name,
+            style: textStyle,
+          )
+        : TextFormField(
+            onSaved: onSaved,
+            validator: validator,
+            initialValue: name,
+            style: textStyle,
+            autovalidateMode: AutovalidateMode.always,
+            decoration: const InputDecoration(
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 8),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(5.0),
                 ),
               ),
             ),
+          );
+  }
+
+  Wrap interestsWrap(
+    List<String>? interests, {
+    required bool isEdit,
+  }) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      runAlignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        for (final interest in interests!) interestItem(interest),
+        interestItem('독서', isEdit: true),
+        interestItem('프로그래밍'),
+        interestItem('프로그래밍'),
+        interestItem('프'),
+        interestItem('프그래밍'),
+      ],
     );
   }
 
-  Container interestItem(String interest) {
+  Container interestItem(String interest, {bool isEdit = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
       decoration: BoxDecoration(
@@ -323,9 +351,16 @@ class MyProfilePage extends GetView<MyProfileController> {
           width: 1, // 테두리의 두께
         ),
       ),
-      child: Text(
-        interest,
-        style: const TextStyle(fontSize: 18),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            interest,
+            style: const TextStyle(fontSize: 18),
+          ),
+          if(isEdit)
+            const Icon(Icons.cancel_outlined)
+        ],
       ),
     );
   }

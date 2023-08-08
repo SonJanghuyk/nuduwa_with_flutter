@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/model/meeting.dart';
-import 'package:nuduwa_with_flutter/model/user.dart';
+import 'package:nuduwa_with_flutter/models/meeting.dart';
+import 'package:nuduwa_with_flutter/models/user.dart';
 import 'package:nuduwa_with_flutter/utils/responsive.dart';
 
 class MeetingCardController extends GetxController {

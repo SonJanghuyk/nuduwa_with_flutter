@@ -11,9 +11,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:nuduwa_with_flutter/controller/main_page_controller.dart';
-import 'package:nuduwa_with_flutter/model/meeting.dart';
-import 'package:nuduwa_with_flutter/model/member.dart';
-import 'package:nuduwa_with_flutter/model/user_meeting.dart';
+import 'package:nuduwa_with_flutter/models/meeting.dart';
+import 'package:nuduwa_with_flutter/models/member.dart';
+import 'package:nuduwa_with_flutter/models/user_meeting.dart';
 import 'package:nuduwa_with_flutter/pages/map/sub/meeting_info_sheet.dart';
 import 'package:nuduwa_with_flutter/utils/assets.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';

@@ -5,10 +5,13 @@ import 'package:nuduwa_with_flutter/controller/profileController/user_profile_co
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/utils/assets.dart';
 
-class UserProfilePage extends StatelessWidget {
-  UserProfilePage({super.key});
+class UserProfilePage extends GetView<UserProfileController> {
+  const UserProfilePage({super.key, required this.uid});
 
-  final controller = Get.put(UserProfileController(uid: Get.arguments));
+  final String uid;
+
+  @override
+  String? get tag => uid;
 
   @override
   Widget build(BuildContext context) {

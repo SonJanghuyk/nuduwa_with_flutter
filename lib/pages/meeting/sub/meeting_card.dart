@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_card_controller.dart';
 
-import 'package:nuduwa_with_flutter/model/meeting.dart';
+import 'package:nuduwa_with_flutter/models/meeting.dart';
 import 'package:nuduwa_with_flutter/utils/assets.dart';
 
 import 'dart:math' as math;
@@ -35,17 +35,18 @@ class MeetingCard extends GetView<MeetingCardController> {
   }
 
   ListTile meetingListTile(Meeting? meeting) {
+    String? time = meeting==null ? null : DateFormat("y년 M월 d일 a hh:mm").format(meeting.meetingTime);
     return ListTile(
       contentPadding: const EdgeInsets.all(8.0),
       onTap: onTap,
       leading: SizedBox(
         width: 50,
         height: 50,
-        child: meeting?.hostImageUrl == null
+        child: meeting == null
             ? const Center(child: CircularProgressIndicator())
             : CircleAvatar(
-                foregroundImage: meeting?.hostImageUrl != null
-                    ? NetworkImage(meeting!.hostImageUrl!) as ImageProvider
+                foregroundImage: meeting.hostImageUrl != null
+                    ? NetworkImage(meeting.hostImageUrl!) as ImageProvider
                     : const AssetImage(Assets.imageNoImage),
                 backgroundImage:
                     const AssetImage(Assets.imageLoading), // 로딩 중일 때 보여줄 배경색
@@ -59,7 +60,7 @@ class MeetingCard extends GetView<MeetingCardController> {
         ),
       ),
       subtitle: Text(
-        '${DateFormat("y년 M월 d일 a hh:mm").format(controller.meeting.value!.meetingTime)}에 만나요 | ${meeting?.hostName}',
+        '$time에 만나요 | ${meeting?.hostName ?? ''}',
         style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
       ),
     );

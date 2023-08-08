@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/model/message.dart';
-import 'package:nuduwa_with_flutter/model/user.dart';
-import 'package:nuduwa_with_flutter/model/user_chatting.dart';
+import 'package:nuduwa_with_flutter/models/message.dart';
+import 'package:nuduwa_with_flutter/models/user.dart';
+import 'package:nuduwa_with_flutter/models/user_chatting.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class ChattingCardController extends GetxController {
@@ -39,11 +39,6 @@ class ChattingCardController extends GetxController {
     unreadCount.value = await countUnread(messages, userChatting.lastReadTime);
   }
 
-  @override
-  void onClose() {
-    super.onClose();
-    // firebaseService.cancelListener(ref: messageColRef);
-  }
 
   StreamSubscription listenerForMessage(CollectionReference<Message> messageColRef) {
     debugPrint('listenerForMessage');

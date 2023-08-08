@@ -20,7 +20,6 @@ class MeetingChatPage extends GetView<MeetingChatController> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('meetingId:$meetingId');
     return ScaffoldOfNuduwa(
       scaffoldKey: _scaffoldKey,
       appBar: AppBar(

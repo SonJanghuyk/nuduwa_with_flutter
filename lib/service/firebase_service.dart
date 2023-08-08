@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
-import 'package:nuduwa_with_flutter/model/chat_room.dart';
-import 'package:nuduwa_with_flutter/model/meeting.dart';
-import 'package:nuduwa_with_flutter/model/member.dart';
-import 'package:nuduwa_with_flutter/model/message.dart';
-import 'package:nuduwa_with_flutter/model/user.dart';
-import 'package:nuduwa_with_flutter/model/user_chatting.dart';
-import 'package:nuduwa_with_flutter/model/user_meeting.dart';
+import 'package:nuduwa_with_flutter/models/chat_room.dart';
+import 'package:nuduwa_with_flutter/models/meeting.dart';
+import 'package:nuduwa_with_flutter/models/member.dart';
+import 'package:nuduwa_with_flutter/models/message.dart';
+import 'package:nuduwa_with_flutter/models/user.dart';
+import 'package:nuduwa_with_flutter/models/user_chatting.dart';
+import 'package:nuduwa_with_flutter/models/user_meeting.dart';
 
 class FirebaseReference {
   // 사용자ID
