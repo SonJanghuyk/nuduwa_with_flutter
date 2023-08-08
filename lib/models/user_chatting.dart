@@ -20,15 +20,16 @@ class UserChatting {
     SnapshotOptions? options,
   ]) {
     final data = snapshot.data();
-    var lastReadTime = data?['lastReadTime'];
-    if (lastReadTime is FieldValue) {
-      lastReadTime = Timestamp.now();
-    }
+    final chattingId = data?['chattingId'] as String?;
+    final otherUid = data?['otherUid'] as String?;
+    final lastReadTime = data?['lastReadTime'] as Timestamp? ?? Timestamp.now();
+
+    if(chattingId==null || otherUid==null) throw 'something null';
 
     return UserChatting(
       id: snapshot.id,
-      chattingId: data?['chattingId'] as String,
-      otherUid: data?['otherUid'] as String,
+      chattingId: chattingId,
+      otherUid: otherUid,
       lastReadTime: lastReadTime.toDate(),
     );
   }
@@ -82,6 +83,7 @@ class UserChattingRepository {
   /// Update UserChatting Data
   static Future<void> updateLastReadTime(
       {required String uid, required String userChattingId}) async {
+        debugPrint('userChattingId왜:$userChattingId');
     final ref =
         FirebaseReference.userChattingList(uid).doc(userChattingId);
     try {

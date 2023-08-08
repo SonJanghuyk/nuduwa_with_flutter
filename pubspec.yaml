@@ -71,6 +71,9 @@ dependencies:
   # Image Picker
   image_picker: ^1.0.2
 
+  # Router
+  go_router: ^10.0.0
+
 flutter_native_splash:
   color: "#1b1c1a"
   image: "assets/images/splash.png"  

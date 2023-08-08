@@ -2,12 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:nuduwa_with_flutter/components/nuduwa_page_route.dart';
-import 'package:nuduwa_with_flutter/components/nuduwa_widgets.dart';
+import 'package:nuduwa_with_flutter/constants/nuduwa_page_route.dart';
+import 'package:nuduwa_with_flutter/constants/nuduwa_widgets.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_detail_controller.dart';
 import 'package:nuduwa_with_flutter/pages/map/sub/meeting_info_sheet.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
-import 'package:nuduwa_with_flutter/utils/assets.dart';
+import 'package:nuduwa_with_flutter/constants/assets.dart';
 
 class MeetingDetailPage extends GetView<MeetingDetailController> {
   const MeetingDetailPage({

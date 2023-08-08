@@ -5,7 +5,6 @@ import 'package:nuduwa_with_flutter/controller/chattingController/chatting_inter
 import 'package:nuduwa_with_flutter/models/message.dart';
 import 'package:nuduwa_with_flutter/models/user.dart';
 import 'package:nuduwa_with_flutter/models/user_chatting.dart';
-import 'package:nuduwa_with_flutter/pages/profile/user_profile_page.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class ChattingRoomController extends GetxController implements ChattingController {
@@ -77,9 +76,6 @@ class ChattingRoomController extends GetxController implements ChattingControlle
       textController.clear();
       FocusScope.of(Get.context!).unfocus();
       await ChattingMessageRepository.create(chattingId: chattingId, uid: FirebaseReference.currentUid!, text: text);
-
-      debugPrint(messages.length.toString());
-      debugPrint('sendMessage 끝');
       
     } catch (e) {
       debugPrint('오류!! sendMessage: ${e.toString()}');
@@ -87,6 +83,7 @@ class ChattingRoomController extends GetxController implements ChattingControlle
   }
 
   void updateLastReadTime() {
+    debugPrint('userChattingId엥:$userChattingId');
     UserChattingRepository.updateLastReadTime(uid: FirebaseReference.currentUid!, userChattingId: userChattingId);
   }
 

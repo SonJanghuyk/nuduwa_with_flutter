@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/components/nuduwa_page_route.dart';
+import 'package:nuduwa_with_flutter/constants/nuduwa_page_route.dart';
 import 'package:nuduwa_with_flutter/models/chat_room.dart';
 import 'package:nuduwa_with_flutter/models/user.dart';
 import 'package:nuduwa_with_flutter/models/user_chatting.dart';
@@ -35,7 +35,6 @@ class UserProfileController extends GetxController {
       final userChatting = await UserChattingRepository.read(
           uid: currentUid, otherUid: uid);
       if (userChatting != null) {
-        // Get.to(() => ChattingRoomPage(userChatting: userChatting));
         Get.toNamed(RoutePages.chattingRoom(userChatting: userChatting));
         return;
       }
@@ -51,8 +50,7 @@ class UserProfileController extends GetxController {
 
       final newUserChatting = UserChatting(
           chattingId: ref.id, otherUid: uid, lastReadTime: DateTime.now());
-
-      // Get.to(() => ChattingRoomPage(userChatting: newUserChatting));
+      Get.toNamed(RoutePages.chattingRoom(userChatting: newUserChatting));
       return;
     } catch (e) {
       debugPrint('clickedChattingButton에러: ${e.toString()}');

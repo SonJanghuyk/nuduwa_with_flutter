@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/components/nuduwa_widgets.dart';
+import 'package:nuduwa_with_flutter/constants/nuduwa_widgets.dart';
 import 'package:nuduwa_with_flutter/controller/chattingController/chatting_card_controller.dart';
 import 'package:nuduwa_with_flutter/controller/chattingController/chatting_page_controller.dart';
 import 'package:nuduwa_with_flutter/models/user_chatting.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/components/nuduwa_page_route.dart';
-import 'package:nuduwa_with_flutter/components/nuduwa_widgets.dart';
+import 'package:nuduwa_with_flutter/constants/nuduwa_page_route.dart';
+import 'package:nuduwa_with_flutter/constants/nuduwa_widgets.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_controller.dart';
 import 'package:nuduwa_with_flutter/pages/meeting/sub/meeting_list_page.dart';
 import 'package:nuduwa_with_flutter/utils/responsive.dart';
@@ -13,7 +13,9 @@ class MeetingPage extends GetView<MeetingController> {
   Widget build(BuildContext context) {
     Responsive.init(context);
 
-    return Responsive.layout(
+    return 
+    
+    Responsive.layout(
       portrait: meetingNavigator(controller.onTapMeetingCardAtPortrait, controller.onCloseMeetingDetail),
       landscape: Row(
         children: [

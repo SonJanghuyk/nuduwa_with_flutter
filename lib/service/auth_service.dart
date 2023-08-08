@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:nuduwa_with_flutter/components/nuduwa_page_route.dart';
+import 'package:nuduwa_with_flutter/constants/nuduwa_page_route.dart';
 import 'package:nuduwa_with_flutter/models/user.dart';
 
 /// 유저 정보 없을시 바로 로그인 페이지로 이동
@@ -13,17 +13,15 @@ class AuthService extends GetxService {
 
   // 로그인 여부  확인
   // FirebaseAuth 유저 정보
-  late final Rx<auth.User?> _authUser;
+  final _authUser = Rx<auth.User?>(null);
   // Firestore 유저 정보
   final _firestoreUser = Rx<User?>(null);
   Rx<User?> get firestoreUser => _firestoreUser;
   
   AuthService(){
-    _authUser = Rx<auth.User?>(_authentication.currentUser);
-    debugPrint('AuthUser: ${_authUser.value}');
-    _authUser.bindStream(_authentication.userChanges());
     ever(_authUser, _checkAuthUser);
     ever(_firestoreUser, _moveToPage);
+    _authUser.bindStream(_authentication.userChanges());
   }
 
   void _checkAuthUser(auth.User? user) {

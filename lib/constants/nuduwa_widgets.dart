@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'nuduwa_constants.dart';
 
-class BottomSheetBody extends StatelessWidget {
-  const BottomSheetBody({super.key, required this.children});
+// class BottomSheetBody extends StatelessWidget {
+//   const BottomSheetBody({super.key, required this.children});
 
-  final List<Widget> children;
+//   final List<Widget> children;
 
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-          child: Padding(
-            padding: pagePadding,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: children,
-            )
-          )
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return SafeArea(
+//           child: Padding(
+//             padding: pagePadding,
+//             child: Column(
+//               mainAxisSize: MainAxisSize.min,
+//               children: children,
+//             )
+//           )
+//     );
+//   }
+// }
 
 void showPermissionDenied(BuildContext context, {required String permission}) {
    ScaffoldMessenger.of(context).showSnackBar(

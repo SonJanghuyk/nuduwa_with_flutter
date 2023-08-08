@@ -124,9 +124,8 @@ extension FirestoreQueryExtension on Query {
   Future<List<T>> getAllDocuments<T>() async {
     final snapshots = await get();
     final list = snapshots.docs
-        .map((doc) => doc.data())
+        .map((doc) => doc.data() as T)
         .where((data) => data != null)
-        .map((data) => data as T)
         .toList();
 
     //.map((doc) => doc.data() as T).toList();
@@ -136,11 +135,12 @@ extension FirestoreQueryExtension on Query {
   /// Get First Item in Query
   Future<T?> getDocument<T>() async {
     final snapshots = await get();
-    final data = snapshots.docs
-        .map((doc) => doc.data())
-        .where((data) => data != null)
-        .first as T?;
-    //.first.data() as T;
+    final docs = snapshots.docs
+        .map((doc) => doc.data() as T?)
+        .where((data) => data != null);
+
+    final data = docs.isEmpty ? null : docs.first;
+
     return data;
   }
 
@@ -156,9 +156,8 @@ extension FirestoreQueryExtension on Query {
   /// Listen All Items in Query
   Stream<List<T>> streamAllDocuments<T>() {
     final stream = snapshots().map((snapshot) => snapshot.docs
-        .map((doc) => doc.data())
+        .map((doc) => doc.data() as T)
         .where((data) => data != null)
-        .map((data) => data as T)
         .toList());
     return stream;
   }

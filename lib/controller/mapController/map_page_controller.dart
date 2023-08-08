@@ -15,7 +15,7 @@ import 'package:nuduwa_with_flutter/models/meeting.dart';
 import 'package:nuduwa_with_flutter/models/member.dart';
 import 'package:nuduwa_with_flutter/models/user_meeting.dart';
 import 'package:nuduwa_with_flutter/pages/map/sub/meeting_info_sheet.dart';
-import 'package:nuduwa_with_flutter/utils/assets.dart';
+import 'package:nuduwa_with_flutter/constants/assets.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 import 'package:nuduwa_with_flutter/service/permission_service.dart';
 

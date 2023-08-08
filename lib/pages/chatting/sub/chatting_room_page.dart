@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/components/nuduwa_widgets.dart';
+import 'package:nuduwa_with_flutter/constants/nuduwa_widgets.dart';
 import 'package:nuduwa_with_flutter/controller/chattingController/chatting_room_controller.dart';
-import 'package:nuduwa_with_flutter/pages/chatting/sub/chatting_widget.dart';
+import 'package:nuduwa_with_flutter/widgets/chatting_widget.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
 
 class ChattingRoomPage extends GetView<ChattingRoomController> {

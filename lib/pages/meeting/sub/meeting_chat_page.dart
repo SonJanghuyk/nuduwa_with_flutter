@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/components/nuduwa_widgets.dart';
+import 'package:nuduwa_with_flutter/constants/nuduwa_widgets.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_chat_controller.dart';
-import 'package:nuduwa_with_flutter/pages/chatting/sub/chatting_widget.dart';
+import 'package:nuduwa_with_flutter/widgets/chatting_widget.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
-import 'package:nuduwa_with_flutter/utils/assets.dart';
+import 'package:nuduwa_with_flutter/constants/assets.dart';
 
 class MeetingChatPage extends GetView<MeetingChatController> {
   MeetingChatPage({

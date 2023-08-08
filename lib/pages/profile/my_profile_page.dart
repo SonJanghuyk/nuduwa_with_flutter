@@ -2,11 +2,12 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/components/nuduwa_widgets.dart';
+import 'package:nuduwa_with_flutter/constants/nuduwa_widgets.dart';
 import 'package:nuduwa_with_flutter/controller/profileController/my_profile_controller.dart';
 import 'package:nuduwa_with_flutter/service/auth_service.dart';
-import 'package:nuduwa_with_flutter/utils/assets.dart';
+import 'package:nuduwa_with_flutter/constants/assets.dart';
 
 class MyProfilePage extends GetView<MyProfileController> {
   const MyProfilePage({super.key});
@@ -52,13 +53,14 @@ class MyProfilePage extends GetView<MyProfileController> {
       ),
       body: Center(
         child: Container(
-          padding: const EdgeInsets.all(32),
+          // padding: const EdgeInsets.all(32),
           width: 500,
           child: SingleChildScrollView(
             child: Form(
               key: controller.formKey,
               child: Obx(() {
                 final user = controller.user.value;
+                debugPrint(user?.toFirestore().toString());
                 final isEdit = controller.isEdit.value;
                 final selectedImage = controller.selectedImage.value;
                 return Column(
@@ -69,13 +71,12 @@ class MyProfilePage extends GetView<MyProfileController> {
                         imageCircle(user?.imageUrl,
                             isEdit: isEdit, selectedImage: selectedImage),
                         const SizedBox(width: 20),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              // 전체길이 - 이미지길이 - 여백길이 - 양쪽패딩길이 - 패딩길이
-                              width: 500 - 80 - 20 - 32 * 2 - 32,
-                              child: nameText(
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              nameText(
+                                context,
                                 user?.name ?? '',
                                 isEdit: isEdit,
                                 onSaved: ((newValue) =>
@@ -84,16 +85,16 @@ class MyProfilePage extends GetView<MyProfileController> {
                                         ? newValue
                                         : null),
                                 validator: (value) {
-                                  if (value!.length <= 2) {
+                                  if (value!.length <= 1) {
                                     return '이름은 두 글자 이상 입력해야합니다.';
                                   }
                                   return null;
                                 },
                               ),
-                            ),
-                            Text('ID: ${user?.email}',
-                                style: const TextStyle(fontSize: 16)),
-                          ],
+                              Text('ID: ${user?.email}',
+                                  style: const TextStyle(fontSize: 16)),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -179,7 +180,7 @@ class MyProfilePage extends GetView<MyProfileController> {
                       ),
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 20),
 
                     // 흥미
                     Container(
@@ -188,13 +189,15 @@ class MyProfilePage extends GetView<MyProfileController> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             '흥미',
-                            style: TextStyle(
-                              fontSize: 24,
-                            ),
+                            style: Theme.of(context).textTheme.titleLarge,
                           ),
-                          interestsWrap(user?.interests ?? [], isEdit: isEdit),
+                          interestsWrap(context,
+                              interests: user?.interests ?? [],
+                              editInterests: controller.editInterests,
+                              isEdit: isEdit),
+                          if (isEdit) addInterestTextField(context),
                         ],
                       ),
                     ),
@@ -204,6 +207,41 @@ class MyProfilePage extends GetView<MyProfileController> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Padding addInterestTextField(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Stack(
+        children: [
+          TextField(
+            controller: controller.textController,
+            style: Theme.of(context).textTheme.bodyLarge,
+            inputFormatters: [LengthLimitingTextInputFormatter(8)],
+            decoration: const InputDecoration(
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(vertical: 9, horizontal: 8),
+              hintText: '최대 8글자',
+              labelText: '흥미 추가하기',
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(15.0),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: TextButton(
+              onPressed: controller.addInterest,
+              child: const Text('추가'),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -290,12 +328,13 @@ class MyProfilePage extends GetView<MyProfileController> {
   }
 
   Widget nameText(
+    BuildContext context,
     String name, {
     required bool isEdit,
     required FormFieldSetter onSaved,
     required FormFieldValidator validator,
   }) {
-    const textStyle = TextStyle(fontSize: 32);
+    final textStyle = Theme.of(context).textTheme.displaySmall;
     return !isEdit
         ? Text(
             name,
@@ -320,29 +359,39 @@ class MyProfilePage extends GetView<MyProfileController> {
           );
   }
 
-  Wrap interestsWrap(
-    List<String>? interests, {
+  Widget interestsWrap(
+    BuildContext context, {
+    required List<String> interests,
+    required RxList<String> editInterests,
     required bool isEdit,
   }) {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      runAlignment: WrapAlignment.center,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        for (final interest in interests!) interestItem(interest),
-        interestItem('독서', isEdit: true),
-        interestItem('프로그래밍'),
-        interestItem('프로그래밍'),
-        interestItem('프'),
-        interestItem('프그래밍'),
-      ],
-    );
+    if (!isEdit) {
+      return Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          for (final interest in interests)
+            interestItem(context, interest, isEdit: isEdit)
+        ],
+      );
+    } else {
+      return Obx(
+        () => Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            for (final interest in editInterests)
+              interestItem(context, interest, isEdit: isEdit)
+          ],
+        ),
+      );
+    }
   }
 
-  Container interestItem(String interest, {bool isEdit = false}) {
+  Container interestItem(BuildContext context, String interest,
+      {bool isEdit = false}) {
     return Container(
+      key: GlobalKey(),
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(50), // 테두리를 둥글게 만드는 부분
@@ -356,10 +405,17 @@ class MyProfilePage extends GetView<MyProfileController> {
         children: [
           Text(
             interest,
-            style: const TextStyle(fontSize: 18),
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
-          if(isEdit)
-            const Icon(Icons.cancel_outlined)
+          if (isEdit)
+            SizedBox(
+              height: 30,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                onPressed: () => controller.removeInterest(interest),
+                icon: const Icon(Icons.close),
+              ),
+            )
         ],
       ),
     );

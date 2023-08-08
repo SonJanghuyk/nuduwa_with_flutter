@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:nuduwa_with_flutter/controller/meetingController/meeting_card_controller.dart';
 
 import 'package:nuduwa_with_flutter/models/meeting.dart';
-import 'package:nuduwa_with_flutter/utils/assets.dart';
+import 'package:nuduwa_with_flutter/constants/assets.dart';
 
 import 'dart:math' as math;
 

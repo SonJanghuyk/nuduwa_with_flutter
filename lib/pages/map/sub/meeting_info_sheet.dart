@@ -5,7 +5,7 @@ import 'package:nuduwa_with_flutter/controller/mapController/meeting_info_sheet_
 import 'package:nuduwa_with_flutter/models/meeting.dart';
 import 'package:nuduwa_with_flutter/models/member.dart';
 import 'package:nuduwa_with_flutter/service/firebase_service.dart';
-import 'package:nuduwa_with_flutter/utils/assets.dart';
+import 'package:nuduwa_with_flutter/constants/assets.dart';
 
 void meetingInfoSheet(Meeting meeting) {
   showModalBottomSheet(

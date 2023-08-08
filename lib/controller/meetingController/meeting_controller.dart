@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:nuduwa_with_flutter/components/nuduwa_page_route.dart';
+import 'package:nuduwa_with_flutter/constants/nuduwa_page_route.dart';
 import 'package:nuduwa_with_flutter/pages/meeting/meeting_page.dart';
 
 class MeetingController extends GetxController {

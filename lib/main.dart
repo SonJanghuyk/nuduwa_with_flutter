@@ -5,8 +5,8 @@ import 'package:get/get.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:nuduwa_with_flutter/bindings/bindings.dart';
-import 'package:nuduwa_with_flutter/components/nuduwa_page_route.dart';
-import 'package:nuduwa_with_flutter/components/nuduwa_themes.dart';
+import 'package:nuduwa_with_flutter/constants/nuduwa_page_route.dart';
+import 'package:nuduwa_with_flutter/constants/nuduwa_themes.dart';
 import 'package:nuduwa_with_flutter/utils/responsive.dart';
 
 import 'firebase_options.dart';
@@ -37,7 +37,7 @@ class NuduwaApp extends StatelessWidget {
     // Init Device Width
     Responsive.init(context);
 
-    return GetMaterialApp(
+    return GetMaterialApp.router(
       debugShowCheckedModeBanner: false, // 디버그바 삭제
       title: 'NUDUWA',
       theme: NuduwaThemes.lightTheme,

@@ -19,12 +19,13 @@ class ChatRoom {
   ]) {
     final data = snapshot.data();
     final people = data?['people'] as Iterable<String>?;
+    final firstChatTime = data?['firstChatTime'] as Timestamp? ?? Timestamp.now();
     if(people==null) throw 'null';
     
     return ChatRoom(
       id: snapshot.id,
       people: List.from(people),
-      firstChatTime: (data?['firstChatTime'] as Timestamp? ?? Timestamp.now()).toDate(),
+      firstChatTime: firstChatTime.toDate(),
     );
   }
 
